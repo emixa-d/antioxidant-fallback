@@ -89,12 +89,13 @@ out_file.close();"
 		 (features-arguments features)
 		 extra-arguments)))
 
-(define (compile-rust-library source destination crate-name extra-arguments
-			       . arguments)
+(define* (compile-rust-library source destination crate-name extra-arguments
+			       #:key (crate-type "rlib") #:allow-other-keys
+			       #:rest arguments)
   ;; TODO: why rlib?  Because that works.  Maybe dylib works too?
   (apply compile-rust source destination
 	 (append (list (string-append "--crate-name=" crate-name)
-		       "--crate-type=rlib")
+		       (string-append "--crate-type=" crate-type))
 		 extra-arguments)
 	 arguments))
 
@@ -109,7 +110,7 @@ out_file.close();"
 		 extra-arguments)
 	 arguments))
 
-(define* (compile-cargo #:key name features outputs
+(define* (compile-cargo #:key name features outputs target
 			#:allow-other-keys #:rest arguments)
   "Compile and install things described in Cargo.toml."
   (convert-toml->json "Cargo.toml" "Cargo.json")
@@ -124,10 +125,15 @@ out_file.close();"
 	 (crate-name (normalise-crate-name (assoc-ref package "name")))
 	 ;; rust-libc does not compile with edition=2018
 	 (edition (or (assoc-ref package "edition") "2015"))
-	 (build (assoc-ref package "build")))
+	 (build (or (assoc-ref package "build")
+		    ;; E.g, rust-proc-macros2 doesn't set 'build'
+		    ;; even though it has a configure script.
+		    (and (file-exists? "build.rs") "build.rs")))
+	 (lib (or (assoc-ref parsed "lib")))
+	 (lib-procedural-macro? (and lib (assoc-ref lib "proc-macro"))))
     (define (handle-line line)
       (cond ((string-prefix? "cargo:rustc-cfg=" line)
-	     (format #t "Building with --cfg ~a~%" line)
+	     (format #t "Building with --cfg ~a~%" line) ;; todo invalid
 	     (set! features
 	       (cons (string-drop line (string-length "cargo:rustc-cfg="))
 		     features)))
@@ -154,9 +160,10 @@ out_file.close();"
       ;; Expected by some configuration scripts, e.g. rust-libc
       (setenv "RUSTC" (which "rustc"))
       ;; This improves error messages
-      (setenv "RUST_BACKTRACE" "1")
+      (setenv "RUST_BACKTRACE" "full")
       ;; rust-indexmap expectes this to be set (TODO: this is rather ad-hoc)
       (setenv "CARGO_FEATURE_STD" "")
+      (setenv "TARGET" (pk 'tt target)) ; used by rust-proc-macro2's build.rs
       ;; TODO: use pipes
       (format #t "running configuration script~%")
       (unless (= 0 (system "./configuration-script > .guix-config"))
@@ -167,6 +174,7 @@ out_file.close();"
 	    (match r
 	      ((? string? line) (handle-line line) (loop (get-line port)))
 	      ((? eof-object? line) (values)))))))
+    (format #t "Building with features: ~a~%" features)
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (apply compile-rust-library "src/lib.rs"
@@ -176,6 +184,9 @@ out_file.close();"
 	   ;; -- required by rust-proc-macro2
 	   (list (string-append "--edition=" edition))
 	   ;; TODO: figure out how to override things
+	   #:crate-type (if lib-procedural-macro?
+			    "proc-macro"
+			    "rlib")
 	   (append
 	    (list #:features features)
 	    arguments

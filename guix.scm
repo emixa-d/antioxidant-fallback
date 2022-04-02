@@ -33,7 +33,10 @@
 		       (srfi srfi-1) (ice-9 match) (antioxidant))
 	  (gnu-build #:name #$name
 		     #:source #+source
-		     #:system #$system ;;#:target #$target
+		     #:system #$system
+		     ;; used even when building natively
+		     #:target #$(or target
+				    (nix-system->gnu-triplet system))
 		     #:outputs #$(outputs->gexp outputs)
 		     #:inputs #$(input-tuples->gexp inputs)
 		     #:native-inputs #$(input-tuples->gexp inputs)
@@ -84,42 +87,89 @@
     (arguments (list #:features features))))
 
 (define c 0)
-(define (vitaminate/auto pack)
+
+(define (is-cargo-toml-phases? phases)
+  ;; This probably just relaxes versions, so no need to keep this phase
+  ;; anymore.
+  (match (if (gexp? phases) (gexp->approximate-sexp phases) phases)
+    (('modify-phases '%standard-phases _
+		     (_ _ _ (_ _ ('substitute* "Cargo.toml" . _))))
+     #t)
+    (_ #false)))
+
+(define (vitaminate/auto* pack)
   (set! c (+ 1 c))
-  (when (> c 90)
+  (when (> c 200)
     (error "ooops, is this a cycle?"))
   (if (eq? (package-build-system pack) (@ (guix build-system cargo) cargo-build-system))
       (apply
        (lambda* (#:key (cargo-development-inputs '()) (cargo-inputs '())
+		 (phases '%standard-phases)
 		 ;; TODO: cargo test flags
-		 skip-build? cargo-test-flags tests?)
+		 skip-build? cargo-test-flags tests?
+		 (features #~'()))
+	 (unless (or (eq? phases '%standard-phases)
+		     (not (is-cargo-toml-phases? phases)))
+	   (error "phases?"))
 	 (define fix-input
 	   (match-lambda
 	     ((_ dependency)
 	      ;; Some of these are only used for tests, cause cycles, ???
 	      (and (not (member (package-name dependency)
 				'("rust-rustc-std-workspace-std"
-				  "rust-rustc-std-workspace-core" "rust-serde"
+				  "rust-rustc-std-workspace-core"
 				  "rust-compiler-builtins" "rust-winapi"
 				  "rust-serde-json" "rust-doc-comment"
 				  "rust-regex" "rust-hermit-abi"
 				  "rust-lazy-static" "rust-version-sync"
 				  "rust-rustversion" "rust-trybuild"
-				  "rust-serde-derive" "rust-clippy"
+				  "rust-clippy"
 				  "rust-rand" "rust-rand-xorshift"
-				  "rust-walkdir" "rust-yaml-rust")))
+				  "rust-walkdir" "rust-yaml-rust"
+				  "rust-serde-test")))
+		   ;; Avoid cycle!
+		   (or (string=? (package-name pack) "rust-serde-bytes")
+		       (not (string=? (package-name dependency) "rust-serde")))
+		   (or (string=? (package-name pack) "rust-serde")
+		       (not (string=? (package-name dependency) "rust-serde-derive")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-serde-bytes" "rust-bincode")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-serde-bytes" "rust-bincode")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-proc-macro2" "rust-quote")))
+		   (pk 'p pack dependency #t)
 		   (vitaminate/auto dependency)))))
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (arguments (list #:features
 			   (match (package-name pack)
+			     ;; TODO: use default features from Cargo.toml
+			     ;; rust-serde-bytes requires the 'parsing' feature
+			     ("rust-syn"
+			      #~'("feature=\"derive\"" "feature=\"parsing\"" "feature=\"printing\"" "feature=\"clone-impls\""
+				  "feature=\"proc-macro\""
+				  "feature=\"full\""))
+			     ("rust-proc-macro2"
+			      ;; Required by rust-serde-bytes via rust-syn.  If
+			      ;; absent, this causes errors like
+			      ;; <<https://github.com/google/cargo-raze/issues/159>.
+			      #~'("feature=\"proc-macro\""))
+			     ;; TODO: move into Guix proper?
 			     ((or "rust-hashbrown" "rust-os-str-bytes")
 			      #~'("feature=\"raw\""))
-			     (_ #~'()))))
+			     ;; TODO: is unstable-locales ok, or does it
+			     ;; need to be converted to feature="unstable-locales"?
+			     (_ features))))
 	  (native-inputs (filter-map fix-input cargo-development-inputs))
 	  (propagated-inputs (append (filter-map fix-input cargo-inputs)
 				     (package-propagated-inputs pack)))))
        (package-arguments pack))
       pack))
 
+(define vitaminate/auto
+  ((@ (guix memoization) mlambda) (pack) (vitaminate/auto* pack)))
+
 (vitaminate/auto (@ (gnu packages rust-apps) hexyl))
+(vitaminate/auto (@ (gnu packages crates-io) rust-serde-bytes-0.11))
+#;(vitaminate/auto (@ (gnu packages rust-apps) sniffglue))
