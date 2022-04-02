@@ -174,8 +174,8 @@
 (define vitaminate/auto
   ((@ (guix memoization) mlambda) (pack)
    (when (member pack (vitamination-stack))
-     (pk 'cyclic-vitamines (append (find-tail (lambda (x) (eq? x pack))
-					      (vitamination-stack))
+     (pk 'cyclic-vitamines (append (break (lambda (x) (eq? x pack))
+					  (vitamination-stack))
 				   (list pack)))
      (error "oops, a cycle?"))
    (parameterize ((vitamination-stack (cons pack (vitamination-stack))))
