@@ -244,7 +244,6 @@
     (propagated-inputs
      (list rust-ansi-term rust-atty rust-clap-2 rust-libc))))
 
-hello-oxygen
 rust-unicode-xid
 rust-proc-macro2
 rust-quote
