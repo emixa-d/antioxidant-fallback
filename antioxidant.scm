@@ -23,6 +23,7 @@
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
   #:use-module (ice-9 string-fun)
+  #:use-module (ice-9 textual-ports)
   #:use-module (json))
 
 (define (normalise-crate-name name)
@@ -71,14 +72,21 @@ out_file.close();"
 	 (string-append "-L" (dirname crate)))
        crates))
 
+(define (features-arguments features)
+  (append-map (lambda (feature)
+		(list "--cfg" feature)) ; or feature="foo"?
+	      features))
+
 (define* (compile-rust source destination extra-arguments
-		       #:key inputs native-inputs #:allow-other-keys)
+		       #:key inputs native-inputs (features '())
+		       #:allow-other-keys)
   (define crates (find-crates (append inputs (or native-inputs '()))))
   (mkdir-p (dirname destination))
   (apply invoke
 	 "rustc" "--verbose" source "-o" destination
 	 (append (extern-arguments crates)
 		 (L-arguments crates)
+		 (features-arguments features)
 		 extra-arguments)))
 
 (define (compile-rust-library source destination crate-name extra-arguments
@@ -103,10 +111,41 @@ out_file.close();"
 	(json->scm port))
       #:encoding "UTF-8"))
   (pk 'pp parsed)
-  ;; Tested for: rust-cfg-il (TODO: more)
+  ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (pk 'pack (assoc-ref parsed "package")))
 	 (crate-name (normalise-crate-name (assoc-ref package "name")))
-	 (edition (or (assoc-ref package "edition") "2018")))
+	 ;; rust-libc does not compile with edition=2018
+	 (edition (or (assoc-ref package "edition") "2015"))
+	 (build (assoc-ref package "build"))
+	 (features '()))
+    (define (handle-line line)
+      (cond ((string-prefix? "cargo:rustc-cfg=" line)
+	     (format #t "Building with --cfg ~a~%" line)
+	     (set! features
+	       (cons (string-drop line (string-length "cargo:rustc-cfg="))
+		     features)))
+	    ((string-prefix? "cargo:rerun-if-changed=" line)
+	     (values)) ; not important for us
+	    (#true (pk 'l line)
+		   (error "unrecognised output line"))))
+    (when build
+      (format #t "building configuration script~%")
+      (apply
+       compile-rust-binary build "configuration-script"
+       (list (string-append "--edition=" edition))
+       arguments)
+      ;; Expected by some configuration scripts, e.g. rust-libc
+      (setenv "RUSTC" (which "rustc"))
+      ;; TODO: use pipes
+      (format #t "running configuration script~%")
+      (unless (= 0 (system "./configuration-script > .guix-config"))
+	(error "configuration script failed"))
+      (call-with-input-file ".guix-config"
+	(lambda (port)
+	  (let loop ((r (get-line port)))
+	    (match r
+	      ((? string? line) (handle-line line) (loop (get-line port)))
+	      ((? eof-object? line) (values)))))))
     ;; TODO: how does Cargo determine where the source is located?
     (apply compile-rust-library "src/lib.rs"
 	   (apply library-destination crate-name arguments)
@@ -114,4 +153,5 @@ out_file.close();"
 	   ;; Version of the Rust language (cf. -std=c11)
 	   ;; -- required by rust-proc-macro2
 	   (list (string-append "--edition=" edition))
+	   #:features features
 	   arguments)))

@@ -118,6 +118,52 @@
     (arguments (list #:type 'auto))
     (propagated-inputs (list rust-unicode-xid))))
 
+(define-public rust-quote
+  (package
+    (inherit (@ (gnu packages crates-io) rust-quote-1))
+    (build-system antioxidant-build-system)
+    ;; TODO tests
+    (arguments (list #:type 'auto))
+    (propagated-inputs (list rust-proc-macro2))))
+
+(define-public rust-syn
+  (package
+    (inherit (@ (gnu packages crates-io) rust-syn-1))
+    (build-system antioxidant-build-system)
+    ;; TODO tests
+    (arguments (list #:type 'auto))
+    (propagated-inputs (list rust-proc-macro2
+			     rust-quote
+			     rust-unicode-xid))))
+
+;; TODO: rust-libc building?
+#;
+(define-public rust-rustc-std-workspace-core
+  (package
+    (inherit (@ (gnu packages crates-io) rust-rustc-std-workspace-core-1))
+    (build-system antioxidant-build-system)
+    (arguments (list #:type 'auto))))
+
+(define-public rust-libc
+  (package
+    (inherit (@ (gnu packages crates-io) rust-libc-0.2))
+    (build-system antioxidant-build-system)
+    ;; TODO tests
+    (arguments (list #:type 'auto))
+    #;(propagated-inputs (list rust-rustc-std-workspace-core))))
+
+(define-public rust-atty
+  (package
+    (inherit (@ (gnu packages crates-io) rust-atty-0.2))
+    (build-system antioxidant-build-system)
+    ;; TODO tests
+    (arguments (list #:type 'auto))
+    (propagated-inputs (list rust-libc))))
+
+    #;(propagated-inputs (list rust-proc-macro2
+			     rust-quote
+			     rust-unicode-xid))
+
 (define-public rust-hello
   (package
     (name "rust-hello")
@@ -152,3 +198,6 @@
 hello-oxygen
 rust-unicode-xid
 rust-proc-macro2
+rust-quote
+rust-syn
+rust-atty
