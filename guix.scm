@@ -55,6 +55,13 @@
 					      (substitute* "Cargo.toml"
 					        (("^build =(.*)$") "")))))
 				       #~())
+				#$@(if (string-prefix? "rust-bytes" name)
+				       #~((add-after 'unpack 'no-werrors
+				            ;; TODO automate?
+					    (lambda _
+					      (substitute* (find-files "src" "\\.rs$")
+						(("#!\\[deny\\(warnings\\)\\]") "")))))
+				       #~())
 				(replace 'build compile-cargo)
 				(delete 'check)
 				(delete 'install)))))))
@@ -128,6 +135,7 @@
 				  "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
 				  "rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
 				  "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
+				  "rust-bencher" ; FTB
 				  "rust-criterion"
 				  "rust-proptest"
 				  "rust-rustc-std-workspace-std"
@@ -294,3 +302,4 @@
 (vitaminate/auto (@ (gnu packages rust-apps) hexyl))
 (vitaminate/auto (@ (gnu packages crates-io) rust-serde-bytes-0.11))
 (vitaminate/auto (@ (gnu packages rust-apps) sniffglue))
+(vitaminate/auto (@ (gnu packages crates-io) rust-bytes-0.3))
