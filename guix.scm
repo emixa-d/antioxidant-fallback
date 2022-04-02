@@ -103,6 +103,21 @@
    (home-page #f)
    (license #f)))
 
+(define-public rust-unicode-xid
+  (package
+    (inherit (@ (gnu packages crates-io) rust-unicode-xid-0.2))
+    (build-system antioxidant-build-system)
+    ;; TODO tests
+    (arguments (list #:type 'auto))))
+
+(define-public rust-proc-macro2
+  (package
+    (inherit (@ (gnu packages crates-io) rust-proc-macro2-1))
+    (build-system antioxidant-build-system)
+    ;; TODO tests
+    (arguments (list #:type 'auto))
+    (propagated-inputs (list rust-unicode-xid))))
+
 (define-public rust-hello
   (package
     (name "rust-hello")
@@ -135,3 +150,5 @@
     (license #f)))
 
 hello-oxygen
+rust-unicode-xid
+rust-proc-macro2
