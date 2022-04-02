@@ -86,8 +86,6 @@
     (build-system antioxidant-build-system)
     (arguments (list #:features features))))
 
-(define c 0)
-
 (define (is-cargo-toml-phases? phases)
   ;; This probably just relaxes versions, so no need to keep this phase
   ;; anymore.
@@ -97,10 +95,8 @@
      #t)
     (_ #false)))
 
+
 (define (vitaminate/auto* pack)
-  (set! c (+ 1 c))
-  (when (> c 200)
-    (error "ooops, is this a cycle?"))
   (if (eq? (package-build-system pack) (@ (guix build-system cargo) cargo-build-system))
       (apply
        (lambda* (#:key (cargo-development-inputs '()) (cargo-inputs '())
@@ -140,6 +136,11 @@
 				(list "rust-proc-macro2" "rust-quote")))
 ;;		   (pk 'p pack dependency #t)
 		   (cons* label (vitaminate/auto dependency) maybe-output)))))
+	 ;; Detect cycles early by unthunking
+	 (define i (filter-map fix-input (package-inputs pack)))
+	 (define n-i (filter-map fix-input cargo-development-inputs))
+	 (define p-i (append (filter-map fix-input cargo-inputs)
+			     (package-propagated-inputs pack)))
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (arguments (list #:features
@@ -161,16 +162,25 @@
 			     ;; TODO: is unstable-locales ok, or does it
 			     ;; need to be converted to feature="unstable-locales"?
 			     (_ features))))
-	  (inputs (filter-map fix-input (package-inputs pack)))
-	  (native-inputs (filter-map fix-input cargo-development-inputs))
-	  (propagated-inputs (append (filter-map fix-input cargo-inputs)
-				     (package-propagated-inputs pack)))))
+	  (inputs i)
+	  (native-inputs n-i)
+	  (propagated-inputs p-i)))
        (package-arguments pack))
       pack))
 
+(define vitamination-stack  ; only for cycle detection
+  (make-parameter '()))
+
 (define vitaminate/auto
-  ((@ (guix memoization) mlambda) (pack) (vitaminate/auto* pack)))
+  ((@ (guix memoization) mlambda) (pack)
+   (when (member pack (vitamination-stack))
+     (pk 'cyclic-vitamines (append (find-tail (lambda (x) (eq? x pack))
+					      (vitamination-stack))
+				   (list pack)))
+     (error "oops, a cycle?"))
+   (parameterize ((vitamination-stack (cons pack (vitamination-stack))))
+     (vitaminate/auto* pack))))
 
 (vitaminate/auto (@ (gnu packages rust-apps) hexyl))
 (vitaminate/auto (@ (gnu packages crates-io) rust-serde-bytes-0.11))
-#;(vitaminate/auto (@ (gnu packages rust-apps) sniffglue))
+;;(vitaminate/auto (@ (gnu packages rust-apps) sniffglue))
