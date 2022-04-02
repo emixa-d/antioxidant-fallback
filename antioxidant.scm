@@ -83,7 +83,9 @@ out_file.close();"
   (define crates (find-crates (append inputs (or native-inputs '()))))
   (mkdir-p (dirname destination))
   (apply invoke
-	 "rustc" "--verbose" source "-o" destination
+	 "rustc" "--verbose"
+	 "--cap-lints" "warn" ;; ignore #[deny(warnings)], it's too noisy
+	 source "-o" destination
 	 (append (extern-arguments crates)
 		 (L-arguments crates)
 		 (features-arguments features)

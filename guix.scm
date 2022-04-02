@@ -55,13 +55,6 @@
 					      (substitute* "Cargo.toml"
 					        (("^build =(.*)$") "")))))
 				       #~())
-				#$@(if (string-prefix? "rust-bytes" name)
-				       #~((add-after 'unpack 'no-werrors
-				            ;; TODO automate?
-					    (lambda _
-					      (substitute* (find-files "src" "\\.rs$")
-						(("#!\\[deny\\(warnings\\)\\]") "")))))
-				       #~())
 				(replace 'build compile-cargo)
 				(delete 'check)
 				(delete 'install)))))))
