@@ -25,17 +25,45 @@
     (with-imported-modules
 	(source-module-closure '((guix build utils) (guix build gnu-build-system)))
       #~(begin
-	  (use-modules (guix build utils) (guix build gnu-build-system))
-	  (define (build-the-crate . _)
+	  (use-modules (guix build utils) (guix build gnu-build-system)
+		       (srfi srfi-1) (ice-9 match))
+	  (define (crate-directory store-item)
+	    (string-append store-item "/lib/guixcrate"))
+	  (define (extract-crate-name rlib)
+	    (string-drop (string-drop-right (basename rlib) (string-length ".rlib"))
+			 (string-length "lib")))
+	  (define (find-crates inputs)
+	    (append-map (match-lambda
+			  ((name . store-item)
+			   (if (file-exists? store-item)
+			       (find-files (crate-directory store-item) "\\.rlib$")
+			       '())))
+			inputs))
+	  (define (extern-arguments crates)
+	    (map (lambda (crate)
+		   (string-append "--extern=" (extract-crate-name crate)
+				  "=" crate))
+		 crates))
+	  (define (L-arguments crates)
+	    (map (lambda (crate)
+		   (string-append "-L" (dirname crate)))
+		 crates))
+	  (define* (build-the-crate #:key inputs native-inputs
+				    #:allow-other-keys)
 	    (define destination
-	      (string-append #$output "/lib/crate/lib" #$crate-name ".rlib"))
+	      (string-append (crate-directory #$output) "/lib" #$crate-name ".rlib"))
+	    (define all-inputs (append inputs (or native-inputs '())))
+	    (define crates (find-crates all-inputs))
 	    (mkdir-p (dirname destination))
 	    ;; TODO: why rlib?  Because that works.  Maybe dylib works too?
-	    (invoke "rustc" "--verbose" "--crate-type=rlib"
-		    #$(string-append "--crate-name=" crate-name)
-		    #$source-file
-		    "-o"
-		    destination))
+	    (apply invoke
+		   "rustc" "--verbose" "--crate-type=rlib"
+		   #$(string-append "--crate-name=" crate-name)
+		   #$source-file
+		   "-o"
+		   destination
+		   (append (extern-arguments crates)
+			   (L-arguments crates))))
 	  (gnu-build #:name #$name
 		     #:source #+source
 		     #:system #$system ;;#:target #$target
@@ -65,6 +93,7 @@
 		    ("tar" ,tar)
 		    ("gzip" ,gzip)
 		    ,@native-inputs))
+    (host-inputs inputs)
     (build (if target antioxidant-cross-build antioxidant-build))
     (arguments (strip-keyword-arguments private-keywords arguments))))
 
@@ -88,5 +117,21 @@
    (home-page #f)
    (license #f)))
 
-;; next step: libhello
-rust-cfg-if
+(define-public rust-hello
+  (package
+    (name "rust-hello")
+    (version "1.0.0")
+    (source (local-file "libhello" #:recursive? #true))
+    (build-system antioxidant-build-system)
+    (arguments (list #:crate-name "hello"
+		     #:source-file "hello.rs"))
+    ;; Or would this need to be native-inputs, because it's a macro?
+    ;; For now, put everything in 'inputs'.
+    (inputs (list rust-cfg-if))
+    (synopsis #f)
+    (description #f)
+    (home-page #f)
+    (license #f)))
+
+;; next step: 'hello-oxygen'
+rust-hello
