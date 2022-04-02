@@ -174,12 +174,18 @@
 (define vitaminate/auto
   ((@ (guix memoization) mlambda) (pack)
    (when (member pack (vitamination-stack))
-     (pk 'cyclic-vitamines (append (break (lambda (x) (eq? x pack))
-					  (vitamination-stack))
-				   (list pack)))
+     (call-with-values
+	 (lambda ()
+	   (break (lambda (x) (eq? x pack)) (vitamination-stack)))
+       (lambda (cycle before)
+	 (pk 'cyclic-vitamines)
+	 (pk #:begin (reverse (map package-name before)))
+	 (pk #:cycle (reverse (cons '... (map package-name cycle))))))
      (error "oops, a cycle?"))
    (parameterize ((vitamination-stack (cons pack (vitamination-stack))))
      (vitaminate/auto* pack))))
+
+;; todo: cycle between rust-demo-hack and rust-demo-hack-impl
 
 (vitaminate/auto (@ (gnu packages rust-apps) hexyl))
 (vitaminate/auto (@ (gnu packages crates-io) rust-serde-bytes-0.11))
