@@ -45,6 +45,16 @@
 		     #:features #$features
 		     #:phases (modify-phases %standard-phases
 				(delete 'configure)
+				#$@(if (string-prefix? "rust-backtrace-sys" name)
+				       #~((add-after 'unpack 'break-cycle
+					    (lambda _
+					      ;; only needed for Android targets,
+					      ;; by removing it we avoid depending
+					      ;; on crate-cc, breaking a cycle
+					      (delete-file "build.rs")
+					      (substitute* "Cargo.toml"
+					        (("^build =(.*)$") "")))))
+				       #~())
 				(replace 'build compile-cargo)
 				(delete 'check)
 				(delete 'install)))))))
@@ -95,7 +105,8 @@
      #t)
     (_ #false)))
 
-
+;; todo: ‘stub‘ rust-rustc-version to reduce deps?
+;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
   (if (eq? (package-build-system pack) (@ (guix build-system cargo) cargo-build-system))
       (apply
@@ -113,8 +124,12 @@
 	      ;; Some of these are only used for tests, cause cycles, ???
 	      (and (not (member (package-name dependency)
 				'("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
-
+				  "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
+				  "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
 				  "rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
+				  "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
+				  "rust-criterion"
+				  "rust-proptest"
 				  "rust-rustc-std-workspace-std"
 				  "rust-rustc-std-workspace-core"
 				  "rust-compiler-builtins" "rust-winapi"
@@ -125,18 +140,104 @@
 				  "rust-clippy"
 				  "rust-rand" "rust-rand-xorshift"
 				  "rust-walkdir" "rust-yaml-rust"
-				  "rust-serde-test")))
+				  "rust-serde-test"
+				  "rust-wasm-bindgen" "rust-wasi"
+				  "rust-wasm-bindgen-test")))
 		   ;; Avoid cycle!
 		   (or (string=? (package-name pack) "rust-serde-bytes")
 		       (not (string=? (package-name dependency) "rust-serde")))
 		   (or (string=? (package-name pack) "rust-serde")
 		       (not (string=? (package-name dependency) "rust-serde-derive")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-anyhow" "rust-thiserror")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-proc-macro-hack" "rust-demo-hack")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-proc-macro-hack" "rust-demo-hack-impl")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-nom" "rust-jemallocator")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-serde-bytes" "rust-bincode")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-serde-bytes" "rust-bincode")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-proc-macro2" "rust-quote")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-indexmap" "rust-itertools")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-hashbrown" "rust-ahash"))) ; todo: remove from #:cargo-inputs?, unused?
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-hashbrown" "rust-bumpalo"))) ; todo: remove from #:cargo-inputs?, unused?
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-fastrand" "rust-getrandom")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-fastrand" "rust-instant")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-fastrand" "rust-wyhash")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio-io" "rust-tokio-current-thread")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio-core" "rust-flate2")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-executor")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-current-thread")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-fs")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-reactor")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-sync")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio-sync" "rust-loom")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-tcp")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-timer")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-threadpool")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-udp")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-uds")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-macros")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-strum-macros" "rust-strum")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-parking-lot-core" "rust-backtrace")))
+		   ;; TODO why benchmark?
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-unicode-bidi" "rust-flame")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-unicode-bidi" "rust-flamer")))
+		   ;; TODO
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-boxxy" "rust-ctrlc")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-cast" "rust-rustc-version")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-flate2" "rust-tokio-tcp")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-flate2" "rust-tokio-threadpool")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-flate2"))) ;; TODO remove old tokios
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-semver" "rust-crates-index"))) ;; TODO why????
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-semver-parser" "rust-pest-generator")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-spmc" "rust-loom")))
+		   (not (and (member (package-name pack)
+				     (list "rust-futures-macro" "rust-futures-util"
+					   "rust-hex-literal-impl" "rust-hex-literal"))
+			     (string=? (package-name dependency) "rust-proc-macro-hack")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio-test" "rust-tokio"))) ; TODO
+		   ;; These are actually test inputs! (TODO guix)
+		   ;; (TODO: this isn't build from source)
+		   (not (equal? (package-name pack) "rust-pure-rust-locales"))
+		   
 ;;		   (pk 'p pack dependency #t)
 		   (cons* label (vitaminate/auto dependency) maybe-output)))))
 	 ;; Detect cycles early by unthunking
@@ -183,7 +284,7 @@
        (lambda (cycle before)
 	 (pk 'cyclic-vitamines)
 	 (pk #:begin (reverse (map package-name before)))
-	 (pk #:cycle (reverse (cons '... (map package-name cycle))))))
+	 (pk #:cycle (reverse (cons '... (map package-name (cons pack cycle)))))))
      (error "oops, a cycle?"))
    (parameterize ((vitamination-stack (cons pack (vitamination-stack))))
      (vitaminate/auto* pack))))
@@ -192,4 +293,4 @@
 
 (vitaminate/auto (@ (gnu packages rust-apps) hexyl))
 (vitaminate/auto (@ (gnu packages crates-io) rust-serde-bytes-0.11))
-;;(vitaminate/auto (@ (gnu packages rust-apps) sniffglue))
+(vitaminate/auto (@ (gnu packages rust-apps) sniffglue))
