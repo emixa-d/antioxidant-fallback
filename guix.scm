@@ -92,27 +92,29 @@
    (description "Build software written in Rust, without cargo")
    (lower lower)))
 
-;; A rust (macro) library
-(define-public rust-cfg-if
+;; Convert from cargo-build-system to antioxidant-build-system,
+;; for now leaving inputs intact.
+(define* (vitaminate-library/no-inputs crate-package
+				       #:key (features #~'()))
   (package
-   (name "rust-cfg-if")
-   (version "1.0.0")
-   (source (package-source (@ (gnu packages crates-io) rust-cfg-if-1)))
-   (build-system antioxidant-build-system)
-   (arguments (list #:type 'auto))
-   (synopsis #f)
-   (description #f)
-   (home-page #f)
-   (license #f)))
+    (inherit crate-package)
+    (build-system antioxidant-build-system)
+    (arguments (list #:type 'auto
+		     #:features features))))
 
-(define-public rust-unicode-xid
+;; A rust (macro) library
+(define rust-cfg-if
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-cfg-if-1)))
+
+(define rust-unicode-xid
   (package
     (inherit (@ (gnu packages crates-io) rust-unicode-xid-0.2))
     (build-system antioxidant-build-system)
     ;; TODO tests
     (arguments (list #:type 'auto))))
 
-(define-public rust-proc-macro2
+(define rust-proc-macro2
   (package
     (inherit (@ (gnu packages crates-io) rust-proc-macro2-1))
     (build-system antioxidant-build-system)
@@ -120,7 +122,7 @@
     (arguments (list #:type 'auto))
     (propagated-inputs (list rust-unicode-xid))))
 
-(define-public rust-quote
+(define rust-quote
   (package
     (inherit (@ (gnu packages crates-io) rust-quote-1))
     (build-system antioxidant-build-system)
@@ -128,7 +130,7 @@
     (arguments (list #:type 'auto))
     (propagated-inputs (list rust-proc-macro2))))
 
-(define-public rust-syn
+(define rust-syn
   (package
     (inherit (@ (gnu packages crates-io) rust-syn-1))
     (build-system antioxidant-build-system)
@@ -146,25 +148,17 @@
     (build-system antioxidant-build-system)
     (arguments (list #:type 'auto))))
 
-(define-public rust-libc
-  (package
-    (inherit (@ (gnu packages crates-io) rust-libc-0.2))
-    (build-system antioxidant-build-system)
-    ;; TODO tests
-    (arguments (list #:type 'auto))
-    #;(propagated-inputs (list rust-rustc-std-workspace-core))))
+(define rust-libc
+  ;; TODO tests
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-libc-0.2)))
 
-(define-public rust-atty
+(define rust-atty
   (package
-    (inherit (@ (gnu packages crates-io) rust-atty-0.2))
-    (build-system antioxidant-build-system)
+    (inherit
+     (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-atty-0.2)))
     ;; TODO tests
-    (arguments (list #:type 'auto))
     (propagated-inputs (list rust-libc))))
-
-    #;(propagated-inputs (list rust-proc-macro2
-			     rust-quote
-			     rust-unicode-xid))
 
 (define-public rust-hello
   (package
@@ -197,49 +191,61 @@
     (home-page #f)
     (license #f)))
 
-(define-public rust-autocfg
-  (package
-    (inherit (@ (gnu packages crates-io) rust-autocfg-1))
-    (build-system antioxidant-build-system)
-    (arguments (list #:type 'auto))))
+(define rust-autocfg
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-autocfg-1)))
 
-(define-public rust-bitflags
-  (package
-    (inherit (@ (gnu packages crates-io) rust-bitflags-1))
-    (build-system antioxidant-build-system)
-    (arguments (list #:type 'auto))
-    #;(propagated-inputs
-     (list rust-atty rust-bitflags))))
+(define rust-bitflags
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-bitflags-1)))
 
-(define-public rust-hashbrown
-  (package
-    (inherit (@ (gnu packages crates-io) rust-hashbrown-0.11))
-    (build-system antioxidant-build-system)
-    (arguments (list #:type 'auto
-		     ;; rust-indexmap requires this feature
-		     #:features #~'("feature=\"raw\"")))))
+(define rust-hashbrown
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-hashbrown-0.11)
+   ;; rust-indexmap requires this feature
+   #:features #~'("feature=\"raw\"")))
 
-(define-public rust-indexmap
+(define rust-indexmap
   (package
-    (inherit (@ (gnu packages crates-io) rust-indexmap-1))
-    (build-system antioxidant-build-system)
-    (arguments (list #:type 'auto))
-    ;; TODO: hashbrown::raw is private
+    (inherit (vitaminate-library/no-inputs
+	      (@ (gnu packages crates-io) rust-indexmap-1)))
     (propagated-inputs (list rust-hashbrown))
     (native-inputs
      (list rust-autocfg)))) ; required by build.rs
 
-;; TODO: fails to build (missing deps)
-(define-public rust-clap
+(define rust-os-str-bytes
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-os-str-bytes-2)
+   ;; rust-clap requires this feature
+   #:features #~'("feature=\"raw\"")))
+
+(define rust-unicode-width
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-unicode-width-0.1)))
+
+(define rust-textwrap
   (package
-    (inherit (@ (gnu packages crates-io) rust-clap-3))
-    (name "rust-clap")
-    (build-system antioxidant-build-system)
-    (arguments (list #:type 'auto
-		     ;; TODO: maybe add this by default?
-		     #:features #~'("feature=\"std\"")))
+    (inherit
+     (vitaminate-library/no-inputs
+      (@ (gnu packages crates-io) rust-textwrap-0.12)))
     (propagated-inputs
-     (list rust-atty rust-bitflags rust-indexmap))))
+     (list rust-unicode-width))))
+
+(define rust-vec-map
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-vec-map-0.8)))
+
+;; TODO: fails to build (missing deps)
+(define rust-clap
+  (package
+    (inherit
+     (vitaminate-library/no-inputs
+      (@ (gnu packages crates-io) rust-clap-3)
+      ;; TODO: maybe add this by default?
+      #:features #~'("feature=\"std\"")))
+    (propagated-inputs
+     (list rust-atty rust-bitflags rust-indexmap rust-os-str-bytes
+	   rust-unicode-width rust-textwrap rust-vec-map))))
 
 hello-oxygen
 rust-unicode-xid
