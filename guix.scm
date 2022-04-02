@@ -21,60 +21,27 @@
 
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
 			    crate-name source-file binary-name (type 'library))
-  (pk 'hi)
   (define builder
     (with-imported-modules
-	(source-module-closure '((guix build utils) (guix build gnu-build-system)))
+	(cons '(antioxidant)
+	      (source-module-closure '((guix build utils) (guix build gnu-build-system)
+				       (antioxidant))))
       #~(begin
 	  (use-modules (guix build utils) (guix build gnu-build-system)
-		       (srfi srfi-1) (ice-9 match))
-	  (define (crate-directory store-item)
-	    (string-append store-item "/lib/guixcrate"))
-	  (define (extract-crate-name rlib)
-	    (string-drop (string-drop-right (basename rlib) (string-length ".rlib"))
-			 (string-length "lib")))
-	  (define (find-crates inputs)
-	    (append-map (match-lambda
-			  ((name . store-item)
-			   (if (file-exists? store-item)
-			       (find-files (crate-directory store-item) "\\.rlib$")
-			       '())))
-			inputs))
-	  (define (extern-arguments crates)
-	    (map (lambda (crate)
-		   (string-append "--extern=" (extract-crate-name crate)
-				  "=" crate))
-		 crates))
-	  (define (L-arguments crates)
-	    (map (lambda (crate)
-		   (string-append "-L" (dirname crate)))
-		 crates))
-	  (define* (build-the-crate #:key inputs native-inputs
-				    #:allow-other-keys)
-	    (define destination
-	      (case '#$type
-		((library)
-		 (string-append (crate-directory #$output) "/lib" #$crate-name ".rlib"))
-		((binary)
-		 (string-append #$output "/bin/" #$binary-name))))
-	    (define all-inputs (append inputs (or native-inputs '())))
-	    (define crates (find-crates all-inputs))
-	    (mkdir-p (dirname destination))
-	    ;; TODO: why rlib?  Because that works.  Maybe dylib works too?
-	    (apply invoke
-		   "rustc" "--verbose"
-		   #$(case type
-		       ((library) "--crate-type=rlib")
-		       ((binary) "--crate-type=bin")
-		       (else (error "bogus")))
-		   #$@(if (eq? type 'library) 
-			  (list (string-append "--crate-name=" crate-name))
-			  '())
-		   #$source-file
-		   "-o"
-		   destination
-		   (append (extern-arguments crates)
-			   (L-arguments crates))))
+		       (srfi srfi-1) (ice-9 match) (antioxidant))
+	  (define (build-the-crate . arguments)
+	    (if (eq? '#$type 'binary)
+		(apply compile-rust-binary
+		       #$source-file
+		       (string-append #$output "/bin/" #$binary-name)
+		       '()
+		       arguments)
+		(apply compile-rust-library #$source-file
+		       (string-append (crate-directory #$output)
+				      "/lib" #$crate-name ".rlib")
+		       #$crate-name
+		       '()
+		       arguments)))
 	  (gnu-build #:name #$name
 		     #:source #+source
 		     #:system #$system ;;#:target #$target
@@ -96,7 +63,6 @@
 		#:rest arguments)
   (define private-keywords
     '(#:inputs #:native-inputs #:outputs))
-  (pk 'hi)
   (bag
     (name name)
     (system system)
@@ -161,4 +127,4 @@
     (home-page #f)
     (license #f)))
 
-(pk 'h hello-oxygen)
+hello-oxygen
