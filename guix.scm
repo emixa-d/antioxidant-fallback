@@ -113,7 +113,7 @@
 	   (error "phases?"))
 	 (define fix-input
 	   (match-lambda
-	     ((_ dependency)
+	     ((label dependency . maybe-output)
 	      ;; Some of these are only used for tests, cause cycles, ???
 	      (and (not (member (package-name dependency)
 				'("rust-rustc-std-workspace-std"
@@ -138,8 +138,8 @@
 				(list "rust-serde-bytes" "rust-bincode")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-proc-macro2" "rust-quote")))
-		   (pk 'p pack dependency #t)
-		   (vitaminate/auto dependency)))))
+;;		   (pk 'p pack dependency #t)
+		   (cons* label (vitaminate/auto dependency) maybe-output)))))
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (arguments (list #:features
@@ -161,6 +161,7 @@
 			     ;; TODO: is unstable-locales ok, or does it
 			     ;; need to be converted to feature="unstable-locales"?
 			     (_ features))))
+	  (inputs (filter-map fix-input (package-inputs pack)))
 	  (native-inputs (filter-map fix-input cargo-development-inputs))
 	  (propagated-inputs (append (filter-map fix-input cargo-inputs)
 				     (package-propagated-inputs pack)))))
