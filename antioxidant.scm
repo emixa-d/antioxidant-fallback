@@ -102,7 +102,7 @@ out_file.close();"
 			      . arguments)
   (apply compile-rust source destination '("--crate-type=bin") arguments))
 
-(define* (compile-cargo . arguments)
+(define* (compile-cargo #:key features #:allow-other-keys #:rest arguments)
   "Compile and install things described in Cargo.toml."
   (convert-toml->json "Cargo.toml" "Cargo.json")
   (define parsed
@@ -116,8 +116,7 @@ out_file.close();"
 	 (crate-name (normalise-crate-name (assoc-ref package "name")))
 	 ;; rust-libc does not compile with edition=2018
 	 (edition (or (assoc-ref package "edition") "2015"))
-	 (build (assoc-ref package "build"))
-	 (features '()))
+	 (build (assoc-ref package "build")))
     (define (handle-line line)
       (cond ((string-prefix? "cargo:rustc-cfg=" line)
 	     (format #t "Building with --cfg ~a~%" line)
@@ -136,6 +135,10 @@ out_file.close();"
        arguments)
       ;; Expected by some configuration scripts, e.g. rust-libc
       (setenv "RUSTC" (which "rustc"))
+      ;; This improves error messages
+      (setenv "RUST_BACKTRACE" "1")
+      ;; rust-indexmap expectes this to be set (TODO: this is rather ad-hoc)
+      (setenv "CARGO_FEATURE_STD" "")
       ;; TODO: use pipes
       (format #t "running configuration script~%")
       (unless (= 0 (system "./configuration-script > .guix-config"))
@@ -153,5 +156,8 @@ out_file.close();"
 	   ;; Version of the Rust language (cf. -std=c11)
 	   ;; -- required by rust-proc-macro2
 	   (list (string-append "--edition=" edition))
-	   #:features features
-	   arguments)))
+	   ;; TODO: figure out how to override things
+	   (append
+	    (list #:features features)
+	    arguments
+	    (list #:features features)))))

@@ -21,7 +21,8 @@
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
-			    crate-name source-file binary-name (type 'library))
+			    crate-name source-file binary-name (type 'library)
+			    (features #~'()))
   (define builder
     (with-extensions (list guile-json-4)
     (with-imported-modules
@@ -56,6 +57,7 @@
 		     #:native-inputs #$(input-tuples->gexp inputs)
 		     #:search-paths '#$(map search-path-specification->sexp
 					    search-paths)
+		     #:features #$features
 		     #:phases (modify-phases %standard-phases
 				(delete 'configure)
 				(replace 'build build-the-crate)
@@ -65,7 +67,7 @@
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
 
 (define* (lower name #:key system source inputs native-inputs outputs target crate-name source-file
-		type binary-name
+		type binary-name (features #~'())
 		#:rest arguments)
   (define private-keywords
     '(#:inputs #:native-inputs #:outputs))
@@ -195,9 +197,54 @@
     (home-page #f)
     (license #f)))
 
+(define-public rust-autocfg
+  (package
+    (inherit (@ (gnu packages crates-io) rust-autocfg-1))
+    (build-system antioxidant-build-system)
+    (arguments (list #:type 'auto))))
+
+(define-public rust-bitflags
+  (package
+    (inherit (@ (gnu packages crates-io) rust-bitflags-1))
+    (build-system antioxidant-build-system)
+    (arguments (list #:type 'auto))
+    #;(propagated-inputs
+     (list rust-atty rust-bitflags))))
+
+(define-public rust-hashbrown
+  (package
+    (inherit (@ (gnu packages crates-io) rust-hashbrown-0.11))
+    (build-system antioxidant-build-system)
+    (arguments (list #:type 'auto
+		     ;; rust-indexmap requires this feature
+		     #:features #~'("feature=\"raw\"")))))
+
+(define-public rust-indexmap
+  (package
+    (inherit (@ (gnu packages crates-io) rust-indexmap-1))
+    (build-system antioxidant-build-system)
+    (arguments (list #:type 'auto))
+    ;; TODO: hashbrown::raw is private
+    (propagated-inputs (list rust-hashbrown))
+    (native-inputs
+     (list rust-autocfg)))) ; required by build.rs
+
+;; TODO: fails to build (missing deps)
+(define-public rust-clap
+  (package
+    (inherit (@ (gnu packages crates-io) rust-clap-3))
+    (name "rust-clap")
+    (build-system antioxidant-build-system)
+    (arguments (list #:type 'auto
+		     ;; TODO: maybe add this by default?
+		     #:features #~'("feature=\"std\"")))
+    (propagated-inputs
+     (list rust-atty rust-bitflags rust-indexmap))))
+
 hello-oxygen
 rust-unicode-xid
 rust-proc-macro2
 rust-quote
 rust-syn
 rust-atty
+rust-clap
