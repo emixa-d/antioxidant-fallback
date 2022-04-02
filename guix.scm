@@ -21,7 +21,6 @@
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
-			    crate-name source-file binary-name (type 'library)
 			    (features #~'()))
   (define builder
     (with-extensions (list guile-json-4)
@@ -32,23 +31,6 @@
       #~(begin
 	  (use-modules (guix build utils) (guix build gnu-build-system)
 		       (srfi srfi-1) (ice-9 match) (antioxidant))
-	  (define (build-the-crate . arguments)
-	    (cond ((eq? '#$type 'auto)
-		   (apply compile-cargo arguments))
-		  ;; TODO: remove these cases
-		  ((eq? '#$type 'binary)
-		   (apply compile-rust-binary
-			  #$source-file
-			  (string-append #$output "/bin/" #$binary-name)
-			  '()
-			  arguments))
-		  (#true
-		   (apply compile-rust-library #$source-file
-			  (string-append (crate-directory #$output)
-					 "/lib" #$crate-name ".rlib")
-			  #$crate-name
-			  '()
-			  arguments))))
 	  (gnu-build #:name #$name
 		     #:source #+source
 		     #:system #$system ;;#:target #$target
@@ -60,14 +42,14 @@
 		     #:features #$features
 		     #:phases (modify-phases %standard-phases
 				(delete 'configure)
-				(replace 'build build-the-crate)
+				(replace 'build compile-cargo)
 				(delete 'check)
 				(delete 'install)))))))
   ;; TODO graft stuff, package->derivation guile-for-build
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
 
-(define* (lower name #:key system source inputs native-inputs outputs target crate-name source-file
-		type binary-name (features #~'())
+(define* (lower name #:key system source inputs native-inputs outputs target
+		(features #~'())
 		#:rest arguments)
   (define private-keywords
     '(#:inputs #:native-inputs #:outputs))
@@ -99,8 +81,7 @@
   (package
     (inherit crate-package)
     (build-system antioxidant-build-system)
-    (arguments (list #:type 'auto
-		     #:features features))))
+    (arguments (list #:features features))))
 
 ;; A rust (macro) library
 (define rust-cfg-if
@@ -108,34 +89,29 @@
    (@ (gnu packages crates-io) rust-cfg-if-1)))
 
 (define rust-unicode-xid
-  (package
-    (inherit (@ (gnu packages crates-io) rust-unicode-xid-0.2))
-    (build-system antioxidant-build-system)
-    ;; TODO tests
-    (arguments (list #:type 'auto))))
+  ;; TODO tests
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-unicode-xid-0.2)))
 
 (define rust-proc-macro2
   (package
-    (inherit (@ (gnu packages crates-io) rust-proc-macro2-1))
-    (build-system antioxidant-build-system)
+    (inherit
+     (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-proc-macro2-1)))
     ;; TODO tests
-    (arguments (list #:type 'auto))
     (propagated-inputs (list rust-unicode-xid))))
 
 (define rust-quote
   (package
-    (inherit (@ (gnu packages crates-io) rust-quote-1))
-    (build-system antioxidant-build-system)
+    (inherit
+     (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-quote-1)))
     ;; TODO tests
-    (arguments (list #:type 'auto))
     (propagated-inputs (list rust-proc-macro2))))
 
 (define rust-syn
   (package
-    (inherit (@ (gnu packages crates-io) rust-syn-1))
-    (build-system antioxidant-build-system)
+    (inherit
+     (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-syn-1)))
     ;; TODO tests
-    (arguments (list #:type 'auto))
     (propagated-inputs (list rust-proc-macro2
 			     rust-quote
 			     rust-unicode-xid))))
@@ -159,37 +135,6 @@
      (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-atty-0.2)))
     ;; TODO tests
     (propagated-inputs (list rust-libc))))
-
-(define-public rust-hello
-  (package
-    (name "rust-hello")
-    (version "1.0.0")
-    (source (local-file "libhello" #:recursive? #true))
-    (build-system antioxidant-build-system)
-    (arguments (list #:crate-name "hello"
-		     #:source-file "hello.rs"))
-    ;; Or would this need to be native-inputs, because it's a macro?
-    ;; For now, put everything in 'inputs'.
-    (propagated-inputs (list rust-cfg-if))
-    (synopsis #f)
-    (description #f)
-    (home-page #f)
-    (license #f)))
-
-(define-public hello-oxygen
-  (package
-    (name "hello-oxygen")
-    (version "1.0.0")
-    (source (local-file "hello-app" #:recursive? #true))
-    (build-system antioxidant-build-system)
-    (arguments (list #:type 'binary
-		     #:binary-name "hello"
-		     #:source-file "main.rs"))
-    (inputs (list rust-hello))
-    (synopsis #f)
-    (description #f)
-    (home-page #f)
-    (license #f)))
 
 (define rust-autocfg
   (vitaminate-library/no-inputs
