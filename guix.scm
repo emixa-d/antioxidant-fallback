@@ -16,12 +16,14 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
-	     (gnu packages compression)
+	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
+	     (gnu packages guile)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
 			    crate-name source-file binary-name (type 'library))
   (define builder
+    (with-extensions (list guile-json-4)
     (with-imported-modules
 	(cons '(antioxidant)
 	      (source-module-closure '((guix build utils) (guix build gnu-build-system)
@@ -30,18 +32,22 @@
 	  (use-modules (guix build utils) (guix build gnu-build-system)
 		       (srfi srfi-1) (ice-9 match) (antioxidant))
 	  (define (build-the-crate . arguments)
-	    (if (eq? '#$type 'binary)
-		(apply compile-rust-binary
-		       #$source-file
-		       (string-append #$output "/bin/" #$binary-name)
-		       '()
-		       arguments)
-		(apply compile-rust-library #$source-file
-		       (string-append (crate-directory #$output)
-				      "/lib" #$crate-name ".rlib")
-		       #$crate-name
-		       '()
-		       arguments)))
+	    (cond ((eq? '#$type 'auto)
+		   (apply compile-cargo arguments))
+		  ;; TODO: remove these cases
+		  ((eq? '#$type 'binary)
+		   (apply compile-rust-binary
+			  #$source-file
+			  (string-append #$output "/bin/" #$binary-name)
+			  '()
+			  arguments))
+		  (#true
+		   (apply compile-rust-library #$source-file
+			  (string-append (crate-directory #$output)
+					 "/lib" #$crate-name ".rlib")
+			  #$crate-name
+			  '()
+			  arguments))))
 	  (gnu-build #:name #$name
 		     #:source #+source
 		     #:system #$system ;;#:target #$target
@@ -54,7 +60,7 @@
 				(delete 'configure)
 				(replace 'build build-the-crate)
 				(delete 'check)
-				(delete 'install))))))
+				(delete 'install)))))))
   ;; TODO graft stuff, package->derivation guile-for-build
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
 
@@ -71,6 +77,8 @@
 		    ("rust" ,rust)
 		    ("tar" ,tar)
 		    ("gzip" ,gzip)
+		    ("python" ,python)
+		    ("python-toml" ,python-toml) ; for convert-toml->json
 		    ,@native-inputs))
     (host-inputs inputs)
     (build (if target antioxidant-cross-build antioxidant-build))
@@ -89,8 +97,7 @@
    (version "1.0.0")
    (source (package-source (@ (gnu packages crates-io) rust-cfg-if-1)))
    (build-system antioxidant-build-system)
-   (arguments (list #:crate-name "cfg_if"
-		    #:source-file "src/lib.rs"))
+   (arguments (list #:type 'auto))
    (synopsis #f)
    (description #f)
    (home-page #f)
