@@ -99,10 +99,18 @@ out_file.close();"
 	 arguments))
 
 (define* (compile-rust-binary source destination extra-arguments
-			      . arguments)
-  (apply compile-rust source destination '("--crate-type=bin") arguments))
+			      #:key outputs #:allow-other-keys
+			      #:rest arguments)
+  (define self-crates (find-crates outputs)) ; required by 'hexyl'
+  (apply compile-rust source destination
+	 (append (list "--crate-type=bin")
+		 (extern-arguments self-crates)
+		 (L-arguments self-crates)
+		 extra-arguments)
+	 arguments))
 
-(define* (compile-cargo #:key features #:allow-other-keys #:rest arguments)
+(define* (compile-cargo #:key name features outputs
+			#:allow-other-keys #:rest arguments)
   "Compile and install things described in Cargo.toml."
   (convert-toml->json "Cargo.toml" "Cargo.json")
   (define parsed
@@ -127,6 +135,16 @@ out_file.close();"
 	     (values)) ; not important for us
 	    (#true (pk 'l line)
 		   (error "unrecognised output line"))))
+    ;; Used by hexyl
+    (call-with-values
+	(lambda ()
+	  (package-name->name+version
+	   (strip-store-file-name (assoc-ref outputs "out"))))
+      (lambda (name version)
+	;; TODO: fill in based on Cargo.toml
+	(setenv "CARGO_PKG_NAME" crate-name)
+	(setenv "CARGO_PKG_VERSION" version)
+	(setenv "CARGO_PKG_DESCRIPTION" "unknown")))
     (when build
       (format #t "building configuration script~%")
       (apply
@@ -149,7 +167,8 @@ out_file.close();"
 	    (match r
 	      ((? string? line) (handle-line line) (loop (get-line port)))
 	      ((? eof-object? line) (values)))))))
-    ;; TODO: how does Cargo determine where the source is located?
+    ;; TODO: implement proper library/binary autodiscovery as described in
+    ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (apply compile-rust-library "src/lib.rs"
 	   (apply library-destination crate-name arguments)
 	   crate-name
@@ -160,4 +179,23 @@ out_file.close();"
 	   (append
 	    (list #:features features)
 	    arguments
-	    (list #:features features)))))
+	    (list #:features features)))
+    ;; Compile binaries
+    (define (cb source binary)
+      (apply compile-rust-binary source
+	     (string-append (or (assoc-ref outputs "bin")
+				(assoc-ref outputs "out"))
+			    "/bin/"
+			    binary)
+	     (list (string-append "--edition=" edition))
+	     ;; TODO: figure out how to override things
+	     (append
+	      (list #:features features)
+	      arguments
+	      (list #:features features))))
+    (for-each
+     (lambda (file)
+       (when (string-suffix? ".rs" file)
+	 (cb file (string-drop-right (basename file)
+				     (string-length ".rs")))))
+     (find-files "src/bin"))))

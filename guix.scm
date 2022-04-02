@@ -235,17 +235,69 @@
   (vitaminate-library/no-inputs
    (@ (gnu packages crates-io) rust-vec-map-0.8)))
 
+(define rust-termcolor
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-termcolor-1)))
+
+(define rust-strsim
+  (vitaminate-library/no-inputs
+   (@ (gnu packages crates-io) rust-strsim-0.10)))
+
+(define rust-terminal-size
+  (package
+    (inherit
+     (vitaminate-library/no-inputs
+      (@ (gnu packages crates-io) rust-terminal-size-0.1)))
+    (propagated-inputs (list rust-libc))))
+
 ;; TODO: fails to build (missing deps)
+;; hexyl requires rust-clap@2 (incompatibility!)
 (define rust-clap
   (package
     (inherit
      (vitaminate-library/no-inputs
       (@ (gnu packages crates-io) rust-clap-3)
       ;; TODO: maybe add this by default?
-      #:features #~'("feature=\"std\"")))
+      #:features #~'("feature=\"std\""
+		     ;; used by hexyl (?)
+		     "feature=\"suggestions\""
+		     "feature=\"color\""
+		     "feature=\"wrap_help\"")))
     (propagated-inputs
      (list rust-atty rust-bitflags rust-indexmap rust-os-str-bytes
-	   rust-unicode-width rust-textwrap rust-vec-map))))
+	   rust-unicode-width rust-textwrap rust-vec-map
+	   rust-termcolor rust-strsim rust-terminal-size))))
+
+(define rust-ansi-term
+  (package
+    (inherit
+     (vitaminate-library/no-inputs
+      (@ (gnu packages crates-graphics) rust-ansi-term-0.12)))
+    #;(propagated-inputs
+     (list rust-serde))))
+
+(define rust-clap-2
+  (package
+    (inherit
+     (vitaminate-library/no-inputs
+      (@ (gnu packages crates-io) rust-clap-2)
+      ;; TODO: maybe add this by default?
+      #|#:features #~'("feature=\"std\""
+		     ;; used by hexyl (?)
+		     "feature=\"suggestions\""
+		     "feature=\"color\""
+		     "feature=\"wrap_help\""|#))
+    (propagated-inputs (package-propagated-inputs rust-clap))))
+;;       (prepend rust-ansi-term)))))
+
+(define hexyl
+  (package
+    (inherit
+     ;; XXX binary, not library
+     (vitaminate-library/no-inputs
+      (@ (gnu packages rust-apps) hexyl)))
+    (propagated-inputs
+     (list rust-ansi-term rust-atty rust-clap-2 rust-libc))))
 
 hello-oxygen
 rust-unicode-xid
@@ -254,3 +306,5 @@ rust-quote
 rust-syn
 rust-atty
 rust-clap
+
+hexyl
