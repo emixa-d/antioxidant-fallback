@@ -112,7 +112,9 @@
 	     ((label dependency . maybe-output)
 	      ;; Some of these are only used for tests, cause cycles, ???
 	      (and (not (member (package-name dependency)
-				'("rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
+				'("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
+
+				  "rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
 				  "rust-rustc-std-workspace-std"
 				  "rust-rustc-std-workspace-core"
 				  "rust-compiler-builtins" "rust-winapi"
