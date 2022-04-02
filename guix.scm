@@ -17,7 +17,7 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
-	     (gnu packages guile)
+	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
@@ -83,172 +83,43 @@
     (build-system antioxidant-build-system)
     (arguments (list #:features features))))
 
-;; A rust (macro) library
-(define rust-cfg-if
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-cfg-if-1)))
+(define c 0)
+(define (vitaminate/auto pack)
+  (set! c (+ 1 c))
+  (when (> c 90)
+    (error "ooops, is this a cycle?"))
+  (if (eq? (package-build-system pack) (@ (guix build-system cargo) cargo-build-system))
+      (apply
+       (lambda* (#:key (cargo-development-inputs '()) (cargo-inputs '())
+		 ;; TODO: cargo test flags
+		 skip-build? cargo-test-flags tests?)
+	 (define fix-input
+	   (match-lambda
+	     ((_ dependency)
+	      ;; Some of these are only used for tests, cause cycles, ???
+	      (and (not (member (package-name dependency)
+				'("rust-rustc-std-workspace-std"
+				  "rust-rustc-std-workspace-core" "rust-serde"
+				  "rust-compiler-builtins" "rust-winapi"
+				  "rust-serde-json" "rust-doc-comment"
+				  "rust-regex" "rust-hermit-abi"
+				  "rust-lazy-static" "rust-version-sync"
+				  "rust-rustversion" "rust-trybuild"
+				  "rust-serde-derive" "rust-clippy"
+				  "rust-rand" "rust-rand-xorshift"
+				  "rust-walkdir" "rust-yaml-rust")))
+		   (vitaminate/auto dependency)))))
+	 (package
+	  (inherit (vitaminate-library/no-inputs pack))
+	  (arguments (list #:features
+			   (match (package-name pack)
+			     ((or "rust-hashbrown" "rust-os-str-bytes")
+			      #~'("feature=\"raw\""))
+			     (_ #~'()))))
+	  (native-inputs (filter-map fix-input cargo-development-inputs))
+	  (propagated-inputs (append (filter-map fix-input cargo-inputs)
+				     (package-propagated-inputs pack)))))
+       (package-arguments pack))
+      pack))
 
-(define rust-unicode-xid
-  ;; TODO tests
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-unicode-xid-0.2)))
-
-(define rust-proc-macro2
-  (package
-    (inherit
-     (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-proc-macro2-1)))
-    ;; TODO tests
-    (propagated-inputs (list rust-unicode-xid))))
-
-(define rust-quote
-  (package
-    (inherit
-     (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-quote-1)))
-    ;; TODO tests
-    (propagated-inputs (list rust-proc-macro2))))
-
-(define rust-syn
-  (package
-    (inherit
-     (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-syn-1)))
-    ;; TODO tests
-    (propagated-inputs (list rust-proc-macro2
-			     rust-quote
-			     rust-unicode-xid))))
-
-;; TODO: rust-libc building?
-#;
-(define-public rust-rustc-std-workspace-core
-  (package
-    (inherit (@ (gnu packages crates-io) rust-rustc-std-workspace-core-1))
-    (build-system antioxidant-build-system)
-    (arguments (list #:type 'auto))))
-
-(define rust-libc
-  ;; TODO tests
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-libc-0.2)))
-
-(define rust-atty
-  (package
-    (inherit
-     (vitaminate-library/no-inputs (@ (gnu packages crates-io) rust-atty-0.2)))
-    ;; TODO tests
-    (propagated-inputs (list rust-libc))))
-
-(define rust-autocfg
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-autocfg-1)))
-
-(define rust-bitflags
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-bitflags-1)))
-
-(define rust-hashbrown
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-hashbrown-0.11)
-   ;; rust-indexmap requires this feature
-   #:features #~'("feature=\"raw\"")))
-
-(define rust-indexmap
-  (package
-    (inherit (vitaminate-library/no-inputs
-	      (@ (gnu packages crates-io) rust-indexmap-1)))
-    (propagated-inputs (list rust-hashbrown))
-    (native-inputs
-     (list rust-autocfg)))) ; required by build.rs
-
-(define rust-os-str-bytes
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-os-str-bytes-2)
-   ;; rust-clap requires this feature
-   #:features #~'("feature=\"raw\"")))
-
-(define rust-unicode-width
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-unicode-width-0.1)))
-
-(define rust-textwrap
-  (package
-    (inherit
-     (vitaminate-library/no-inputs
-      (@ (gnu packages crates-io) rust-textwrap-0.12)))
-    (propagated-inputs
-     (list rust-unicode-width))))
-
-(define rust-vec-map
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-vec-map-0.8)))
-
-(define rust-termcolor
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-termcolor-1)))
-
-(define rust-strsim
-  (vitaminate-library/no-inputs
-   (@ (gnu packages crates-io) rust-strsim-0.10)))
-
-(define rust-terminal-size
-  (package
-    (inherit
-     (vitaminate-library/no-inputs
-      (@ (gnu packages crates-io) rust-terminal-size-0.1)))
-    (propagated-inputs (list rust-libc))))
-
-;; TODO: fails to build (missing deps)
-;; hexyl requires rust-clap@2 (incompatibility!)
-(define rust-clap
-  (package
-    (inherit
-     (vitaminate-library/no-inputs
-      (@ (gnu packages crates-io) rust-clap-3)
-      ;; TODO: maybe add this by default?
-      #:features #~'("feature=\"std\""
-		     ;; used by hexyl (?)
-		     "feature=\"suggestions\""
-		     "feature=\"color\""
-		     "feature=\"wrap_help\"")))
-    (propagated-inputs
-     (list rust-atty rust-bitflags rust-indexmap rust-os-str-bytes
-	   rust-unicode-width rust-textwrap rust-vec-map
-	   rust-termcolor rust-strsim rust-terminal-size))))
-
-(define rust-ansi-term
-  (package
-    (inherit
-     (vitaminate-library/no-inputs
-      (@ (gnu packages crates-graphics) rust-ansi-term-0.12)))
-    #;(propagated-inputs
-     (list rust-serde))))
-
-(define rust-clap-2
-  (package
-    (inherit
-     (vitaminate-library/no-inputs
-      (@ (gnu packages crates-io) rust-clap-2)
-      ;; TODO: maybe add this by default?
-      #|#:features #~'("feature=\"std\""
-		     ;; used by hexyl (?)
-		     "feature=\"suggestions\""
-		     "feature=\"color\""
-		     "feature=\"wrap_help\""|#))
-    (propagated-inputs (package-propagated-inputs rust-clap))))
-;;       (prepend rust-ansi-term)))))
-
-(define hexyl
-  (package
-    (inherit
-     ;; XXX binary, not library
-     (vitaminate-library/no-inputs
-      (@ (gnu packages rust-apps) hexyl)))
-    (propagated-inputs
-     (list rust-ansi-term rust-atty rust-clap-2 rust-libc))))
-
-rust-unicode-xid
-rust-proc-macro2
-rust-quote
-rust-syn
-rust-atty
-rust-clap
-
-hexyl
+(vitaminate/auto (@ (gnu packages rust-apps) hexyl))
