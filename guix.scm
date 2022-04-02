@@ -20,7 +20,8 @@
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
-			    crate-name source-file)
+			    crate-name source-file binary-name (type 'library))
+  (pk 'hi)
   (define builder
     (with-imported-modules
 	(source-module-closure '((guix build utils) (guix build gnu-build-system)))
@@ -51,14 +52,24 @@
 	  (define* (build-the-crate #:key inputs native-inputs
 				    #:allow-other-keys)
 	    (define destination
-	      (string-append (crate-directory #$output) "/lib" #$crate-name ".rlib"))
+	      (case '#$type
+		((library)
+		 (string-append (crate-directory #$output) "/lib" #$crate-name ".rlib"))
+		((binary)
+		 (string-append #$output "/bin/" #$binary-name))))
 	    (define all-inputs (append inputs (or native-inputs '())))
 	    (define crates (find-crates all-inputs))
 	    (mkdir-p (dirname destination))
 	    ;; TODO: why rlib?  Because that works.  Maybe dylib works too?
 	    (apply invoke
-		   "rustc" "--verbose" "--crate-type=rlib"
-		   #$(string-append "--crate-name=" crate-name)
+		   "rustc" "--verbose"
+		   #$(case type
+		       ((library) "--crate-type=rlib")
+		       ((binary) "--crate-type=bin")
+		       (else (error "bogus")))
+		   #$@(if (eq? type 'library) 
+			  (list (string-append "--crate-name=" crate-name))
+			  '())
 		   #$source-file
 		   "-o"
 		   destination
@@ -81,9 +92,11 @@
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
 
 (define* (lower name #:key system source inputs native-inputs outputs target crate-name source-file
+		type binary-name
 		#:rest arguments)
   (define private-keywords
     '(#:inputs #:native-inputs #:outputs))
+  (pk 'hi)
   (bag
     (name name)
     (system system)
@@ -127,11 +140,25 @@
 		     #:source-file "hello.rs"))
     ;; Or would this need to be native-inputs, because it's a macro?
     ;; For now, put everything in 'inputs'.
-    (inputs (list rust-cfg-if))
+    (propagated-inputs (list rust-cfg-if))
     (synopsis #f)
     (description #f)
     (home-page #f)
     (license #f)))
 
-;; next step: 'hello-oxygen'
-rust-hello
+(define-public hello-oxygen
+  (package
+    (name "hello-oxygen")
+    (version "1.0.0")
+    (source (local-file "hello-app" #:recursive? #true))
+    (build-system antioxidant-build-system)
+    (arguments (list #:type 'binary
+		     #:binary-name "hello"
+		     #:source-file "main.rs"))
+    (inputs (list rust-hello))
+    (synopsis #f)
+    (description #f)
+    (home-page #f)
+    (license #f)))
+
+(pk 'h hello-oxygen)
