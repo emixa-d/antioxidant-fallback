@@ -111,5 +111,7 @@ out_file.close();"
     (apply compile-rust-library "src/lib.rs"
 	   (apply library-destination crate-name arguments)
 	   crate-name
-	   '() ; TODO edition
+	   ;; Version of the Rust language (cf. -std=c11)
+	   ;; -- required by rust-proc-macro2
+	   (list (string-append "--edition=" edition))
 	   arguments)))
