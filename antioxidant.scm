@@ -31,13 +31,11 @@
 
 (define (convert-toml->json from to)
   (invoke "python3" "-c"
-	  "import sys; import toml; import json;
+	  "import sys, toml, json
 here = sys.argv[1]; there = sys.argv[2];
 t = toml.load(here);
-print(t)
-out_file = open(there, \"w\");
-json.dump(t, out_file);
-out_file.close();"
+with open(there, \"w\") as out_file:
+	json.dump(t, out_file);"
 	  from to))
 
 (define (crate-directory store-item)
