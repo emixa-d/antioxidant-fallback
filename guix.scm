@@ -133,6 +133,7 @@
 				  "rust-bencher" ; FTB
 				  "rust-criterion"
 				  "rust-proptest"
+				  "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
 				  "rust-rustc-std-workspace-std"
 				  "rust-rustc-std-workspace-core"
 				  "rust-compiler-builtins" "rust-winapi"
