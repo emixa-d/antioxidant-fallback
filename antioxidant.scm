@@ -41,23 +41,32 @@ with open(there, \"w\") as out_file:
 (define (crate-directory store-item)
   (string-append store-item "/lib/guixcrate"))
 
-(define* (library-destination crate-name #:key outputs #:allow-other-keys)
+(define* (library-destination crate-name type #:key outputs #:allow-other-keys)
   (string-append
    (crate-directory (pk 'out (or (assoc-ref outputs "lib")
 			(assoc-ref outputs "out"))))
-   "/lib" (pk 'cname crate-name) ".rlib"))
+   "/lib" (pk 'cname crate-name) "." type))
   
 (define (find-crates inputs)
   (append-map (match-lambda
 		((name . store-item)
 		 (if (file-exists? store-item)
-		     (find-files (crate-directory store-item) "\\.rlib$")
+		     ;; rlib: Rust's static library format, currently the default
+		     ;; so: shared library, used for proc-macro
+		     (find-files (crate-directory store-item) "\\.(rlib|so)$")
 		     '())))
 	      inputs))
 
-(define (extract-crate-name rlib)
-  (string-drop (string-drop-right (basename rlib) (string-length ".rlib"))
-	       (string-length "lib")))
+(define (extract-crate-name lib)
+  (string-drop
+   (string-drop-right (basename lib)
+		      (cond ((string-suffix? ".rlib" lib)
+			     (string-length ".rlib"))
+			    ((string-suffix? ".so" lib)
+			     (string-length ".so"))
+			    (#true
+			     (format #t "Unrecognised: ~a~%" lib))))
+   (string-length "lib")))
 
 (define (extern-arguments crates)
   (map (lambda (crate)
@@ -197,7 +206,11 @@ with open(there, \"w\") as out_file:
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (apply compile-rust-library lib-path
-	   (apply library-destination crate-name arguments)
+	   (apply library-destination crate-name
+		  (if lib-procedural-macro?
+		      "so"
+		      "rlib")
+		  arguments)
 	   crate-name
 	   ;; Version of the Rust language (cf. -std=c11)
 	   ;; -- required by rust-proc-macro2

@@ -139,7 +139,7 @@
 				  "rust-compiler-builtins" "rust-winapi"
 				  "rust-serde-json" "rust-doc-comment"
 				  "rust-regex" "rust-hermit-abi"
-				  "rust-lazy-static" "rust-version-sync"
+				  #;"rust-lazy-static" "rust-version-sync"
 				  "rust-rustversion" "rust-trybuild"
 				  "rust-clippy"
 				  "rust-rand" "rust-rand-xorshift"
@@ -163,6 +163,8 @@
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-serde-bytes" "rust-bincode")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-failure-derive" "rust-failure")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-serde-bytes" "rust-bincode")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-proc-macro2" "rust-quote")))
@@ -182,6 +184,10 @@
 				(list "rust-tokio-io" "rust-tokio-current-thread")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-core" "rust-flate2")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio-core" "rust-httparse")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-httparse")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-process" "rust-failure"))) ;; otherwise cc needs to be removed from rust-cloudflare-zlib-sys
 		   (not (equal? (list (package-name pack) (package-name dependency))
@@ -220,6 +226,8 @@
 				(list "rust-unicode-bidi" "rust-flame")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-unicode-bidi" "rust-flamer")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-odds" "rust-lazy-static")))
 		   ;; TODO
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-boxxy" "rust-ctrlc")))
@@ -238,7 +246,7 @@
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-spmc" "rust-loom")))
 		   (not (and (member (package-name pack)
-				     (list "rust-futures-macro" "rust-futures-util"
+				     (list "rust-futures-util"
 					   "rust-hex-literal-impl" "rust-hex-literal"))
 			     (string=? (package-name dependency) "rust-proc-macro-hack")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
