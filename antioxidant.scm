@@ -162,6 +162,8 @@ with open(there, \"w\") as out_file:
        compile-rust-binary build "configuration-script"
        (list (string-append "--edition=" edition))
        arguments)
+      ;; Expected by rust-const-fn's build.rs
+      (setenv "OUT_DIR" (getcwd))
       ;; Expected by some configuration scripts, e.g. rust-libc
       (setenv "RUSTC" (which "rustc"))
       ;; This improves error messages
