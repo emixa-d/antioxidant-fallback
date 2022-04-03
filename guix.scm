@@ -126,7 +126,7 @@
 				'("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
 				  "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
 				  "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
-				  "rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
+				  ;;"rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
 				  "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
 				  "rust-bencher" ; FTB
 				  "rust-criterion"
@@ -180,6 +180,8 @@
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-core" "rust-flate2")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio-process" "rust-failure"))) ;; otherwise cc needs to be removed from rust-cloudflare-zlib-sys
+		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio" "rust-tokio-executor")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio" "rust-tokio-current-thread")))
@@ -207,6 +209,9 @@
 				(list "rust-strum-macros" "rust-strum")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-parking-lot-core" "rust-backtrace")))
+		   ;; TODO: can be removed by relaxing versions in rust-signal-hook@0.1
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-signal-hook-registry" "rust-signal-hook")))
 		   ;; TODO why benchmark?
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-unicode-bidi" "rust-flame")))
