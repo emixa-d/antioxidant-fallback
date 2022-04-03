@@ -20,8 +20,10 @@
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
+;; features = default: Use whatever Cargo.toml lists as defaults (or nothing if nothing
+;; is listed).
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
-			    (features #~'()))
+			    (features #~'default))
   (define builder
     (with-extensions (list guile-json-4)
     (with-imported-modules
@@ -62,7 +64,7 @@
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
 
 (define* (lower name #:key system source inputs native-inputs outputs target
-		(features #~'())
+		(features #~'default)
 		#:rest arguments)
   (define private-keywords
     '(#:inputs #:native-inputs #:outputs))
@@ -90,7 +92,7 @@
 ;; Convert from cargo-build-system to antioxidant-build-system,
 ;; for now leaving inputs intact.
 (define* (vitaminate-library/no-inputs crate-package
-				       #:key (features #~'()))
+				       #:key (features #~'default))
   (package
     (inherit crate-package)
     (build-system antioxidant-build-system)
@@ -114,7 +116,7 @@
 		 (phases '%standard-phases)
 		 ;; TODO: cargo test flags
 		 skip-build? cargo-test-flags tests?
-		 (features #~'()))
+		 (features #~'default))
 	 (unless (or (eq? phases '%standard-phases)
 		     (not (is-cargo-toml-phases? phases)))
 	   (error "phases?"))
@@ -145,7 +147,7 @@
 				  "rust-wasm-bindgen" "rust-wasi"
 				  "rust-wasm-bindgen-test")))
 		   ;; Avoid cycle!
-		   (or (string=? (package-name pack) "rust-serde-bytes")
+		   (or (member (package-name pack) '("rust-serde-bytes" "rust-erased-serde"))
 		       (not (string=? (package-name dependency) "rust-serde")))
 		   (or (string=? (package-name pack) "rust-serde")
 		       (not (string=? (package-name dependency) "rust-serde-derive")))

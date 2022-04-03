@@ -122,6 +122,12 @@ with open(there, \"w\") as out_file:
   (pk 'pp parsed)
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (pk 'pack (assoc-ref parsed "package")))
+	 (toml-features (assoc-ref parsed "features"))
+	 (default-features
+	   (vector->list
+	    (or (and toml-features
+		     (assoc-ref toml-features "default"))
+		#())))
 	 (crate-name (normalise-crate-name (assoc-ref package "name")))
 	 ;; rust-libc does not compile with edition=2018
 	 (edition (or (assoc-ref package "edition") "2015"))
@@ -136,6 +142,11 @@ with open(there, \"w\") as out_file:
 	 (lib-path (or (and lib (assoc-ref lib "path"))
 		       "src/lib.rs"))
 	 (lib-procedural-macro? (and lib (assoc-ref lib "proc-macro"))))
+    (when (eq? features 'default)
+      ;; TODO: this confuses features and configuration options
+      (set! features (map (lambda (f)
+			    (string-append "feature=\"" f "\"")) default-features))
+      (format #t "Using features listed in Cargo.toml: ~a~%" features))
     (define (handle-line line)
       (cond ((string-prefix? "cargo:rustc-cfg=" line)
 	     (format #t "Building with --cfg ~a~%" line) ;; todo invalid
@@ -161,7 +172,8 @@ with open(there, \"w\") as out_file:
       (apply
        compile-rust-binary build "configuration-script"
        (list (string-append "--edition=" edition))
-       arguments)
+       (append arguments
+	       (list #:features features))) ; TODO: do something less impure
       ;; Expected by rust-const-fn's build.rs
       (setenv "OUT_DIR" (getcwd))
       ;; Expected by some configuration scripts, e.g. rust-libc
