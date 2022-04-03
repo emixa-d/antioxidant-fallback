@@ -130,6 +130,11 @@ with open(there, \"w\") as out_file:
 		    ;; even though it has a configure script.
 		    (and (file-exists? "build.rs") "build.rs")))
 	 (lib (or (assoc-ref parsed "lib")))
+	 ;; Location of the crate source code to compile.
+	 ;; The default location is src/lib.rs, some packages put
+	 ;; the code elsewhere.
+	 (lib-path (or (and lib (assoc-ref lib "path"))
+		       "src/lib.rs"))
 	 (lib-procedural-macro? (and lib (assoc-ref lib "proc-macro"))))
     (define (handle-line line)
       (cond ((string-prefix? "cargo:rustc-cfg=" line)
@@ -177,7 +182,7 @@ with open(there, \"w\") as out_file:
     (format #t "Building with features: ~a~%" features)
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
-    (apply compile-rust-library "src/lib.rs"
+    (apply compile-rust-library lib-path
 	   (apply library-destination crate-name arguments)
 	   crate-name
 	   ;; Version of the Rust language (cf. -std=c11)
