@@ -170,7 +170,8 @@
 				  "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
 				  "rust-rustc-std-workspace-std"
 				  "rust-rustc-std-workspace-core"
-				  "rust-compiler-builtins" "rust-winapi"
+				  "rust-compiler-builtins"
+				  "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
 				  "rust-serde-json" "rust-doc-comment"
 				  "rust-hermit-abi"
 				  "rust-model" ;; doesn't build, avoid for now
