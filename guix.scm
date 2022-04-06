@@ -20,13 +20,42 @@
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
+(define (target-environment-variables target)
+  ;; TODO gnueabihf?
+  `(("CARGO_CFG_TARGET_ENV" .
+     ,(if (or (target-linux? target) (target-hurd? target))
+	  "gnu"
+	  (unrecognised)))
+    ("CARGO_CFG_TARGET_VENDOR" . "unknown") ; TODO: or pc?
+    ("CARGO_CFG_TARGET_ENDIAN" . "little") ; TODO: big-endian
+    ("CARGO_CFG_TARGET_ARCH" .
+     ,(cond ((target-x86-64? target) "x86_64")
+	    ((target-aarch64? target) "aarch64")
+	    ((target-riscv64? target) "riscv64")
+	    (#true (unrecognised))))
+    ("CARGO_CFG_TARGET_OS" .
+     ,(cond ((target-linux? target) "linux")
+	    ((target-hurd? target) "hurd") ; TODO: or gnu?
+	    (#true (unrecognised))))
+    ("CARGO_CFG_TARGET_FAMILY" .
+     ,(cond ((target-linux? target) "unix")
+	    ((target-hurd? target) "unix") ; TODO: or gnu?
+	    (#true (unrecognised))))
+    ("CARGO_CFG_TARGET_POINTER_WIDTH" .
+     ,(cond ((target-64bit? target) "64")
+	    (#true "32")))))
+
 ;; features = default: Use whatever Cargo.toml lists as defaults (or nothing if nothing
 ;; is listed).
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
 			    ;; TODO: consider optimisations (what does cargo-build-system
 			    ;; do?)
 			    (optimisation-level 0)
-			    (features #~'default))
+			    (features #~'default)
+			    (cargo-env-variables
+			     #~'#$(target-environment-variables
+				   (or target
+				       (nix-system->gnu-triplet system)))))
   (define builder
     (with-extensions (list guile-json-4)
     (with-imported-modules
@@ -49,6 +78,7 @@
 					    search-paths)
 		     #:features #$features
 		     #:optimisation-level '#$optimisation-level
+		     #:cargo-env-variables #$cargo-env-variables
 		     #:phases (modify-phases %standard-phases
 				(delete 'configure)
 				#$@(if (string-prefix? "rust-backtrace-sys" name)

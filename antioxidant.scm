@@ -124,8 +124,11 @@ with open(there, \"w\") as out_file:
 
 (define* (compile-cargo #:key name features outputs target
 			(optimisation-level 0)
+			(cargo-env-variables '())
 			#:allow-other-keys #:rest arguments)
   "Compile and install things described in Cargo.toml."
+  (for-each (match-lambda ((name . value) (setenv name value)))
+	    cargo-env-variables) ; TODO: maybe move more things inside
   (convert-toml->json "Cargo.toml" "Cargo.json")
   (define parsed
     (call-with-input-file "Cargo.json"
@@ -199,7 +202,7 @@ with open(there, \"w\") as out_file:
       (setenv "RUST_BACKTRACE" "full")
       ;; rust-indexmap expectes this to be set (TODO: this is rather ad-hoc)
       (setenv "CARGO_FEATURE_STD" "")
-      (setenv "TARGET" (pk 'tt target)) ; used by rust-proc-macro2's build.rs
+      (setenv "TARGET" target) ; used by rust-proc-macro2's build.rs
       ;; TODO: use pipes
       (format #t "running configuration script~%")
       (unless (= 0 (system "./configuration-script > .guix-config"))
