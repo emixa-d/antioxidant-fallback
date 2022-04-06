@@ -183,7 +183,7 @@
 				  "rust-wasm-bindgen" "rust-wasi"
 				  "rust-wasm-bindgen-test")))
 		   ;; The Redox operating system is not supported by Guix.
-		   (string-prefix? "rust-redox" (package-name dependency))
+		   (not (string-prefix? "rust-redox" (package-name dependency)))
 		   ;; Avoid cycle!
 		   (or (member (package-name pack)
 			       '("rust-serde-bytes" "rust-erased-serde" "rust-docopt"
@@ -307,8 +307,10 @@
 				    (@ (gnu packages crates-io) rust-nb-1))
 				   (("rust-num-traits" "0.1.43")
 				    (@ (gnu packages crates-io) rust-num-traits-0.2))
+				   (("rust-proc-macro2" "0.4.30")
+				    (@ (gnu packages crates-io) rust-proc-macro2-1))
 				   (_ dependency)))
-				 maybe-output)))))
+			  maybe-output)))))
 	 ;; Detect cycles early by unthunking
 	 (define i (filter-map fix-input (package-inputs pack)))
 	 (define n-i (filter-map fix-input cargo-development-inputs))
