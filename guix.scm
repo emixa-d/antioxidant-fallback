@@ -309,6 +309,8 @@
 				    (@ (gnu packages crates-io) rust-nb-1))
 				   (("rust-num-traits" "0.1.43")
 				    (@ (gnu packages crates-io) rust-num-traits-0.2))
+				   (("rust-cfg-if" "0.1.10")
+				    (@ (gnu packages crates-io) rust-cfg-if-1))
 				   (("rust-rand" _)
 				    (@ (gnu packages crates-io) rust-rand-0.8))
 				   (("rust-proc-macro2" "0.4.30")
