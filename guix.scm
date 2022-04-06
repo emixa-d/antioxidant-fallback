@@ -186,7 +186,7 @@
 		   ;; Avoid cycle!
 		   (or (member (package-name pack)
 			       '("rust-serde-bytes" "rust-erased-serde" "rust-docopt"
-				 "rust-toml"))
+				 "rust-toml" "rust-serde-fmt"))
 		       (not (string=? (package-name dependency) "rust-serde")))
 		   (or (string=? (package-name pack) "rust-serde")
 		       (not (string=? (package-name dependency) "rust-serde-derive")))
@@ -316,6 +316,8 @@
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (arguments (list #:features
+			   ;; TODO: can some now be removed now that default features
+			   ;; are enabled by default?
 			   (match (package-name pack)
 			     ;; Avoid the default 'unicode' feature to avoid having to depend
 			     ;; on rust-regex-automata(cycle).  TODO: how does cargo handle it?
@@ -334,8 +336,9 @@
 			     ;; rust-serde-bytes requires the 'parsing' feature
 			     ("rust-syn"
 			      #~'("feature=\"derive\"" "feature=\"parsing\"" "feature=\"printing\"" "feature=\"clone-impls\""
-				  "feature=\"proc-macro\""
-				  "feature=\"full\""))
+				  "feature=\"proc-macro\"" "feature=\"full\""
+				  ;; Used by rust-strum-macros
+				  "feature=\"extra-traits\""))
 			     ("rust-proc-macro2"
 			      ;; Required by rust-serde-bytes via rust-syn.  If
 			      ;; absent, this causes errors like
