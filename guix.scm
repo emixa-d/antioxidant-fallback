@@ -322,6 +322,11 @@
 				    (@ (gnu packages crates-io) rust-rand-0.8))
 				   (("rust-lock-api" _) ; 0.3, 0.2, 0.1
 				    (@ (gnu packages crates-io) rust-lock-api-0.4))
+				   ;; The old parking-lot doesn't build against
+				   ;; the new lock api.
+				   (("rust-parking-lot" _)
+				    ;; TODO: inherit?
+				    (@ (gnu packages crates-io) rust-parking-lot-0.11))
 				   (("rust-proc-macro2" "0.4.30")
 				    (@ (gnu packages crates-io) rust-proc-macro2-1))
 				   (("rust-log" "0.3.9")
@@ -370,10 +375,13 @@
 			     ("rust-crossbeam-epoch"
 			      #~'("feature=\"std\"" "feature=\"alloc\""))
 			     ;; TODO: use default features from Cargo.toml
-			     ;; rust-serde-bytes requires the 'parsing' feature
+			     ;; rust-serde-bytes requires the 'parsing' feature.
+			     ;; visit is required by rust-synstructure.
 			     ("rust-syn"
-			      #~'("feature=\"derive\"" "feature=\"parsing\"" "feature=\"printing\"" "feature=\"clone-impls\""
+			      #~'("feature=\"derive\"" "feature=\"parsing\"" "feature=\"printing\""
+				  "feature=\"clone-impls\""
 				  "feature=\"proc-macro\"" "feature=\"full\""
+				  "feature=\"visit\""
 				  ;; Used by rust-strum-macros
 				  "feature=\"extra-traits\""))
 			     ("rust-proc-macro2"
