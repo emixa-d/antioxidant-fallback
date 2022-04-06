@@ -266,6 +266,9 @@
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (arguments (list #:features
 			   (match (package-name pack)
+			     ;; This addresses the build failure
+			     ;; ‘could not find `collector` in the crate root’
+			     ("rust-crossbeam-epoch" #~'("feature=\"alloc\""))
 			     ;; TODO: use default features from Cargo.toml
 			     ;; rust-serde-bytes requires the 'parsing' feature
 			     ("rust-syn"
