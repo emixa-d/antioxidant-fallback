@@ -171,7 +171,6 @@
 				  "rust-rustc-std-workspace-std"
 				  "rust-rustc-std-workspace-core"
 				  "rust-compiler-builtins" "rust-winapi"
-				  "rust-redox-syscall" ;; The Redox operating system is not supported
 				  "rust-serde-json" "rust-doc-comment"
 				  "rust-hermit-abi"
 				  "rust-model" ;; doesn't build, avoid for now
@@ -183,6 +182,8 @@
 				  "rust-serde-test"
 				  "rust-wasm-bindgen" "rust-wasi"
 				  "rust-wasm-bindgen-test")))
+		   ;; The Redox operating system is not supported by Guix.
+		   (string-prefix? "rust-redox" (package-name dependency))
 		   ;; Avoid cycle!
 		   (or (member (package-name pack)
 			       '("rust-serde-bytes" "rust-erased-serde" "rust-docopt"
