@@ -354,9 +354,13 @@
 			     ;; TODO: move into Guix proper?
 			     ((or "rust-hashbrown" "rust-os-str-bytes")
 			      #~'("feature=\"raw\""))
-			     ;; TODO: is unstable-locales ok, or does it
-			     ;; need to be converted to feature="unstable-locales"?
-			     (_ features))))
+			     (_ (match features
+				  ((? gexp? f) f)
+				  (('quote l)
+				   ;; TODO: escapes, less ad-hoc
+				   #~'#$(map (lambda (s)
+					       (string-append "feature=\"" s "\""))
+					     l)))))))
 	  (inputs i)
 	  (native-inputs n-i)
 	  (propagated-inputs p-i)))
