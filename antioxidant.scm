@@ -169,7 +169,7 @@ with open(there, \"w\") as out_file:
 	     (set! features
 	       (cons (string-drop line (string-length "cargo:rustc-cfg="))
 		     features)))
-	    ((string-prefix? "cargo:rerun-if-changed=" line)
+	    ((string-prefix? "cargo:rerun-if-" line)
 	     (values)) ; not important for us
 	    (#true (pk 'l line)
 		   (error "unrecognised output line"))))
