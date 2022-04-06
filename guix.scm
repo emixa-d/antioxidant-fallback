@@ -23,6 +23,9 @@
 ;; features = default: Use whatever Cargo.toml lists as defaults (or nothing if nothing
 ;; is listed).
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
+			    ;; TODO: consider optimisations (what does cargo-build-system
+			    ;; do?)
+			    (optimisation-level 0)
 			    (features #~'default))
   (define builder
     (with-extensions (list guile-json-4)
@@ -45,6 +48,7 @@
 		     #:search-paths '#$(map search-path-specification->sexp
 					    search-paths)
 		     #:features #$features
+		     #:optimisation-level '#$optimisation-level
 		     #:phases (modify-phases %standard-phases
 				(delete 'configure)
 				#$@(if (string-prefix? "rust-backtrace-sys" name)

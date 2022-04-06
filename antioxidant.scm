@@ -123,6 +123,7 @@ with open(there, \"w\") as out_file:
 	 arguments))
 
 (define* (compile-cargo #:key name features outputs target
+			(optimisation-level 0)
 			#:allow-other-keys #:rest arguments)
   "Compile and install things described in Cargo.toml."
   (convert-toml->json "Cargo.toml" "Cargo.json")
@@ -188,6 +189,10 @@ with open(there, \"w\") as out_file:
 	       (list #:features features))) ; TODO: do something less impure
       ;; Expected by rust-const-fn's build.rs
       (setenv "OUT_DIR" (getcwd))
+      ;; Expected by rust-libm's build.rs
+      (setenv "OPT_LEVEL" (if (number? optimisation-level)
+			      (number->string optimisation-level)
+			      optimisation-level))
       ;; Expected by some configuration scripts, e.g. rust-libc
       (setenv "RUSTC" (which "rustc"))
       ;; This improves error messages
