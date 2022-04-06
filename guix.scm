@@ -320,6 +320,8 @@
 				    (@ (gnu packages crates-io) rust-cfg-if-1))
 				   (("rust-rand" _)
 				    (@ (gnu packages crates-io) rust-rand-0.8))
+				   (("rust-lock-api" _) ; 0.3, 0.2, 0.1
+				    (@ (gnu packages crates-io) rust-lock-api-0.4))
 				   (("rust-proc-macro2" "0.4.30")
 				    (@ (gnu packages crates-io) rust-proc-macro2-1))
 				   (("rust-log" "0.3.9")
