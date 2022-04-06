@@ -87,8 +87,13 @@ with open(there, \"w\") as out_file:
 		(list "--cfg" feature)) ; or feature="foo"?
 	      features))
 
+;; TODO: support static libraries instead of only .so/dylib
+(define (l-arguments c-libraries)
+  (append-map (lambda (l) (list "-l" l)) c-libraries))
+
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs (features '())
+		       (c-libraries '())
 		       #:allow-other-keys)
   (define crates (find-crates (append inputs (or native-inputs '()))))
   (mkdir-p (dirname destination))
@@ -99,10 +104,12 @@ with open(there, \"w\") as out_file:
 	 (append (extern-arguments crates)
 		 (L-arguments crates)
 		 (features-arguments features)
+		 (l-arguments c-libraries)
 		 extra-arguments)))
 
 (define* (compile-rust-library source destination crate-name extra-arguments
-			       #:key (crate-type "rlib") #:allow-other-keys
+			       #:key (crate-type "rlib")
+			       #:allow-other-keys
 			       #:rest arguments)
   ;; TODO: why rlib?  Because that works.  Maybe dylib works too?
   (apply compile-rust source destination
@@ -157,7 +164,9 @@ with open(there, \"w\") as out_file:
 	 ;; the code elsewhere.
 	 (lib-path (or (and lib (assoc-ref lib "path"))
 		       "src/lib.rs"))
-	 (lib-procedural-macro? (and lib (assoc-ref lib "proc-macro"))))
+	 (lib-procedural-macro? (and lib (assoc-ref lib "proc-macro")))
+	 (c-libraries '())
+	 (extra-arguments '())) ; TODO: ad-hoc
     (when (eq? features 'default)
       ;; TODO: this confuses features and configuration options
       (set! features (map (lambda (f)
@@ -169,6 +178,14 @@ with open(there, \"w\") as out_file:
 	     (set! features
 	       (cons (string-drop line (string-length "cargo:rustc-cfg="))
 		     features)))
+	    ((string-prefix? "cargo:rustc-link-lib=" line)
+	     (let ((c-library (string-drop line (string-length "cargo:rustc-link-lib="))))
+	       (format #t "Building with C library ~a~%" c-library)
+	       (set! c-libraries (cons c-library c-libraries))))
+	    ((string-prefix? "cargo:rustc-link-search=" line)
+	     (set! extra-arguments
+		   `("-L" ,(string-drop line (string-length "cargo:rustc-link-search="))
+		     ,@extra-arguments)))
 	    ((string-prefix? "cargo:rerun-if-" line)
 	     (values)) ; not important for us
 	    (#true (pk 'l line)
