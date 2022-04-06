@@ -322,6 +322,10 @@
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?
 			   (match (package-name pack)
+			     ;; The feature "alloc" is not set by default, causing the
+			     ;; build to fail (TODO: maybe report upstream?)
+			     ("rust-bitvec"
+			      #~'("feature=\"std\"" "feature=\"atomic\"" "feature=\"alloc\""))
 			     ;; Avoid the default 'unicode' feature to avoid having to depend
 			     ;; on rust-regex-automata(cycle).  TODO: how does cargo handle it?
 			     ;; TODO(upstream): maybe split off the unicode grapheme things
