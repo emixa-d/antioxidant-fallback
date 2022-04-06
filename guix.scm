@@ -268,7 +268,9 @@
 			   (match (package-name pack)
 			     ;; This addresses the build failure
 			     ;; ‘could not find `collector` in the crate root’
-			     ("rust-crossbeam-epoch" #~'("feature=\"alloc\""))
+			     ;; and ‘cannot find function `pin` in crate `epoch`’
+			     ("rust-crossbeam-epoch"
+			      #~'("feature=\"std\"" "feature=\"alloc\""))
 			     ;; TODO: use default features from Cargo.toml
 			     ;; rust-serde-bytes requires the 'parsing' feature
 			     ("rust-syn"
