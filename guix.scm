@@ -290,10 +290,9 @@
 			     (string=? (package-name dependency) "rust-proc-macro-hack")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-test" "rust-tokio"))) ; TODO
-		   ;; rust-regex-automata is an optional dependency of rust-bstr,
-		   ;; remove it to break a cycle
+		   ;; Break dev-dependencies cycle
 		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-bstr" "rust-regex-automata")))
+				(list "rust-regex-automata" "rust-bstr")))
 		   ;; These are actually test inputs! (TODO guix)
 		   ;; (TODO: this isn't build from source)
 		   ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
@@ -328,11 +327,6 @@
 			      #~'("feature=\"std\"" "feature=\"atomic\"" "feature=\"alloc\""))
 			     ;; Likewise.
 			     ("rust-chrono" #~'("feature=\"alloc\""))
-			     ;; Avoid the default 'unicode' feature to avoid having to depend
-			     ;; on rust-regex-automata(cycle).  TODO: how does cargo handle it?
-			     ;; TODO(upstream): maybe split off the unicode grapheme things
-			     ;; to a separate crate.
-			     ("rust-bstr" #~'("feature=\"std\""))
 			     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
 			     ("rust-nom"
 			      #~'("feature=\"std\"" "feature=\"lexical\"" "feature=\"alloc\""))
