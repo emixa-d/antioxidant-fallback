@@ -256,7 +256,14 @@
 		   (not (equal? (package-name pack) "rust-pure-rust-locales"))
 		   
 ;;		   (pk 'p pack dependency #t)
-		   (cons* label (vitaminate/auto dependency) maybe-output)))))
+		   (cons* label (vitaminate/auto
+				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-nb" "0.1.3")
+				    ;; Avoid E0519, caused by multiple versions of the same crate
+				    ;; being used.  TODO: bump version in 'sniffglue'
+				    (@ (gnu packages crates-io) rust-nb-1))
+				   (_ dependency)))
+				 maybe-output)))))
 	 ;; Detect cycles early by unthunking
 	 (define i (filter-map fix-input (package-inputs pack)))
 	 (define n-i (filter-map fix-input cargo-development-inputs))
