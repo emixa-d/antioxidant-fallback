@@ -298,6 +298,8 @@
 				    ;; Avoid E0519, caused by multiple versions of the same crate
 				    ;; being used.  TODO: bump version in 'sniffglue'
 				    (@ (gnu packages crates-io) rust-nb-1))
+				   (("rust-num-traits" "0.1.43")
+				    (@ (gnu packages crates-io) rust-num-traits-0.2))
 				   (_ dependency)))
 				 maybe-output)))))
 	 ;; Detect cycles early by unthunking
