@@ -48,14 +48,15 @@ with open(there, \"w\") as out_file:
    "/lib" (pk 'cname crate-name) "." type))
   
 (define (find-crates inputs)
-  (append-map (match-lambda
-		((name . store-item)
-		 (if (file-exists? store-item)
-		     ;; rlib: Rust's static library format, currently the default
-		     ;; so: shared library, used for proc-macro
-		     (find-files (crate-directory store-item) "\\.(rlib|so)$")
-		     '())))
-	      inputs))
+  (append-map (lambda (store-item)
+		(if (file-exists? store-item)
+		    ;; rlib: Rust's static library format, currently the default
+		    ;; so: shared library, used for proc-macro
+		    (find-files (crate-directory store-item) "\\.(rlib|so)$")
+		    '()))
+	      ;; Delete duplicates that can happen when compiling natively, to avoid
+	      ;; E0519.
+	      (delete-duplicates (map cdr inputs) string=?)))
 
 (define (extract-crate-name lib)
   (string-drop
@@ -75,9 +76,11 @@ with open(there, \"w\") as out_file:
        crates))
 
 (define (L-arguments crates)
-  (map (lambda (crate)
-	 (string-append "-L" (dirname crate)))
-       crates))
+  (delete-duplicates
+   (map (lambda (crate)
+	  (string-append "-L" (dirname crate)))
+	crates)
+   string=?))
 
 (define (features-arguments features)
   (append-map (lambda (feature)
