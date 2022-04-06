@@ -178,7 +178,7 @@
 				  #;"rust-lazy-static" "rust-version-sync"
 				  "rust-rustversion" "rust-trybuild"
 				  "rust-clippy"
-				  "rust-rand" "rust-rand-xorshift"
+				  "rust-rand-xorshift"
 				  "rust-walkdir" "rust-yaml-rust"
 				  "rust-serde-test"
 				  "rust-wasm-bindgen" "rust-wasi"
@@ -216,6 +216,8 @@
 				(list "rust-hashbrown" "rust-bumpalo"))) ; todo: remove from #:cargo-inputs?, unused?
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-fastrand" "rust-getrandom")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-rand" "rust-packed-simd-2")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-fastrand" "rust-instant")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
@@ -307,6 +309,8 @@
 				    (@ (gnu packages crates-io) rust-nb-1))
 				   (("rust-num-traits" "0.1.43")
 				    (@ (gnu packages crates-io) rust-num-traits-0.2))
+				   (("rust-rand" _)
+				    (@ (gnu packages crates-io) rust-rand-0.8))
 				   (("rust-proc-macro2" "0.4.30")
 				    (@ (gnu packages crates-io) rust-proc-macro2-1))
 				   (("rust-log" "0.3.9")
@@ -329,6 +333,14 @@
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?
 			   (match (package-name pack)
+			     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?)
+			     ("rust-rand"
+			      #~'("feature=\"std\"" "feature=\"std_rng\"" "feature=\"getrandom\""
+				  "feature=\"alloc\""))
+			     ;; Required by rust-rand when using the getrandom feature
+			     ("rust-rand-core" #~'("feature=\"std\" ""feature=\"getrandom\""))
+			     ;; Required by rust-rand-core.
+			     ("rust-getrandom" #~'("feature=\"std\""))
 			     ;; Required by rust-env-logger
 			     ("rust-log" #~'("feature=\"std\""))
 			     ;; The feature "alloc" is not set by default, causing the
