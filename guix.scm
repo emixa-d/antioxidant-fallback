@@ -137,8 +137,10 @@
 				  "rust-rustc-std-workspace-std"
 				  "rust-rustc-std-workspace-core"
 				  "rust-compiler-builtins" "rust-winapi"
+				  "rust-redox-syscall" ;; The Redox operating system is not supported
 				  "rust-serde-json" "rust-doc-comment"
 				  "rust-regex" "rust-hermit-abi"
+				  "rust-model" ;; doesn't build, avoid for now
 				  #;"rust-lazy-static" "rust-version-sync"
 				  "rust-rustversion" "rust-trybuild"
 				  "rust-clippy"
@@ -253,7 +255,7 @@
 				(list "rust-tokio-test" "rust-tokio"))) ; TODO
 		   ;; These are actually test inputs! (TODO guix)
 		   ;; (TODO: this isn't build from source)
-		   (not (equal? (package-name pack) "rust-pure-rust-locales"))
+		   ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
 		   
 ;;		   (pk 'p pack dependency #t)
 		   (cons* label (vitaminate/auto
