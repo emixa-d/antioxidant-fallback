@@ -335,10 +335,11 @@
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?
 			   (match (package-name pack)
-			     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?)
+			     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
+			     ;; small_rngs is required by rust-phf-generator.
 			     ("rust-rand"
 			      #~'("feature=\"std\"" "feature=\"std_rng\"" "feature=\"getrandom\""
-				  "feature=\"alloc\""))
+				  "feature=\"alloc\"" "feature=\"small_rng\""))
 			     ;; Required by rust-rand when using the getrandom feature
 			     ("rust-rand-core" #~'("feature=\"std\" ""feature=\"getrandom\""))
 			     ;; Required by rust-rand-core.
