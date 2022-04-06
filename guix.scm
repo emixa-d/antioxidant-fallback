@@ -326,6 +326,8 @@
 			     ;; build to fail (TODO: maybe report upstream?)
 			     ("rust-bitvec"
 			      #~'("feature=\"std\"" "feature=\"atomic\"" "feature=\"alloc\""))
+			     ;; Likewise.
+			     ("rust-chrono" #~'("feature=\"alloc\""))
 			     ;; Avoid the default 'unicode' feature to avoid having to depend
 			     ;; on rust-regex-automata(cycle).  TODO: how does cargo handle it?
 			     ;; TODO(upstream): maybe split off the unicode grapheme things
