@@ -309,6 +309,8 @@
 				    (@ (gnu packages crates-io) rust-num-traits-0.2))
 				   (("rust-proc-macro2" "0.4.30")
 				    (@ (gnu packages crates-io) rust-proc-macro2-1))
+				   (("rust-log" "0.3.9")
+				    (@ (gnu packages crates-io) rust-log-0.4))
 				   (_ dependency)))
 			  maybe-output)))))
 	 ;; Detect cycles early by unthunking
