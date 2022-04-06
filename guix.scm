@@ -187,7 +187,7 @@
 		   ;; Avoid cycle!
 		   (or (member (package-name pack)
 			       '("rust-serde-bytes" "rust-erased-serde" "rust-docopt"
-				 "rust-toml" "rust-serde-fmt"))
+				 "rust-toml" "rust-serde-fmt" "rust-csv"))
 		       (not (string=? (package-name dependency) "rust-serde")))
 		   (or (string=? (package-name pack) "rust-serde")
 		       (not (string=? (package-name dependency) "rust-serde-derive")))
