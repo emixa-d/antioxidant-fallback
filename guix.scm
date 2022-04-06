@@ -332,7 +332,7 @@
 			     ;; on rust-regex-automata(cycle).  TODO: how does cargo handle it?
 			     ;; TODO(upstream): maybe split off the unicode grapheme things
 			     ;; to a separate crate.
-			     ("rust-bstr" #~'("std"))
+			     ("rust-bstr" #~'("feature=\"std\""))
 			     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
 			     ("rust-nom"
 			      #~'("feature=\"std\"" "feature=\"lexical\"" "feature=\"alloc\""))
