@@ -309,6 +309,9 @@
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (arguments (list #:features
 			   (match (package-name pack)
+			     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
+			     ("rust-nom"
+			      #~'("feature=\"std\"" "feature=\"lexical\"" "feature=\"alloc\""))
 			     ;; This addresses the build failure
 			     ;; ‘could not find `collector` in the crate root’
 			     ;; and ‘cannot find function `pin` in crate `epoch`’
