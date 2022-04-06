@@ -81,16 +81,23 @@
 		     #:cargo-env-variables #$cargo-env-variables
 		     #:phases (modify-phases %standard-phases
 				(delete 'configure)
-				#$@(if (string-prefix? "rust-backtrace-sys" name)
-				       #~((add-after 'unpack 'break-cycle
-					    (lambda _
-					      ;; only needed for Android targets,
-					      ;; by removing it we avoid depending
-					      ;; on crate-cc, breaking a cycle
-					      (delete-file "build.rs")
-					      (substitute* "Cargo.toml"
-					        (("^build =(.*)$") "")))))
-				       #~())
+				#$@(cond ((string-prefix? "rust-backtrace-sys" name)
+				          #~((add-after 'unpack 'break-cycle
+					       (lambda _
+					         ;; only needed for Android targets,
+					         ;; by removing it we avoid depending
+					         ;; on crate-cc, breaking a cycle
+					         (delete-file "build.rs")
+					         (substitute* "Cargo.toml"
+					           (("^build =(.*)$") ""))))))
+					 ;; TODO: when deciding what binaries to build,
+					 ;; respect [[bin]]/required-features, then this
+					 ;; phase can be removed.
+					 ((string-prefix? "rust-phf-generator" name)
+					  #~((add-after 'unpack 'delete-bin
+					       (lambda _
+						 (delete-file "src/bin/gen_hash_test.rs")))))
+					 (#true #~()))
 				(replace 'build compile-cargo)
 				(delete 'check)
 				(delete 'install)))))))
