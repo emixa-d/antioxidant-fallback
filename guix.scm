@@ -173,7 +173,7 @@
 				  "rust-compiler-builtins" "rust-winapi"
 				  "rust-redox-syscall" ;; The Redox operating system is not supported
 				  "rust-serde-json" "rust-doc-comment"
-				  "rust-regex" "rust-hermit-abi"
+				  "rust-hermit-abi"
 				  "rust-model" ;; doesn't build, avoid for now
 				  #;"rust-lazy-static" "rust-version-sync"
 				  "rust-rustversion" "rust-trybuild"
@@ -184,7 +184,9 @@
 				  "rust-wasm-bindgen" "rust-wasi"
 				  "rust-wasm-bindgen-test")))
 		   ;; Avoid cycle!
-		   (or (member (package-name pack) '("rust-serde-bytes" "rust-erased-serde"))
+		   (or (member (package-name pack)
+			       '("rust-serde-bytes" "rust-erased-serde" "rust-docopt"
+				 "rust-toml"))
 		       (not (string=? (package-name dependency) "rust-serde")))
 		   (or (string=? (package-name pack) "rust-serde")
 		       (not (string=? (package-name dependency) "rust-serde-derive")))
@@ -287,6 +289,10 @@
 			     (string=? (package-name dependency) "rust-proc-macro-hack")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-test" "rust-tokio"))) ; TODO
+		   ;; rust-regex-automata is an optional dependency of rust-bstr,
+		   ;; remove it to break a cycle
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-bstr" "rust-regex-automata")))
 		   ;; These are actually test inputs! (TODO guix)
 		   ;; (TODO: this isn't build from source)
 		   ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
@@ -311,6 +317,11 @@
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (arguments (list #:features
 			   (match (package-name pack)
+			     ;; Avoid the default 'unicode' feature to avoid having to depend
+			     ;; on rust-regex-automata(cycle).  TODO: how does cargo handle it?
+			     ;; TODO(upstream): maybe split off the unicode grapheme things
+			     ;; to a separate crate.
+			     ("rust-bstr" #~'("std"))
 			     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
 			     ("rust-nom"
 			      #~'("feature=\"std\"" "feature=\"lexical\"" "feature=\"alloc\""))
