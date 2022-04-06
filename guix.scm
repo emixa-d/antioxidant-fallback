@@ -321,6 +321,8 @@
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?
 			   (match (package-name pack)
+			     ;; Required by rust-env-logger
+			     ("rust-log" #~'("feature=\"std\""))
 			     ;; The feature "alloc" is not set by default, causing the
 			     ;; build to fail (TODO: maybe report upstream?)
 			     ("rust-bitvec"
