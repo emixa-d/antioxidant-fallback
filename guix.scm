@@ -316,7 +316,12 @@
 	 ;; Detect cycles early by unthunking
 	 (define i (filter-map fix-input (package-inputs pack)))
 	 (define n-i (filter-map fix-input cargo-development-inputs))
-	 (define p-i (append (filter-map fix-input cargo-inputs)
+	 (define p-i (append (filter-map fix-input
+					 (append cargo-inputs
+						 ;; Add missing dependencies (TODO upstream Guix)
+						 (match (package-name pack)
+						   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
+						   (_ '()))))
 			     (package-propagated-inputs pack)))
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
