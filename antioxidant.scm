@@ -129,7 +129,8 @@ with open(there, \"w\") as out_file:
 		 extra-arguments)
 	 arguments))
 
-(define* (compile-cargo #:key name features outputs target
+(define* (compile-cargo #:key name features outputs
+			target build
 			(optimisation-level 0)
 			(cargo-env-variables '())
 			#:allow-other-keys #:rest arguments)
@@ -161,10 +162,10 @@ with open(there, \"w\") as out_file:
 	 (crate-license-file (or (assoc-ref package "license-file") ""))
 	 ;; rust-libc does not compile with edition=2018
 	 (edition (or (assoc-ref package "edition") "2015"))
-	 (build (or (assoc-ref package "build")
-		    ;; E.g, rust-proc-macros2 doesn't set 'build'
-		    ;; even though it has a configure script.
-		    (and (file-exists? "build.rs") "build.rs")))
+	 (build.rs (or (assoc-ref package "build")
+		       ;; E.g, rust-proc-macros2 doesn't set 'build'
+		       ;; even though it has a configure script.
+		       (and (file-exists? "build.rs") "build.rs")))
 	 (lib (or (assoc-ref parsed "lib")))
 	 ;; Location of the crate source code to compile.
 	 ;; The default location is src/lib.rs, some packages put
@@ -237,10 +238,10 @@ with open(there, \"w\") as out_file:
     (setenv "CARGO_PKG_REPOSITORY" crate-repository)
     (setenv "CARGO_PKG_LICENSE" crate-license)
     (setenv "CARGO_PKG_LICENSE_FILE" crate-license-file)
-    (when build
+    (when build.rs
       (format #t "building configuration script~%")
       (apply
-       compile-rust-binary build "configuration-script"
+       compile-rust-binary build.rs "configuration-script"
        (list (string-append "--edition=" edition))
        (append arguments
 	       (list #:features features))) ; TODO: do something less impure
@@ -257,6 +258,7 @@ with open(there, \"w\") as out_file:
       ;; rust-indexmap expectes this to be set (TODO: this is rather ad-hoc)
       (setenv "CARGO_FEATURE_STD" "")
       (setenv "TARGET" target) ; used by rust-proc-macro2's build.rs
+      (setenv "HOST" build) ; used by rust-pico-sys
       ;; TODO: use pipes
       (format #t "running configuration script~%")
       (unless (= 0 (system "./configuration-script > .guix-config"))

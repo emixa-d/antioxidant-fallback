@@ -67,7 +67,8 @@
 		       (srfi srfi-1) (ice-9 match) (antioxidant))
 	  (gnu-build #:name #$name
 		     #:source #+source
-		     #:system #$system
+		     #:system #+(nix-system->gnu-triplet system)
+		     #:build #+(nix-system->gnu-triplet system)
 		     ;; used even when building natively
 		     #:target #$(or target
 				    (nix-system->gnu-triplet system))
