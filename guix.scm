@@ -639,8 +639,25 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
-			     ;; tokio-util requires 'sync'
-			     ("rust-tokio" #~'("feature=\"sync\""))
+			     ;; Required by rust-tokio
+			     ;; TODO remove os-poll when implied features are implemented.
+			     ("rust-mio"
+			      #~'("feature=\"net\"" "feature=\"os-ext\"" "feature=\"os-poll\""))
+			     ;; By default zero features are enabled, which is rather
+			     ;; minimalistic and often not sufficient.  TODO: teach
+			     ;; antioxidant about ‘implied’ features.
+			     ("rust-tokio"
+			      #~'("feature=\"full\"" "feature=\"io-util\"" "feature=\"io-std\""
+				  ;;"feature=\"macros\""  ;; TODO
+				  "feature=\"net\""
+				  "feature=\"parking_lot\""
+				  "feature=\"process\""
+				  "feature=\"rt\""
+				  "feature=\"rt-multi-thread\""
+				  "feature=\"signal\""
+				  "feature=\"sync\""
+				  "feature=\"time\""))
+			     ("rust-tokio-util" #~'("feature=\"full\"" "feature=\"codec\""))
 			     ;; extra-traits is required by rust-nix
 			     ("rust-libc" #~'("feature=\"std\"" "feature=\"extra_traits\""))
 			     ;; Enable some features such that "rust-futures" actually builds.
