@@ -45,7 +45,7 @@ with open(there, \"w\") as out_file:
   (string-append
    (crate-directory (or (assoc-ref outputs "lib")
 			(assoc-ref outputs "out")))
-   "/lib" (pk 'cname crate-name) "." type))
+   "/lib" crate-name "." type))
   
 (define (find-crates inputs)
   (append-map (lambda (store-item)
