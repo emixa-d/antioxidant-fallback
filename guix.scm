@@ -115,10 +115,12 @@
     (target target)
     (build-inputs `(("source" ,source)
 		    ("rust" ,rust)
-		    ("tar" ,tar)
-		    ("gzip" ,gzip)
 		    ("python" ,python)
 		    ("python-toml" ,python-toml) ; for convert-toml->json
+		    ;; CARGO_PKG_AUTHORS can contain non-ASCII characters,
+		    ;; make sure 'setenv' won't fail by including glibc
+		    ;; and glibc-utf8-locales
+		    ,@(@ (gnu packages commencement) %final-inputs)
 		    ,@native-inputs))
     (host-inputs inputs)
     (build (if target antioxidant-cross-build antioxidant-build))

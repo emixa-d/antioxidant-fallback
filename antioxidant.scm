@@ -151,9 +151,14 @@ with open(there, \"w\") as out_file:
 	    (or (and toml-features
 		     (assoc-ref toml-features "default"))
 		#())))
-	 (crate-name (normalise-crate-name (assoc-ref package "name")))
 	 (crate-version (or (assoc-ref package "version") ""))
+	 (crate-authors (or (assoc-ref package "authors") #()))
+	 (crate-name (normalise-crate-name (assoc-ref package "name")))
 	 (crate-description (or (assoc-ref package "description") ""))
+	 (crate-homepage (or (assoc-ref package "homepage") ""))
+	 (crate-repository (or (assoc-ref package "repository") ""))
+	 (crate-license (or (assoc-ref package "license") ""))
+	 (crate-license-file (or (assoc-ref package "license-file") ""))
 	 ;; rust-libc does not compile with edition=2018
 	 (edition (or (assoc-ref package "edition") "2015"))
 	 (build (or (assoc-ref package "build")
@@ -199,7 +204,6 @@ with open(there, \"w\") as out_file:
     ;; When something does not appear in the Cargo.toml or such, according to
     ;; that documentation, the environment variable needs to be set to the empty
     ;; string.
-    (setenv "CARGO_PKG_NAME" crate-name)
     (setenv "CARGO_PKG_VERSION" crate-version)
     (let ((set-version-environment-variables
 	   (lambda (major minor patch pre)
@@ -218,7 +222,14 @@ with open(there, \"w\") as out_file:
 	 (set-version-environment-variables major "" "" ""))
 	(() ; not set in Cargo.toml
 	 (set-version-environment-variables "" "" "" ""))))
+    (setenv "CARGO_PKG_AUTHORS"
+	    (string-join (vector->list crate-authors) ":"))
+    (setenv "CARGO_PKG_NAME" crate-name)
     (setenv "CARGO_PKG_DESCRIPTION" crate-description)
+    (setenv "CARGO_PKG_HOMEPAGE" crate-homepage)
+    (setenv "CARGO_PKG_REPOSITORY" crate-repository)
+    (setenv "CARGO_PKG_LICENSE" crate-license)
+    (setenv "CARGO_PKG_LICENSE_FILE" crate-license-file)
     (when build
       (format #t "building configuration script~%")
       (apply
