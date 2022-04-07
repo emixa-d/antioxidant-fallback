@@ -173,6 +173,7 @@
 	      ;; Some of these are only used for tests, cause cycles, ???
 	      (and (not (member (package-name dependency)
 				'("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
+				  "rust-macrotest"
 				  "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
 				  "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
 				  "rust-cortex-m" ; ARM targets not yet supported for Rust in Guix
