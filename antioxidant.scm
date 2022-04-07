@@ -49,7 +49,7 @@ with open(there, \"w\") as out_file:
   
 (define (find-crates inputs)
   (append-map (lambda (store-item)
-		(if (file-exists? store-item)
+		(if (file-exists? (crate-directory store-item))
 		    ;; rlib: Rust's static library format, currently the default
 		    ;; so: shared library, used for proc-macro
 		    (find-files (crate-directory store-item) "\\.(rlib|so)$")
