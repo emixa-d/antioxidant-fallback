@@ -202,8 +202,15 @@ with open(there, \"w\") as out_file:
 		     (string-drop line (string-length "cargo:warning="))))
 	    ((string-prefix? "cargo:rerun-if-" line)
 	     (values)) ; not important for us
-	    (#true (pk 'l line)
-		   (error "unrecognised output line"))))
+	    ((string-prefix? "cargo:" line)
+	     (pk 'l line)
+	     (error "unrecognised build.rs instruction"))
+	    ;; Some build.rs (e.g. the one of rust-pico-sys)
+	    ;; print strings like "TARGET = Some(\"TARGET\")". Maybe
+	    ;; they are just debugging information that can be ignored
+	    ;; by cargo -- err, antioxidant.
+	    (#true (v (pk 'l line)
+		   (error "unrecognised output line")))))
 
     ;; Set some variables that Cargo can set and that might
     ;; be expected by build.rs.  A (full?) list is avialable
