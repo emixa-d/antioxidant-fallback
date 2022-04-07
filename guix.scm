@@ -527,6 +527,8 @@
 				    (@ (gnu packages crates-io) rust-num-traits-0.2))
 				   (("rust-cfg-if" "0.1.10")
 				    (@ (gnu packages crates-io) rust-cfg-if-1))
+				   (("rust-env-logger" _) ; old versions don't build
+				    (@ (gnu packages crates-io) rust-env-logger-0.9))
 				   (("rust-lazy-static" _)
 				    (@ (gnu packages crates-io) rust-lazy-static-1))
 				   (("rust-rand" _)
