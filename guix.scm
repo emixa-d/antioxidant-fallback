@@ -612,14 +612,17 @@
 			     ;; and ‘cannot find function `pin` in crate `epoch`’
 			     ("rust-crossbeam-epoch"
 			      #~'("feature=\"std\"" "feature=\"alloc\""))
+			     ;; Required by rust-unicode-normalization
+			     ("rust-tinyvec" #~'("feature=\"alloc\""))
 			     ;; TODO: use default features from Cargo.toml
 			     ;; rust-serde-bytes requires the 'parsing' feature.
 			     ;; visit is required by rust-synstructure.
+			     ;; visit-mut is used by rust-tracing-attributes.
 			     ("rust-syn"
 			      #~'("feature=\"derive\"" "feature=\"parsing\"" "feature=\"printing\""
 				  "feature=\"clone-impls\""
 				  "feature=\"proc-macro\"" "feature=\"full\""
-				  "feature=\"visit\""
+				  "feature=\"visit\"" "feature=\"visit-mut\""
 				  ;; Used by rust-strum-macros
 				  "feature=\"extra-traits\""))
 			     ("rust-proc-macro2"
