@@ -288,7 +288,11 @@ with open(there, \"w\") as out_file:
 	   crate-name
 	   ;; Version of the Rust language (cf. -std=c11)
 	   ;; -- required by rust-proc-macro2
-	   (list (string-append "--edition=" edition))
+	   (list (string-append "--edition=" edition)
+		 ;; Some build.rs put libraries in the current directory
+		 ;; (or, at least, in OUT_DIR or something like that).
+		 ;; TODO: can be done tidier.
+		 (string-append "-Lnative=" (getcwd)))
 	   ;; TODO: figure out how to override things
 	   #:crate-type (if lib-procedural-macro?
 			    "proc-macro"
@@ -304,7 +308,8 @@ with open(there, \"w\") as out_file:
 				(assoc-ref outputs "out"))
 			    "/bin/"
 			    binary)
-	     (list (string-append "--edition=" edition))
+	     (list (string-append "--edition=" edition)
+		   (string-append "-Lnative=" (getcwd)))
 	     ;; TODO: figure out how to override things
 	     (append
 	      (list #:features features)
