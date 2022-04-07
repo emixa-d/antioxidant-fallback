@@ -189,7 +189,7 @@
 				  "rust-compiler-builtins"
 				  "rust-compiletest-rs" ;; TODO: rustc-dev?
 				  "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
-				  "rust-winapi-util"
+				  "rust-winapi-util" "rust-winapi-build"
 				  "rust-serde-json" "rust-doc-comment"
 				  "rust-hermit-abi"
 				  "rust-model" ;; doesn't build, avoid for now
