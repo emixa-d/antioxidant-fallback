@@ -528,6 +528,8 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-bytes" _)
+				    (@ (gnu packages crates-io) rust-bytes-1))
 				   (("rust-tokio-io" _)
 				    rust-tokio-io-0.2)
 				   (("rust-tokio-codec" _)
