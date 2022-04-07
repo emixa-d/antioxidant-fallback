@@ -102,6 +102,14 @@
 					  #~((add-after 'unpack 'delete-bin
 					       (lambda _
 						 (delete-file "src/bin/afl_runner.rs")))))
+					 ((string-prefix? "rust-cloudflare-zlib-sys" name)
+					  #~((add-after 'unpack 'remove-undocumented
+					       (lambda _
+						 ;; What does this output mean?  It does
+						 ;; not appear to be documented in Cargo's
+						 ;; documentation.
+						 (substitute* "build.rs"
+						   (("println!\\(\"cargo:include(.*)") ""))))))
 					 ;; 'cc' and 'c++' don't exist
 					 ((or (string-prefix? "rust-gcc-" name)
 					      (string-prefix? "rust-cc-" name))
