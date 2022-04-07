@@ -193,6 +193,8 @@ with open(there, \"w\") as out_file:
 	     (set! extra-arguments
 		   `("-L" ,(string-drop line (string-length "cargo:rustc-link-search="))
 		     ,@extra-arguments)))
+	    ((string-prefix? "cargo:rustc-env=" line)
+	     (putenv (string-drop line (string-length "cargo:rustc-env="))))
 	    ((string-prefix? "cargo:rerun-if-" line)
 	     (values)) ; not important for us
 	    (#true (pk 'l line)
