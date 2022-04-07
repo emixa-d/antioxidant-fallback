@@ -97,6 +97,10 @@
 					  #~((add-after 'unpack 'delete-bin
 					       (lambda _
 						 (delete-file "src/bin/gen_hash_test.rs")))))
+					 ((string-prefix? "rust-cpp-demangle" name)
+					  #~((add-after 'unpack 'delete-bin
+					       (lambda _
+						 (delete-file "src/bin/afl_runner.rs")))))
 					 (#true #~()))
 				(replace 'build compile-cargo)
 				(delete 'check)

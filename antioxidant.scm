@@ -210,6 +210,7 @@ with open(there, \"w\") as out_file:
     ;; When something does not appear in the Cargo.toml or such, according to
     ;; that documentation, the environment variable needs to be set to the empty
     ;; string.
+    (setenv "CARGO_MANIFEST_DIR" (getcwd)) ; directory containing the Cargo.toml
     (setenv "CARGO_PKG_VERSION" crate-version)
     (let ((set-version-environment-variables
 	   (lambda (major minor patch pre)
