@@ -195,6 +195,10 @@ with open(there, \"w\") as out_file:
 		     ,@extra-arguments)))
 	    ((string-prefix? "cargo:rustc-env=" line)
 	     (putenv (string-drop line (string-length "cargo:rustc-env="))))
+	    ((string-prefix? "cargo:warning=" line)
+	     (format (current-error-port)
+		     "configuration script: warning: ~a~%"
+		     (string-drop line (string-length "cargo:warning="))))
 	    ((string-prefix? "cargo:rerun-if-" line)
 	     (values)) ; not important for us
 	    (#true (pk 'l line)
