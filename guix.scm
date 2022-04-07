@@ -110,6 +110,14 @@
 						 ;; documentation.
 						 (substitute* "build.rs"
 						   (("println!\\(\"cargo:include(.*)") ""))))))
+					 ((string-prefix? "rust-miniz-sys" name)
+					  #~((add-after 'unpack 'remove-undocumented
+					       (lambda _
+						 ;; What does this output mean?  It does
+						 ;; not appear to be documented in Cargo's
+						 ;; documentation.
+						 (substitute* "build.rs"
+						   (("println!\\(\"cargo:root(.*)") ""))))))
 					 ;; 'cc' and 'c++' don't exist
 					 ((or (string-prefix? "rust-gcc-" name)
 					      (string-prefix? "rust-cc-" name))
