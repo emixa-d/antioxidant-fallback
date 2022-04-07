@@ -301,6 +301,18 @@
      (sha256
       (base32 "1i92ichh2m7i23vdr51gnf5hxngv7d1clwjan1h0dwrxakaq89qi"))))))
 
+(define rust-tokio-codec-0.2
+  (package
+   (inherit (@ (gnu packages crates-io) rust-tokio-codec-0.1))
+   (version "0.2.0-alpha.6")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "tokio-codec" version))
+     (file-name (string-append "rust-tokio-codec" "-" version ".tar.gz"))
+     (sha256
+      (base32 "0ykqx22rmw0k49y5302wshsaxjnpnwf4j4w8s92l1gc43vyj4pcz"))))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -329,6 +341,7 @@
 				  "rust-bencher" ; FTB
 				  "rust-criterion"
 				  "rust-proptest"
+				  "rust-futures-util-preview" ; futures-util has been updated?
 				  "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
 				  ;; TODO: how do the two following crates even work?
 				  "rust-rustc-std-workspace-std"
@@ -343,11 +356,16 @@
 				  #;"rust-lazy-static" "rust-version-sync"
 				  "rust-rustversion" "rust-trybuild"
 				  "rust-clippy"
+				  "rust-tokio-mock-task" ; doesn't build
+				  "rust-tokio-test"
 				  "rust-rand-xorshift"
 				  "rust-walkdir" "rust-yaml-rust"
 				  "rust-serde-test"
 				  "rust-wasm-bindgen" "rust-wasi"
 				  "rust-wasm-bindgen-test")))
+		   ;; rust-futures-cpupool isn't updated anymore and doesn't
+		   ;; build anymore?
+		   (not (string=? (package-name dependency) "rust-futures-cpupool"))
 		   ;; The Redox operating system is not supported by Guix.
 		   (not (string-prefix? "rust-redox" (package-name dependency)))
 		   ;; Avoid cycle!
@@ -476,6 +494,8 @@
 				 (match (list (package-name dependency) (package-version dependency))
 				   (("rust-tokio-io" _)
 				    rust-tokio-io-0.2)
+				   (("rust-tokio-codec" _)
+				    rust-tokio-io-0.2)
 				   (("rust-futures" _)
 				    rust-futures-0.3)
 				   (("rust-futures-channel" _)
@@ -543,6 +563,9 @@
 						   ;; TODO: is this sufficient?
 						   ("rust-futures-core-preview"
 						    `(("rust-futures-core" ,rust-futures-core-0.3)))
+						   ("rust-tokio-sync"
+						    `(("rust-futures-core" ,rust-futures-core-0.3)
+						      ("rust-futures-util" ,rust-futures-util-0.3)))
 						   (_ '()))))
 			     (package-propagated-inputs pack)))
 	 (package
