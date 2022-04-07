@@ -288,6 +288,19 @@
      (sha256
       (base32 "19mq96kwgf06axgdc2fbrjhqzdnxww9vw6cz8b82gqr9z86bj84l"))))))
 
+;; The old tokio doesn't build against recent rust-futures
+(define rust-tokio-io-0.2
+  (package
+   (inherit (@ (gnu packages crates-io) rust-tokio-io-0.1))
+   (version "0.2.0-alpha.6")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "tokio-io" version))
+     (file-name (string-append "rust-tokio-io" "-" version ".tar.gz"))
+     (sha256
+      (base32 "1i92ichh2m7i23vdr51gnf5hxngv7d1clwjan1h0dwrxakaq89qi"))))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -461,6 +474,8 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-tokio-io" _)
+				    rust-tokio-io-0.2)
 				   (("rust-futures" _)
 				    rust-futures-0.3)
 				   (("rust-futures-channel" _)
@@ -525,6 +540,9 @@
 						 ;; Add missing dependencies (TODO upstream Guix)
 						 (match (package-name pack)
 						   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
+						   ;; TODO: is this sufficient?
+						   ("rust-futures-core-preview"
+						    `(("rust-futures-core" ,rust-futures-core-0.3)))
 						   (_ '()))))
 			     (package-propagated-inputs pack)))
 	 (package
