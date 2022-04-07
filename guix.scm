@@ -371,6 +371,8 @@
 				  "rust-serde-json" "rust-doc-comment"
 				  "rust-hermit-abi"
 				  "rust-model" ;; doesn't build, avoid for now
+				  "rust-tokio-core" ;; doesn't exist in recent tokios
+				  "rust-tokio-process" ;; doesn't exist in recent tokios
 				  #;"rust-lazy-static" "rust-version-sync"
 				  "rust-rustversion" "rust-trybuild"
 				  "rust-clippy"
@@ -418,6 +420,8 @@
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tracing-attributes" "rust-tracing-futures")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tracing" "rust-tokio")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-hashbrown" "rust-ahash"))) ; todo: remove from #:cargo-inputs?, unused?
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-hashbrown" "rust-bumpalo"))) ; todo: remove from #:cargo-inputs?, unused?
@@ -438,6 +442,10 @@
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio" "rust-httparse")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-async-stream"))) ;; test
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-nix"))) ;; test
+		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-process" "rust-failure"))) ;; otherwise cc needs to be removed from rust-cloudflare-zlib-sys
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio" "rust-tokio-executor")))
@@ -449,6 +457,8 @@
 				(list "rust-tokio" "rust-tokio-reactor")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio" "rust-tokio-sync")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tokio" "rust-tokio-stream")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-sync" "rust-loom")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
@@ -514,6 +524,8 @@
 				    rust-tokio-io-0.2)
 				   (("rust-tokio-codec" _)
 				    rust-tokio-io-0.2)
+				   (("rust-tokio" _)
+				    (@ (gnu packages crates-io) rust-tokio-1.8))
 				   (("rust-futures" _)
 				    rust-futures-0.3)
 				   (("rust-futures-channel" _)
