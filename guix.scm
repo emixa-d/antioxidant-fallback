@@ -154,6 +154,140 @@
      #t)
     (_ #false)))
 
+(use-modules (guix download))
+(define crate-uri (@ (guix build-system cargo) crate-uri))
+
+;; Use an updated set of rust-futures-... crates to avoid build failures
+;; caused by uses of unstable rust things.  (and because they will need to
+;; be updated anyway eventually).  TODO: verify for malware?
+(define-public rust-futures-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-0.3))
+   (name "rust-futures")
+   (version "0.3.21")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "futures" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "17id2zvn2acny759indn6yj2acfa6lhkwzaidxr2pqfiaigycgzp"))))
+   (arguments
+    `(#:cargo-inputs
+      (("rust-futures-core" ,rust-futures-core-0.3)
+       ("rust-futures-io" ,rust-futures-io-0.3)
+       ("rust-futures-sink" ,rust-futures-sink-0.3)
+       ("rust-futures-executor" ,rust-futures-executor-0.3)
+       ("rust-futures-util" ,rust-futures-util-0.3))))))
+
+(define rust-futures-task-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-task-0.3))
+   (version "0.3.21")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "futures-task" "0.3.21"))
+     (file-name (string-append "rust-futures-task" "-" "0.3.21" ".tar.gz"))
+     (sha256
+      (base32 "0skpiz2ljisywajv79p70yapfwhkqhb39wxy3f09v47mdfbnmijp"))))))
+
+(define rust-futures-util-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-util-0.3))
+   (version "0.3.21")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "futures-util" "0.3.21"))
+     (file-name (string-append "rust-futures-util" "-" "0.3.21" ".tar.gz"))
+     (sha256
+      (base32 "0sh3wqi8p36csjffy0irq8nlx9shqxp7z4dsih6bknarsvaspdyq"))))
+   (arguments
+    ;; TODO: upstream includes rust-futures
+    `(#:cargo-inputs
+      (("rust-futures-core" ,rust-futures-core-0.3)
+       ("rust-futures-task" ,rust-futures-task-0.3)
+       ("rust-futures-macro" ,rust-futures-macro-0.3)
+       ("rust-futures-sink" ,rust-futures-sink-0.3)
+       ("rust-futures-io" ,rust-futures-io-0.3)
+       ("rust-futures-channel" ,rust-futures-channel-0.3)
+       ("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))
+       ("rust-pin-utils" ,(@ (gnu packages crates-io) rust-pin-utils-0.1))
+       ("rust-slab" ,(@ (gnu packages crates-io) rust-slab-0.4)))))))
+
+(define rust-futures-channel-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-channel-0.3))
+   (version "0.3.21")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "futures-channel" "0.3.21"))
+     (file-name (string-append "rust-futures-channel" "-" "0.3.21" ".tar.gz"))
+     (sha256
+      (base32 "0420lz2fmxa356ax1rp2sqi7b27ykfhvq4w9f1sla4hlp7j3q263"))))))
+
+(define rust-futures-core-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-core-0.3))
+   (version "0.3.21")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "futures-core" "0.3.21"))
+     (file-name (string-append "rust-futures-core" "-" "0.3.21" ".tar.gz"))
+     (sha256
+      (base32 "1lqhc6mqklh5bmkpr77p42lqwjj8gaskk5ba2p3kl1z4nw2gs28c"))))))
+
+(define rust-futures-sink-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-sink-0.3))
+   (version "0.3.21")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "futures-sink" "0.3.21"))
+     (file-name (string-append "rust-futures-sink" "-" "0.3.21" ".tar.gz"))
+     (sha256
+      (base32 "0s58gx5yw1a21xviw2qgc0wzk225vgn4kbzddrp141m3kw9kw5i1"))))))
+
+(define rust-futures-io-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-io-0.3))
+   (version "0.3.21")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "futures-io" "0.3.21"))
+     (file-name (string-append "rust-futures-io" "-" "0.3.21" ".tar.gz"))
+     (sha256
+      (base32 "0swn29fysas36ikk5aw55104fi98117amvgxw9g96pjs5ab4ah7w"))))))
+
+(define rust-futures-macro-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-macro-0.3))
+   (version "0.3.21")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "futures-macro" "0.3.21"))
+     (file-name (string-append "rust-futures-macro" "-" "0.3.21" ".tar.gz"))
+     (sha256
+      (base32 "04pmj5xfk5rdhlj69wc7w3zvdg3xardg8srig96lszrk00wf3h9k"))))))
+
+(define rust-futures-executor-0.3
+  (package
+   (inherit (@ (gnu packages crates-io) rust-futures-executor-0.3))
+   (version "0.3.21")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "futures-executor" "0.3.21"))
+     (file-name (string-append "rust-futures-executor" "-" "0.3.21" ".tar.gz"))
+     (sha256
+      (base32 "19mq96kwgf06axgdc2fbrjhqzdnxww9vw6cz8b82gqr9z86bj84l"))))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -327,6 +461,22 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-futures" _)
+				    rust-futures-0.3)
+				   (("rust-futures-channel" _)
+				    rust-futures-channel-0.3)
+				   (("rust-futures-core" _)
+				    rust-futures-core-0.3)
+				   (("rust-futures-executor" _)
+				    rust-futures-executor-0.3)
+				   (("rust-futures-io" _)
+				    rust-futures-io-0.3)
+				   (("rust-futures-sink" _)
+				    rust-futures-sink-0.3)
+				   (("rust-futures-task" _)
+				    rust-futures-task-0.3)
+				   (("rust-futures-util" _)
+				    rust-futures-util-0.3)
 				   ;; rust-http-body@0.1.0's dependency rust-tokio-buf doesn't
 				   ;; build anymore.  (TODO remove from Guix)
 				   (("rust-http-body" _)
@@ -381,8 +531,21 @@
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (arguments (list #:features
 			   ;; TODO: can some now be removed now that default features
-			   ;; are enabled by default?
+			   ;; are enabled by default?  And maybe the features can be moved
+			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; Enable some features such that "rust-futures" actually builds.
+			     ("rust-futures-task"
+			      #~'("feature=\"std\"" "feature=\"alloc\""))
+			     ("rust-futures-util"
+			      #~'("feature=\"std\"" "feature=\"alloc\"" "feature=\"sink\""
+				  "feature=\"io\"" "feature=\"async-await\""
+				  "feature=\"async-await-macro\""
+				  "feature=\"channel\""))
+			     ("rust-futures-core"
+			      #~'("feature=\"std\"" "feature=\"alloc\""))
+			     ("rust-futures-channel"
+			      #~'("feature=\"std\"" "feature=\"alloc\""))
 			     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
 			     ;; small_rngs is required by rust-phf-generator.
 			     ("rust-rand"
