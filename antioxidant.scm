@@ -43,8 +43,8 @@ with open(there, \"w\") as out_file:
 
 (define* (library-destination crate-name type #:key outputs #:allow-other-keys)
   (string-append
-   (crate-directory (pk 'out (or (assoc-ref outputs "lib")
-			(assoc-ref outputs "out"))))
+   (crate-directory (or (assoc-ref outputs "lib")
+			(assoc-ref outputs "out")))
    "/lib" (pk 'cname crate-name) "." type))
   
 (define (find-crates inputs)
