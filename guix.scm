@@ -338,6 +338,18 @@
      (sha256
       (base32 "0ykqx22rmw0k49y5302wshsaxjnpnwf4j4w8s92l1gc43vyj4pcz"))))))
 
+(define rust-tokio-util-0.7
+  (package
+   (inherit (@ (gnu packages crates-io) rust-tokio-util-0.6))
+   (version "0.7.1")
+   (source
+    (origin
+     (method (@ (guix download) url-fetch))
+     (uri ((@ (guix build-system cargo) crate-uri) "tokio-util" version))
+     (file-name (string-append "rust-tokio-util" "-" version ".tar.gz"))
+     (sha256
+      (base32 "0r0p83nisf732qydg23qvmdd6gbrvyr1qvfs8hhbl7a1cyqdxpqf"))))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -381,6 +393,8 @@
 				  "rust-model" ;; doesn't build, avoid for now
 				  "rust-tokio-core" ;; doesn't exist in recent tokios
 				  "rust-tokio-process" ;; doesn't exist in recent tokios
+				  "rust-tokio-executor" ;; doesn't exist in recent tokios, I think?
+				  "rust-tokio-io" ;; doesn't exist in recent tokios, I think?
 				  #;"rust-lazy-static" "rust-version-sync"
 				  "rust-rustversion" "rust-trybuild"
 				  "rust-clippy"
@@ -534,6 +548,8 @@
 				    rust-tokio-io-0.2)
 				   (("rust-tokio-codec" _)
 				    rust-tokio-io-0.2)
+				   (("rust-tokio-util" _)
+				    rust-tokio-util-0.7)
 				   (("rust-tokio" _)
 				    (@ (gnu packages crates-io) rust-tokio-1.8))
 				   (("rust-futures" _)
@@ -552,6 +568,8 @@
 				    rust-futures-task-0.3)
 				   (("rust-futures-util" _)
 				    rust-futures-util-0.3)
+				   (("rust-http" _) ; 0.1 doesn't build
+				    (@ (gnu packages crates-io) rust-http-0.2))
 				   ;; rust-http-body@0.1.0's dependency rust-tokio-buf doesn't
 				   ;; build anymore.  (TODO remove from Guix)
 				   (("rust-http-body" _)
@@ -621,6 +639,8 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; tokio-util requires 'sync'
+			     ("rust-tokio" #~'("feature=\"sync\""))
 			     ;; extra-traits is required by rust-nix
 			     ("rust-libc" #~'("feature=\"std\"" "feature=\"extra_traits\""))
 			     ;; Enable some features such that "rust-futures" actually builds.
