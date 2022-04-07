@@ -171,6 +171,7 @@
 				'("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
 				  "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
 				  "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
+				  "rust-cortex-m" ; ARM targets not yet supported for Rust in Guix
 				  ;;"rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
 				  "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
 				  "rust-bencher" ; FTB
@@ -324,11 +325,19 @@
 				    (@ (gnu packages crates-io) rust-rand-0.8))
 				   (("rust-lock-api" _) ; 0.3, 0.2, 0.1
 				    (@ (gnu packages crates-io) rust-lock-api-0.4))
+				   ;; The (now deprecated) rust-tempdir doesn't build
+				   ;; against current rust-rand, use the new rust-tempfile
+				   ;; instead as upstream recommends.
+				   (("rust-tempdir" _)
+				    (@ (gnu packages crates-io) rust-tempfile-3))
+				   (("rust-bare-metal" _)
+				    (@ (gnu packages crates-io) rust-bare-metal-1))
 				   ;; The old parking-lot doesn't build against
 				   ;; the new lock api.
 				   (("rust-parking-lot" _)
 				    ;; TODO: inherit?
 				    (@ (gnu packages crates-io) rust-parking-lot-0.11))
+				   ;; 0.4.30 fails to build.
 				   (("rust-proc-macro2" "0.4.30")
 				    (@ (gnu packages crates-io) rust-proc-macro2-1))
 				   (("rust-log" "0.3.9")
