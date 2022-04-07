@@ -152,8 +152,8 @@ with open(there, \"w\") as out_file:
 		     (assoc-ref toml-features "default"))
 		#())))
 	 (crate-name (normalise-crate-name (assoc-ref package "name")))
-	 (crate-version (assoc-ref package "version"))
-	 (crate-description (assoc-ref package "description"))
+	 (crate-version (or (assoc-ref package "version") ""))
+	 (crate-description (or (assoc-ref package "description") ""))
 	 ;; rust-libc does not compile with edition=2018
 	 (edition (or (assoc-ref package "edition") "2015"))
 	 (build (or (assoc-ref package "build")
@@ -192,12 +192,33 @@ with open(there, \"w\") as out_file:
 	     (values)) ; not important for us
 	    (#true (pk 'l line)
 		   (error "unrecognised output line"))))
-    ;; Used by hexyl
+
+    ;; Set some variables that Cargo can set and that might
+    ;; be expected by build.rs.  A (full?) list is avialable
+    ;; at <https://doc.rust-lang.org/cargo/reference/environment-variables.html>.
+    ;; When something does not appear in the Cargo.toml or such, according to
+    ;; that documentation, the environment variable needs to be set to the empty
+    ;; string.
     (setenv "CARGO_PKG_NAME" crate-name)
-    (when crate-version
-      (setenv "CARGO_PKG_VERSION" crate-version))
-    (when crate-description
-      (setenv "CARGO_PKG_DESCRIPTION" crate-description))
+    (setenv "CARGO_PKG_VERSION" crate-version)
+    (let ((set-version-environment-variables
+	   (lambda (major minor patch pre)
+	     (setenv "CARGO_PKG_VERSION_MAJOR" major)
+	     (setenv "CARGO_PKG_VERSION_MINOR" minor)
+	     (setenv "CARGO_PKG_VERSION_PATCH" patch)
+	     (setenv "CARGO_PKG_VERSION_PRE" pre))))
+      (match (string-split crate-version #\.)
+	((major minor patch pre)
+	 (set-version-environment-variables major minor patch pre))
+	((major minor patch)
+	 (set-version-environment-variables major minor patch ""))
+	((major minor)
+	 (set-version-environment-variables major minor "" ""))
+	((major)
+	 (set-version-environment-variables major "" "" ""))
+	(() ; not set in Cargo.toml
+	 (set-version-environment-variables "" "" "" ""))))
+    (setenv "CARGO_PKG_DESCRIPTION" crate-description)
     (when build
       (format #t "building configuration script~%")
       (apply
