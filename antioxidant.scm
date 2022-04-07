@@ -209,8 +209,8 @@ with open(there, \"w\") as out_file:
 	    ;; print strings like "TARGET = Some(\"TARGET\")". Maybe
 	    ;; they are just debugging information that can be ignored
 	    ;; by cargo -- err, antioxidant.
-	    (#true (v (pk 'l line)
-		   (error "unrecognised output line")))))
+	    (#true
+	     (format #t "info from build.rs: ~a~%" line))))
 
     ;; Set some variables that Cargo can set and that might
     ;; be expected by build.rs.  A (full?) list is avialable
