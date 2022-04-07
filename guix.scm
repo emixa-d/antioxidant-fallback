@@ -617,6 +617,8 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; extra-traits is required by rust-nix
+			     ("rust-libc" #~'("feature=\"std\"" "feature=\"extra_traits\""))
 			     ;; Enable some features such that "rust-futures" actually builds.
 			     ("rust-futures-task"
 			      #~'("feature=\"std\"" "feature=\"alloc\""))
