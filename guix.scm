@@ -227,6 +227,12 @@
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-indexmap" "rust-itertools")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tracing-attributes" "rust-tracing")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tracing-attributes" "rust-async-trait")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-tracing-attributes" "rust-tracing-futures")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-hashbrown" "rust-ahash"))) ; todo: remove from #:cargo-inputs?, unused?
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-hashbrown" "rust-bumpalo"))) ; todo: remove from #:cargo-inputs?, unused?
@@ -316,9 +322,16 @@
 		   ;; (TODO: this isn't build from source)
 		   ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
 		   
-;;		   (pk 'p pack dependency #t)
+		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   ;; rust-http-body@0.1.0's dependency rust-tokio-buf doesn't
+				   ;; build anymore.  (TODO remove from Guix)
+				   (("rust-http-body" _)
+				    (@ (gnu packages crates-io) rust-http-body-0.4))
+				   ;; Likewise.
+				   (("rust-hyper" _)
+				    (@ (gnu packages crates-io) rust-hyper-0.14))
 				   (("rust-nb" "0.1.3")
 				    ;; Avoid E0519, caused by multiple versions of the same crate
 				    ;; being used.  TODO: bump version in 'sniffglue'
@@ -331,6 +344,8 @@
 				    (@ (gnu packages crates-io) rust-rand-0.8))
 				   (("rust-lock-api" _) ; 0.3, 0.2, 0.1
 				    (@ (gnu packages crates-io) rust-lock-api-0.4))
+				   (("rust-sysctl" _) ; 0.1 does not compile (type errors)
+				    (@ (gnu packages crates-io) rust-sysctl-0.4))
 				   ;; The (now deprecated) rust-tempdir doesn't build
 				   ;; against current rust-rand, use the new rust-tempfile
 				   ;; instead as upstream recommends.
