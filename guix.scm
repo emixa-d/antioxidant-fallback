@@ -102,6 +102,13 @@
 					  #~((add-after 'unpack 'delete-bin
 					       (lambda _
 						 (delete-file "src/bin/afl_runner.rs")))))
+					 ;; 'cc' and 'c++' don't exist
+					 ((string-prefix? "rust-gcc-" name)
+					  #~((add-after 'unpack 'fix-cc
+					       (lambda _
+						 (substitute* "src/lib.rs"
+						   (("\"cc\"") "\"gcc\"")
+						   (("\"c++\"") "\"g++\""))))))
 					 (#true #~()))
 				(replace 'build compile-cargo)
 				(delete 'check)
