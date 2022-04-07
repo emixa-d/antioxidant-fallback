@@ -152,6 +152,8 @@ with open(there, \"w\") as out_file:
 		     (assoc-ref toml-features "default"))
 		#())))
 	 (crate-name (normalise-crate-name (assoc-ref package "name")))
+	 (crate-version (assoc-ref package "version"))
+	 (crate-description (assoc-ref package "description"))
 	 ;; rust-libc does not compile with edition=2018
 	 (edition (or (assoc-ref package "edition") "2015"))
 	 (build (or (assoc-ref package "build")
@@ -191,15 +193,11 @@ with open(there, \"w\") as out_file:
 	    (#true (pk 'l line)
 		   (error "unrecognised output line"))))
     ;; Used by hexyl
-    (call-with-values
-	(lambda ()
-	  (package-name->name+version
-	   (strip-store-file-name (assoc-ref outputs "out"))))
-      (lambda (name version)
-	;; TODO: fill in based on Cargo.toml
-	(setenv "CARGO_PKG_NAME" crate-name)
-	(setenv "CARGO_PKG_VERSION" version)
-	(setenv "CARGO_PKG_DESCRIPTION" "unknown")))
+    (setenv "CARGO_PKG_NAME" crate-name)
+    (when crate-version
+      (setenv "CARGO_PKG_VERSION" crate-version))
+    (when crate-description
+      (setenv "CARGO_PKG_DESCRIPTION" crate-description))
     (when build
       (format #t "building configuration script~%")
       (apply
