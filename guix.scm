@@ -103,7 +103,8 @@
 					       (lambda _
 						 (delete-file "src/bin/afl_runner.rs")))))
 					 ;; 'cc' and 'c++' don't exist
-					 ((string-prefix? "rust-gcc-" name)
+					 ((or (string-prefix? "rust-gcc-" name)
+					      (string-prefix? "rust-cc-" name))
 					  #~((add-after 'unpack 'fix-cc
 					       (lambda _
 						 (substitute* "src/lib.rs"
