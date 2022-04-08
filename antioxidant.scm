@@ -69,11 +69,13 @@ with open(there, \"w\") as out_file:
 			     (format #t "Unrecognised: ~a~%" lib))))
    (string-length "lib")))
 
-(define (extern-arguments crates)
-  (map (lambda (crate)
-	 (string-append "--extern=" (extract-crate-name crate)
-			"=" crate))
-       crates))
+(define (extern-arguments crates allowed-crates)
+  (filter-map (lambda (crate)
+		(define name (extract-crate-name crate))
+		(and (member name allowed-crates)
+		     (string-append "--extern=" (extract-crate-name crate)
+				    "=" crate)))
+	      crates))
 
 (define (L-arguments crates)
   (delete-duplicates
@@ -93,7 +95,7 @@ with open(there, \"w\") as out_file:
 
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs (configuration '())
-		       (c-libraries '())
+		       (c-libraries '()) (extern-crates '())
 		       #:allow-other-keys)
   (define crates (find-crates (append inputs (or native-inputs '()))))
   (mkdir-p (dirname destination))
@@ -101,7 +103,7 @@ with open(there, \"w\") as out_file:
 	 "rustc" "--verbose"
 	 "--cap-lints" "warn" ;; ignore #[deny(warnings)], it's too noisy
 	 source "-o" destination
-	 (append (extern-arguments crates)
+	 (append (extern-arguments crates extern-crates)
 		 (L-arguments crates)
 		 (configuration-arguments configuration)
 		 (l-arguments c-libraries)
@@ -124,8 +126,6 @@ with open(there, \"w\") as out_file:
   (define self-crates (find-crates outputs)) ; required by 'hexyl'
   (apply compile-rust source destination
 	 (append (list "--crate-type=bin")
-		 (extern-arguments self-crates)
-		 (L-arguments self-crates)
 		 extra-arguments)
 	 arguments))
 
@@ -152,6 +152,21 @@ with open(there, \"w\") as out_file:
   ;; TODO: escapes?
   (string-append "feature=\"" feature "\""))
 
+;; If too many crates are included in --extern, errors like
+;; error[E0659]: `time` is ambiguous (name vs any other name during import resolution)
+;; are possible.  Avoid them!
+(define (toml-dependencies toml)
+  "Return a list of Crate names that are dependencies"
+  (define (dependencies-sections1 toml)
+    (append (or (assoc-ref toml "dependencies") '())
+	    (or (assoc-ref toml "dev-dependencies") '())
+	    (or (assoc-ref toml "build-dependencies") '())))
+  ;; For now ignore which target a dependency is for.
+  (define toml-list
+    (cons toml (map cdr (or (assoc-ref toml "target") '()))))
+  (define sections (append-map dependencies-sections1 toml-list))
+  (map normalise-crate-name (map car sections)))
+
 (define* (compile-cargo #:key name features outputs
 			target build
 			(optimisation-level 0)
@@ -170,6 +185,7 @@ with open(there, \"w\") as out_file:
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (pk 'pack (assoc-ref parsed "package")))
 	 (toml-features (assoc-ref parsed "features"))
+	 (extern-crates (toml-dependencies parsed))
 	 (default-features
 	   (vector->list
 	    (or (and toml-features
@@ -276,7 +292,8 @@ with open(there, \"w\") as out_file:
        compile-rust-binary build.rs "configuration-script"
        (list (string-append "--edition=" edition))
        (append arguments
-	       (list #:configuration configuration))) ; TODO: do something less impure
+	       (list #:extern-crates extern-crates
+		     #:configuration configuration))) ; TODO: do something less impure
       ;; Expected by rust-const-fn's build.rs
       (setenv "OUT_DIR" (getcwd))
       ;; Expected by rust-libm's build.rs
@@ -323,6 +340,7 @@ with open(there, \"w\") as out_file:
 	   #:crate-type (if lib-procedural-macro?
 			    "proc-macro"
 			    "rlib")
+	   #:extern-crates extern-crates
 	   (append
 	    arguments
 	    (list #:configuration configuration)))
@@ -335,6 +353,7 @@ with open(there, \"w\") as out_file:
 			    binary)
 	     (list (string-append "--edition=" edition)
 		   (string-append "-Lnative=" (getcwd)))
+	     #:extern-crates extern-crates
 	     ;; TODO: figure out how to override things
 	     (append
 	      arguments
