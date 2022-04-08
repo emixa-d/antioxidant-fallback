@@ -548,6 +548,8 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-nix" _)
+				    (@ (gnu packages crates-io) rust-nix-0.23))
 				   (("rust-bytes" _)
 				    (@ (gnu packages crates-io) rust-bytes-1))
 				   (("rust-tokio-io" _)
