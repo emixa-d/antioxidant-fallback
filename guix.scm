@@ -549,6 +549,9 @@
 				 (match (list (package-name dependency) (package-version dependency))
 				   (("rust-webpki" _)
 				    (@ (gnu packages crates-io) rust-webpki-0.22))
+				   (("rust-rustls" _)
+				    ;; Remove old (not-building) and potentially unsecure versions
+				    (@ (gnu packages crates-io) rust-rustls-0.20))
 				   ;; TODO: respect SSL_CERT_DIR instead of hardcoding trusting
 				   ;; whoever Mozilla trusts.
 				   ;; TODO: build from source
@@ -658,6 +661,7 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ("rust-webpki" #~'("std" "alloc"))
 			     ;; Required by rust-tokio
 			     ;; TODO remove os-poll, as implied features are implemented.
 			     ("rust-mio"
