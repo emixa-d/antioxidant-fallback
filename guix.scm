@@ -355,6 +355,33 @@
      (sha256
       (base32 "0r0p83nisf732qydg23qvmdd6gbrvyr1qvfs8hhbl7a1cyqdxpqf"))))))
 
+;; Old combinations of rust-rustls & rust-tokio-rustls fail to build
+(define-public rust-rustls-0.20
+  (package
+   (inherit (@ (gnu packages crates-io) rust-rustls-0.20))
+   (name "rust-rustls")
+   (version "0.20.4")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "rustls" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "08b941jj4kk1bfg82zrr5b2ifa4ip155g9cpqmmp116v1n6ypgsg"))))))
+
+(define-public rust-tokio-rustls-0.23
+  (package
+   (inherit (@ (gnu packages crates-io) rust-tokio-rustls-0.22))
+   (name "rust-tokio-rustls")
+   (version "0.23.3")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "tokio-rustls" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "17iqy9a8x0d8ydl5r28w8z9akhnwp74wyjxks055b617ryhgsla1"))))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -551,7 +578,10 @@
 				    (@ (gnu packages crates-io) rust-webpki-0.22))
 				   (("rust-rustls" _)
 				    ;; Remove old (not-building) and potentially unsecure versions
-				    (@ (gnu packages crates-io) rust-rustls-0.20))
+				    ;; Also, rust-tokio-rustls requires a newer rust-rustls.
+				    rust-rustls-0.20)
+				   (("rust-tokio-rustls" _) ;0.10.3 doesn't build
+				    rust-tokio-rustls-0.23)
 				   ;; TODO: respect SSL_CERT_DIR instead of hardcoding trusting
 				   ;; whoever Mozilla trusts.
 				   ;; TODO: build from source
