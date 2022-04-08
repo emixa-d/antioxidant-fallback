@@ -126,12 +126,6 @@
 						 (substitute* "src/lib.rs"
 						   (("\"cc\"") "\"gcc\"")
 						   (("\"c++\"") "\"g++\""))))))
-					 ;; TODO upstream
-					 ((string-prefix? "rust-backtrace-0" name)
-					  #~((add-after 'unpack 'unambigious-import
-					       (lambda _
-						 (substitute* "src/symbolize/mod.rs"
-						   (("use gimli") "use self::gimli"))))))
 					 (#true #~()))
 				(replace 'build compile-cargo)
 				(delete 'check)
