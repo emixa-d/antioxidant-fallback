@@ -548,6 +548,8 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-webpki" _)
+				    (@ (gnu packages crates-io) rust-webpki-0.22))
 				   (("rust-nix" _)
 				    (@ (gnu packages crates-io) rust-nix-0.23))
 				   (("rust-bytes" _)
