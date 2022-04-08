@@ -549,6 +549,13 @@
 				 (match (list (package-name dependency) (package-version dependency))
 				   (("rust-webpki" _)
 				    (@ (gnu packages crates-io) rust-webpki-0.22))
+				   ;; TODO: respect SSL_CERT_DIR instead of hardcoding trusting
+				   ;; whoever Mozilla trusts.
+				   ;; TODO: build from source
+				   ;; TODO: remove certificates with restrictions
+				   (("rust-webpki-roots" _)
+				    ;; 0.17.0 doesn't build
+				    (@ (gnu packages crates-io) rust-webpki-roots-0.22))
 				   (("rust-nix" _)
 				    (@ (gnu packages crates-io) rust-nix-0.23))
 				   (("rust-bytes" _)
