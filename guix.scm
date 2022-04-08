@@ -616,7 +616,10 @@
 			  maybe-output)))))
 	 ;; Detect cycles early by unthunking
 	 (define i (filter-map fix-input (package-inputs pack)))
-	 (define n-i (filter-map fix-input cargo-development-inputs))
+	 (define n-i (append (filter-map fix-input cargo-development-inputs)
+			     ;; TODO: move zlib of rust-libz-sys-1 from
+			     ;; native-inputs to inputs.
+			     (package-native-inputs pack)))
 	 (define p-i (append (filter-map fix-input
 					 (append cargo-inputs
 						 ;; Add missing dependencies (TODO upstream Guix)
