@@ -561,8 +561,15 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-sct" _)
+				    (@ (gnu packages crates-io) rust-sct-0.7))
+				   (("rust-sha1" _)
+				    (@ (gnu packages crates-io) rust-sha1-0.6))
 				   (("rust-webpki" _)
 				    (@ (gnu packages crates-io) rust-webpki-0.22))
+				   ;; Old versions don't build (because rust-tokio-io disappeared)
+				   (("rust-hyper-rustls" _)
+				    (@ (gnu packages crates-io) rust-hyper-rustls-0.22))
 				   (("rust-rustls" _)
 				    ;; Remove old (not-building) and potentially unsecure versions
 				    ;; Also, rust-tokio-rustls requires a newer rust-rustls.
