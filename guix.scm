@@ -102,6 +102,11 @@
 					  #~((add-after 'unpack 'delete-bin
 					       (lambda _
 						 (delete-file "src/bin/afl_runner.rs")))))
+					 ((string-prefix? "rust-tokio-sync" name)
+					  #~((add-after 'unpack 'unpreview
+					       (lambda _
+						 (substitute* "Cargo.toml"
+						   (("-preview\\]") "]"))))))
 					 ((string-prefix? "rust-cloudflare-zlib-sys" name)
 					  #~((add-after 'unpack 'remove-undocumented
 					       (lambda _
