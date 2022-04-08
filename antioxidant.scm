@@ -82,17 +82,17 @@ with open(there, \"w\") as out_file:
 	crates)
    string=?))
 
-(define (features-arguments features)
-  (append-map (lambda (feature)
-		(list "--cfg" feature)) ; or feature="foo"?
-	      features))
+(define (configuration-arguments configuration)
+  (append-map (lambda (cfg)
+		(list "--cfg" cfg))
+	      configuration))
 
 ;; TODO: support static libraries instead of only .so/dylib
 (define (l-arguments c-libraries)
   (append-map (lambda (l) (list "-l" l)) c-libraries))
 
 (define* (compile-rust source destination extra-arguments
-		       #:key inputs native-inputs (features '())
+		       #:key inputs native-inputs (configuration '())
 		       (c-libraries '())
 		       #:allow-other-keys)
   (define crates (find-crates (append inputs (or native-inputs '()))))
@@ -103,7 +103,7 @@ with open(there, \"w\") as out_file:
 	 source "-o" destination
 	 (append (extern-arguments crates)
 		 (L-arguments crates)
-		 (features-arguments features)
+		 (configuration-arguments configuration)
 		 (l-arguments c-libraries)
 		 extra-arguments)))
 
@@ -129,6 +129,29 @@ with open(there, \"w\") as out_file:
 		 extra-arguments)
 	 arguments))
 
+(define (features-closure features features-section)
+  "Include features and the features implied by those features and so on."
+  (define new-features
+    (delete-duplicates
+     ;; lists are not sets, and the order is irrelevant here, so
+     ;; pick some fixed arbitrary order.
+     (sort-list!
+      (append-map (lambda (feature)
+		    (define extra
+		      (vector->list
+		       (or (assoc-ref features-section feature) #())))
+		    (cons feature extra))
+		  features)
+      string<?)))
+  (if (equal? features new-features)
+      ;; fixpoint has been reached
+      features
+      (features-closure new-features features-section)))
+
+(define (feature->config feature)
+  ;; TODO: escapes?
+  (string-append "feature=\"" feature "\""))
+
 (define* (compile-cargo #:key name features outputs
 			target build
 			(optimisation-level 0)
@@ -152,6 +175,7 @@ with open(there, \"w\") as out_file:
 	    (or (and toml-features
 		     (assoc-ref toml-features "default"))
 		#())))
+	 (extra-configuration '()) ; --cfg options, computed by build.rs
 	 (crate-version (or (assoc-ref package "version") ""))
 	 (crate-authors (or (assoc-ref package "authors") #()))
 	 (crate-name (normalise-crate-name (assoc-ref package "name")))
@@ -176,16 +200,16 @@ with open(there, \"w\") as out_file:
 	 (c-libraries '())
 	 (extra-arguments '())) ; TODO: ad-hoc
     (when (eq? features 'default)
-      ;; TODO: this confuses features and configuration options
-      (set! features (map (lambda (f)
-			    (string-append "feature=\"" f "\"")) default-features))
-      (format #t "Using features listed in Cargo.toml: ~a~%" features))
+      (set! features default-features)
+      (format #t "Using features listed in Cargo.toml: ~a~%" features)
+      (set! features (features-closure features toml-features))
+      (format #t "With closure: ~a~%" features))
     (define (handle-line line)
       (cond ((string-prefix? "cargo:rustc-cfg=" line)
 	     (format #t "Building with --cfg ~a~%" line) ;; todo invalid
-	     (set! features
-	       (cons (string-drop line (string-length "cargo:rustc-cfg="))
-		     features)))
+	     (set! extra-configuration
+		   (cons (string-drop line (string-length "cargo:rustc-cfg="))
+			 extra-configuration)))
 	    ((string-prefix? "cargo:rustc-link-lib=" line)
 	     (let ((c-library (string-drop line (string-length "cargo:rustc-link-lib="))))
 	       (format #t "Building with C library ~a~%" c-library)
@@ -245,13 +269,14 @@ with open(there, \"w\") as out_file:
     (setenv "CARGO_PKG_REPOSITORY" crate-repository)
     (setenv "CARGO_PKG_LICENSE" crate-license)
     (setenv "CARGO_PKG_LICENSE_FILE" crate-license-file)
+    (define configuration (append extra-configuration (map feature->config features)))
     (when build.rs
       (format #t "building configuration script~%")
       (apply
        compile-rust-binary build.rs "configuration-script"
        (list (string-append "--edition=" edition))
        (append arguments
-	       (list #:features features))) ; TODO: do something less impure
+	       (list #:configuration configuration))) ; TODO: do something less impure
       ;; Expected by rust-const-fn's build.rs
       (setenv "OUT_DIR" (getcwd))
       ;; Expected by rust-libm's build.rs
@@ -276,7 +301,8 @@ with open(there, \"w\") as out_file:
 	    (match r
 	      ((? string? line) (handle-line line) (loop (get-line port)))
 	      ((? eof-object? line) (values)))))))
-    (format #t "Building with features: ~a~%" features)
+    (set! configuration (append extra-configuration (map feature->config features)))
+    (format #t "Building with configuration options: ~a~%" configuration)
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (apply compile-rust-library lib-path
@@ -298,9 +324,8 @@ with open(there, \"w\") as out_file:
 			    "proc-macro"
 			    "rlib")
 	   (append
-	    (list #:features features)
 	    arguments
-	    (list #:features features)))
+	    (list #:configuration configuration)))
     ;; Compile binaries
     (define (cb source binary)
       (apply compile-rust-binary source
@@ -312,9 +337,8 @@ with open(there, \"w\") as out_file:
 		   (string-append "-Lnative=" (getcwd)))
 	     ;; TODO: figure out how to override things
 	     (append
-	      (list #:features features)
 	      arguments
-	      (list #:features features))))
+	      (list #:configuration configuration))))
     (for-each
      (lambda (file)
        (when (string-suffix? ".rs" file)

@@ -643,91 +643,89 @@
 			   ;; to Guix upstream?
 			   (match (package-name pack)
 			     ;; Required by rust-tokio
-			     ;; TODO remove os-poll when implied features are implemented.
+			     ;; TODO remove os-poll, as implied features are implemented.
 			     ("rust-mio"
-			      #~'("feature=\"net\"" "feature=\"os-ext\"" "feature=\"os-poll\""))
+			      #~'("net" "os-ext" "os-poll"))
 			     ;; By default zero features are enabled, which is rather
 			     ;; minimalistic and often not sufficient.  TODO: teach
 			     ;; antioxidant about ‘implied’ features.
 			     ("rust-tokio"
-			      #~'("feature=\"full\"" "feature=\"io-util\"" "feature=\"io-std\""
+			      #~'("full" "io-util" "io-std"
 				  ;;"feature=\"macros\""  ;; TODO
-				  "feature=\"net\""
-				  "feature=\"parking_lot\""
-				  "feature=\"process\""
-				  "feature=\"rt\""
-				  "feature=\"rt-multi-thread\""
-				  "feature=\"signal\""
-				  "feature=\"sync\""
-				  "feature=\"time\""))
-			     ("rust-tokio-util" #~'("feature=\"full\"" "feature=\"codec\""))
+				  "net"
+				  "parking_lot"
+				  "process"
+				  "rt"
+				  "rt-multi-thread"
+				  "signal"
+				  "sync"
+				  "time"))
+			     ("rust-tokio-util" #~'("full" "codec"))
 			     ;; extra-traits is required by rust-nix
-			     ("rust-libc" #~'("feature=\"std\"" "feature=\"extra_traits\""))
+			     ("rust-libc" #~'("std" "extra_traits"))
 			     ;; Enable some features such that "rust-futures" actually builds.
 			     ("rust-futures-task"
-			      #~'("feature=\"std\"" "feature=\"alloc\""))
+			      #~'("std" "alloc"))
 			     ("rust-futures-util"
-			      #~'("feature=\"std\"" "feature=\"alloc\"" "feature=\"sink\""
-				  "feature=\"io\"" "feature=\"async-await\""
-				  "feature=\"async-await-macro\""
-				  "feature=\"channel\""))
+			      #~'("std" "alloc" "sink"
+				  "io" "async-await"
+				  "async-await-macro"
+				  "channel"))
 			     ("rust-futures-core"
-			      #~'("feature=\"std\"" "feature=\"alloc\""))
+			      #~'("std" "alloc"))
 			     ("rust-futures-channel"
-			      #~'("feature=\"std\"" "feature=\"alloc\""))
+			      #~'("std" "alloc"))
 			     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
 			     ;; small_rngs is required by rust-phf-generator.
 			     ("rust-rand"
-			      #~'("feature=\"std\"" "feature=\"std_rng\"" "feature=\"getrandom\""
-				  "feature=\"alloc\"" "feature=\"small_rng\""))
+			      #~'("std" "std_rng" "getrandom"
+				  "alloc" "small_rng"))
 			     ;; Required by rust-rand when using the getrandom feature
-			     ("rust-rand-core" #~'("feature=\"std\" ""feature=\"getrandom\""))
+			     ("rust-rand-core" #~'("std" "getrandom"))
 			     ;; Required by rust-rand-core.
-			     ("rust-getrandom" #~'("feature=\"std\""))
+			     ("rust-getrandom" #~'("std"))
 			     ;; Required by rust-env-logger
-			     ("rust-log" #~'("feature=\"std\""))
+			     ("rust-log" #~'("std"))
 			     ;; The feature "alloc" is not set by default, causing the
 			     ;; build to fail (TODO: maybe report upstream?)
 			     ("rust-bitvec"
-			      #~'("feature=\"std\"" "feature=\"atomic\"" "feature=\"alloc\""))
+			      #~'("std" "atomic" "alloc"))
 			     ;; Likewise.
-			     ("rust-chrono" #~'("feature=\"alloc\""))
+			     ("rust-chrono" #~'("alloc"))
 			     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
 			     ("rust-nom"
-			      #~'("feature=\"std\"" "feature=\"lexical\"" "feature=\"alloc\""))
+			      #~'("std" "lexical" "alloc"))
 			     ;; This addresses the build failure
 			     ;; ‘could not find `collector` in the crate root’
 			     ;; and ‘cannot find function `pin` in crate `epoch`’
 			     ("rust-crossbeam-epoch"
-			      #~'("feature=\"std\"" "feature=\"alloc\""))
+			      #~'("std" "alloc"))
 			     ;; Required by rust-unicode-normalization
-			     ("rust-tinyvec" #~'("feature=\"alloc\""))
+			     ("rust-tinyvec" #~'("alloc"))
 			     ;; TODO: use default features from Cargo.toml
 			     ;; rust-serde-bytes requires the 'parsing' feature.
 			     ;; visit is required by rust-synstructure.
 			     ;; visit-mut is used by rust-tracing-attributes.
 			     ("rust-syn"
-			      #~'("feature=\"derive\"" "feature=\"parsing\"" "feature=\"printing\""
-				  "feature=\"clone-impls\""
-				  "feature=\"proc-macro\"" "feature=\"full\""
-				  "feature=\"visit\"" "feature=\"visit-mut\""
+			      #~'("derive" "parsing" "printing"
+				  "clone-impls"
+				  "proc-macro" "full"
+				  "visit" "visit-mut"
 				  ;; Used by rust-strum-macros
-				  "feature=\"extra-traits\""))
+				  "extra-traits"))
 			     ("rust-proc-macro2"
 			      ;; Required by rust-serde-bytes via rust-syn.  If
 			      ;; absent, this causes errors like
 			      ;; <<https://github.com/google/cargo-raze/issues/159>.
-			      #~'("feature=\"proc-macro\""))
+			      #~'("proc-macro"))
 			     ;; TODO: move into Guix proper?
 			     ((or "rust-hashbrown" "rust-os-str-bytes")
-			      #~'("feature=\"raw\""))
+			      #~'("raw"))
 			     (_ (match features
 				  ((? gexp? f) f)
 				  (('quote l)
 				   ;; TODO: escapes, less ad-hoc
-				   #~'#$(map (lambda (s)
-					       (string-append "feature=\"" s "\""))
-					     l)))))))
+				   #~'#$l))))))
 	  (inputs i)
 	  (native-inputs n-i)
 	  (propagated-inputs p-i)))
