@@ -81,6 +81,9 @@
 		     #:optimisation-level '#$optimisation-level
 		     #:cargo-env-variables #$cargo-env-variables
 		     #:phases (modify-phases %standard-phases
+				;; TODO: before configure?
+				(add-before 'unpack 'read-dependency-environment-variables
+					    read-dependency-environment-variables)
 				(delete 'configure)
 				#$@(cond ((string-prefix? "rust-backtrace-sys" name)
 				          #~((add-after 'unpack 'break-cycle
@@ -107,22 +110,6 @@
 					       (lambda _
 						 (substitute* "Cargo.toml"
 						   (("-preview\\]") "]"))))))
-					 ((string-prefix? "rust-cloudflare-zlib-sys" name)
-					  #~((add-after 'unpack 'remove-undocumented
-					       (lambda _
-						 ;; What does this output mean?  It does
-						 ;; not appear to be documented in Cargo's
-						 ;; documentation.
-						 (substitute* "build.rs"
-						   (("println!\\(\"cargo:include(.*)") ""))))))
-					 ((string-prefix? "rust-miniz-sys" name)
-					  #~((add-after 'unpack 'remove-undocumented
-					       (lambda _
-						 ;; What does this output mean?  It does
-						 ;; not appear to be documented in Cargo's
-						 ;; documentation.
-						 (substitute* "build.rs"
-						   (("println!\\(\"cargo:root(.*)") ""))))))
 					 ;; 'cc' and 'c++' don't exist
 					 ((or (string-prefix? "rust-gcc-" name)
 					      (string-prefix? "rust-cc-" name))

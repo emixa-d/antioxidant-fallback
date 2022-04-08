@@ -18,7 +18,8 @@
 (define-module (antioxidant)
   #:export (find-crates crate-directory extract-crate-name extern-arguments
 			L-arguments compile-rust compile-rust-library
-			compile-rust-binary compile-cargo)
+			compile-rust-binary compile-cargo
+			read-dependency-environment-variables)
   #:use-module (guix build utils)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
@@ -167,6 +168,57 @@ with open(there, \"w\") as out_file:
   (define sections (append-map dependencies-sections1 toml-list))
   (map normalise-crate-name (map car sections)))
 
+;; Some cargo:??? lines from build.rs are ‘propagated’ to dependencies
+;; as environment variables, see
+;; <https://doc.rust-lang.org/cargo/reference/build-script-examples.html>.
+(define* (read-dependency-environment-variables
+	  #:key (inputs '())
+	  (native-inputs '())
+	  #:allow-other-keys)
+  (define (setenv* x y)
+    (format #t "setting ~a to ~a~%" x y)
+    (setenv x y))
+  (define (do* stuff)
+    (format #t "reading extra environment variables from ~a~%" stuff)
+    (for-each
+     (match-lambda
+       ((x y) (setenv*
+	       (string-replace-substring
+		(string-upcase
+		 (string-append
+		  "DEP_"
+		  (string-drop-right
+		   (basename stuff) ; the 'link' name
+		   (string-length ".propagated-environment"))
+		  "_"
+		  x))
+		"-"
+		"_")
+	       y)))
+     (call-with-input-file stuff read #:encoding "UTF-8")))
+  (define do
+    (match-lambda
+      ((_ . input)
+       (define where (string-append input "/lib/guixlinks"))
+       (when (file-exists? where)
+	 (for-each do* (find-files where "\\.propagated-environment$"))))))
+  (for-each do native-inputs)
+  (for-each do inputs))
+
+(define* (save-environment-variables link-name saved-settings
+				     #:key outputs #:allow-other-keys)
+  (define where (string-append (or (assoc-ref outputs "env")
+				   (assoc-ref outputs "lib")
+				   (assoc-ref outputs "out")) ;; maybe switch the last two?
+			       "/lib/guixlinks/" link-name ".propagated-environment"))
+  (unless (null? saved-settings)
+    ;; TODO: maybe filter out uninteresting things like core-rerun-if-changed?
+    (format #t "Saving gathered environment variables to ~a~%" where)
+    (mkdir-p (dirname where))
+    (call-with-output-file where
+      (lambda (o) (write saved-settings o))
+      #:encoding "UTF-8")))
+
 (define* (compile-cargo #:key name features outputs
 			target build
 			(optimisation-level 0)
@@ -214,6 +266,8 @@ with open(there, \"w\") as out_file:
 		       "src/lib.rs"))
 	 (lib-procedural-macro? (and lib (assoc-ref lib "proc-macro")))
 	 (c-libraries '())
+	 (saved-settings '())
+	 (link (assoc-ref package "links")) ; optional
 	 (extra-arguments '())) ; TODO: ad-hoc
     (when (eq? features 'default)
       (set! features default-features)
@@ -221,6 +275,16 @@ with open(there, \"w\") as out_file:
       (set! features (features-closure features toml-features))
       (format #t "With closure: ~a~%" features))
     (define (handle-line line)
+      (when (string-prefix? "cargo:" line)
+	(let* ((rest (string-drop line (string-length "cargo:")))
+	       (=-index (string-index rest #\=)))
+	  (if =-index
+	      (let ((this (substring rest 0 =-index))
+		    (that (substring rest (+ 1 =-index))))
+		(set! saved-settings (cons (list this that) saved-settings)))
+	      (begin
+		(pk 'l rest)
+		(error "cargo: line doesn't look right, = missing?")))))
       (cond ((string-prefix? "cargo:rustc-cfg=" line)
 	     (format #t "Building with --cfg ~a~%" line) ;; todo invalid
 	     (set! extra-configuration
@@ -240,11 +304,10 @@ with open(there, \"w\") as out_file:
 	     (format (current-error-port)
 		     "configuration script: warning: ~a~%"
 		     (string-drop line (string-length "cargo:warning="))))
-	    ((string-prefix? "cargo:rerun-if-" line)
-	     (values)) ; not important for us
 	    ((string-prefix? "cargo:" line)
 	     (pk 'l line)
-	     (error "unrecognised build.rs instruction"))
+	     (format #t "warning: ~a: unrecognised build.rs instruction~%" line)
+	     (format #t "hint: maybe the crate is just saving an environment variable for dependencies, maybe nothing needs to be changed.\n"))
 	    ;; Some build.rs (e.g. the one of rust-pico-sys)
 	    ;; print strings like "TARGET = Some(\"TARGET\")". Maybe
 	    ;; they are just debugging information that can be ignored
@@ -319,6 +382,8 @@ with open(there, \"w\") as out_file:
 	      ((? string? line) (handle-line line) (loop (get-line port)))
 	      ((? eof-object? line) (values)))))))
     (set! configuration (append extra-configuration (map feature->config features)))
+    (when link
+      (apply save-environment-variables link saved-settings arguments))
     (format #t "Building with configuration options: ~a~%" configuration)
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
