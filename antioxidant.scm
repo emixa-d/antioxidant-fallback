@@ -264,7 +264,10 @@ with open(there, \"w\") as out_file:
 	 ;; the code elsewhere.
 	 (lib-path (or (and lib (assoc-ref lib "path"))
 		       "src/lib.rs"))
-	 (lib-procedural-macro? (and lib (assoc-ref lib "proc-macro")))
+	 ;; TODO: which one is it?  (For rust-derive-arbitrary,
+	 ;; it is proc_macro)
+	 (lib-procedural-macro? (and lib (or (assoc-ref lib "proc-macro")
+					     (assoc-ref lib "proc_macro"))))
 	 (c-libraries '())
 	 (saved-settings '())
 	 (link (assoc-ref package "links")) ; optional
