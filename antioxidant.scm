@@ -102,6 +102,10 @@ with open(there, \"w\") as out_file:
   (mkdir-p (dirname destination))
   (apply invoke
 	 "rustc" "--verbose"
+	 ;; Cargo adds '--extern=proc_macro' by default,
+	 ;; see <https://github.com/rust-lang/cargo/pull/7700>.
+	 ;; Make sure that it will be used.
+	 "--extern=proc_macro"
 	 "--cap-lints" "warn" ;; ignore #[deny(warnings)], it's too noisy
 	 source "-o" destination
 	 (append (extern-arguments crates extern-crates)
