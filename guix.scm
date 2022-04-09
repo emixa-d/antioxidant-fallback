@@ -420,7 +420,7 @@
 				  "rust-tokio-mock-task" ; doesn't build
 				  "rust-tokio-test"
 				  "rust-rand-xorshift"
-				  "rust-walkdir" "rust-yaml-rust"
+				  "rust-walkdir"
 				  "rust-serde-test"
 				  "rust-wasm-bindgen" "rust-wasi"
 				  "rust-wasm-bindgen-test")))
@@ -432,7 +432,7 @@
 		   ;; Avoid cycle!
 		   (or (member (package-name pack)
 			       '("rust-serde-bytes" "rust-erased-serde" "rust-docopt"
-				 "rust-toml" "rust-serde-fmt" "rust-csv"))
+				 "rust-toml" "rust-serde-fmt" "rust-csv" "rust-serde-yaml"))
 		       (not (string=? (package-name dependency) "rust-serde")))
 		   (or (string=? (package-name pack) "rust-serde")
 		       (not (string=? (package-name dependency) "rust-serde-derive")))
