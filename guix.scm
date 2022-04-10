@@ -665,6 +665,10 @@
 				    (@ (gnu packages crates-io) rust-serde-1)) ; old versions don't build
 				   (("rust-sha1" _)
 				    (@ (gnu packages crates-io) rust-sha1-0.6))
+				   (("rust-hashbrown" _)
+				    (@ (gnu packages crates-io) rust-hashbrown-0.11))
+				   (("rust-scopeguard" _)
+				    (@ (gnu packages crates-io) rust-scopeguard-1))
 				   (("rust-webpki" _)
 				    (@ (gnu packages crates-io) rust-webpki-0.22))
 				   ;; Old versions don't build (because rust-tokio-io disappeared)
