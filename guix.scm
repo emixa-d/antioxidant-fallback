@@ -723,6 +723,14 @@
 			     (package-propagated-inputs pack)))
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
+	  (source
+	   (match (package-name pack)
+	     ("rust-itoa"
+	      (origin
+	       (inherit (package-source pack))
+	       ;; TODO: for compatibility with rust-http
+	       (patches (list (local-file "rust-itoa-Reintroduce-fmt.patch")))))
+	     (_ (package-source pack))))
 	  (arguments (list #:features
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?  And maybe the features can be moved

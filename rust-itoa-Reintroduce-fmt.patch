@@ -1,0 +1,51 @@
+From 4c3501a1086fcea7ed9bd911d07aadcb23855780 Mon Sep 17 00:00:00 2001
+From: Maxime Devos <maximedevos@telenet.be>
+Date: Sun, 10 Apr 2022 17:54:00 +0000
+Subject: [PATCH] Revert "Delete fmt function"
+
+This reverts commit 9cf53f10832b202fa8f515352b4b1ebd7aa05e05,
+as rust-http@0.2 still uses this. (TODO inform rust-http)
+---
+ src/lib.rs | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/src/lib.rs b/src/lib.rs
+index c26bf35..c2bbd5e 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -46,6 +46,32 @@ use core::{ptr, slice, str};
+ 
+ /// A correctly sized stack allocation for the formatted integer to be written
+ /// into.
++#[cfg(feature = "std")]
++use std::{fmt, io};
++
++#[cfg(not(feature = "std"))]
++use core::{fmt};
++
++/// Write integer to an `io::Write`.
++#[cfg(feature = "std")]
++#[inline]
++pub fn write<W: io::Write, V: Integer>(mut wr: W, value: V) -> io::Result<usize> {
++    let mut buf = Buffer::new();
++    let s = buf.format(value);
++    match wr.write_all(s.as_bytes()) {
++        Ok(()) => Ok(s.len()),
++        Err(e) => Err(e),
++    }
++}
++
++/// Write integer to an `fmt::Write`.
++#[inline]
++pub fn fmt<W: fmt::Write, V: Integer>(mut wr: W, value: V) -> fmt::Result {
++    let mut buf = Buffer::new();
++    wr.write_str(buf.format(value))
++}
++
++/// A safe API for formatting integers to text.
+ ///
+ /// # Example
+ ///
+-- 
+2.34.0
+
