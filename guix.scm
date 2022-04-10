@@ -403,6 +403,21 @@
      (sha256
       (base32 "1b2wi75qrmwfpw3pqwcg1xjndl4z0aris15296wf7i8d5v04hz6q"))))))
 
+;; Old versions don't support the new rustls
+(define-public rust-boxxy
+  (package
+   (inherit (@ (gnu packages crates-io) rust-boxxy-0.11))
+   (name "rust-boxxy")
+   (version "0.12.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "boxxy" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1q0wpz955y3iwd35bqk3pbx2vx904fhyj75j7d6mrb7ib5fs5kxg"))))))
+
+
 ;; old rust-test-case@1 is incompatible with new rust-syn
 (define-syntax p
   (syntax-rules ()
@@ -471,6 +486,7 @@
 				  "rust-security-framework" "rust-cocoa" "rust-cocoa-foundation" "rust-core-foundation" "rust-core-foundation-sys" "rust-core-text" "rust-fsevent" "rust-fsevent-sys" "rust-objc-foundation" ; non-Linux, non-Hurd things
 				  "rust-ws2-32-sys"
 				  "rust-winapi-util" "rust-winapi-build"
+				  "rust-core-arch" ; doesn't build, nowadays part of Rust itself?
 				  "rust-doc-comment"
 				  "rust-hermit-abi"
 				  "rust-model" ;; doesn't build, avoid for now
@@ -624,6 +640,11 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-boxxy" _) rust-boxxy)
+				   (("rust-rustyline" _)
+				    (@ (gnu packages crates-io) rust-rustyline-9))
+				   (("rust-base64" _)
+				    (@ (gnu packages crates-io) rust-base64-0.13))
 				   (("rust-test-case" _) rust-test-case-2)
 				   (("rust-slab" _) rust-slab)
 				   (("rust-socket2" _) (@ (gnu packages crates-io) rust-socket2-0.4))
@@ -751,6 +772,8 @@
 					 (append cargo-inputs
 						 ;; Add missing dependencies (TODO upstream Guix)
 						 (match (package-name pack)
+						   ;; possibly only required by new version
+						   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
 						   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
 						   ;; TODO: is this sufficient?
 						   ("rust-futures-core-preview"
