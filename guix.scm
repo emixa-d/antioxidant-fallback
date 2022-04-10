@@ -684,6 +684,8 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; 'derive' is needed by rust-ron
+			     ("rust-serde" #~'("std" "alloc" "derive""))
 			     ("rust-webpki" #~'("std" "alloc"))
 			     ;; Required by rust-tokio
 			     ;; TODO remove os-poll, as implied features are implemented.
