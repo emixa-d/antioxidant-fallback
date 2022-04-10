@@ -606,6 +606,7 @@
 				 (match (list (package-name dependency) (package-version dependency))
 				   (("rust-test-case" _) rust-test-case-2)
 				   (("rust-slab" _) rust-slab)
+				   (("rust-socket2" _) (@ (gnu packages crates-io) rust-socket2-0.4))
 				   (("rust-insta" _)
 				    (@ (gnu packages crates-io) rust-insta-1))
 				   (("rust-itoa" _)
