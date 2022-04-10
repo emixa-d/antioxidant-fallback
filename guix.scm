@@ -542,7 +542,7 @@
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio" "rust-tokio-uds")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-macros")))
+				(list "rust-tokio-macros" "rust-tokio")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-strum-macros" "rust-strum")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
