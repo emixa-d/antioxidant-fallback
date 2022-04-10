@@ -805,6 +805,7 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ("rust-numtoa" #~'("std"))
 			     ;; rust-cargo-metadata requires the serialisation
 			     ;; / deserialisation traits.
 			     ("rust-semver" #~'("default" "serde"))
