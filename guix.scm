@@ -383,6 +383,19 @@
      (sha256
       (base32 "0cmvcy9ppsh3dz8mi6jljx7bxyknvgpas4aid2ayxk1vjpz3qw7b"))))))
 
+(define-public rust-hyper-rustls
+  (package
+   (inherit (@ (gnu packages crates-io) rust-hyper-rustls-0.22))
+   (name "rust-hyper-rustls")
+   (version "0.23.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "hyper-rustls" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1b2wi75qrmwfpw3pqwcg1xjndl4z0aris15296wf7i8d5v04hz6q"))))))
+
 ;; old rust-test-case@1 is incompatible with new rust-syn
 (define-syntax p
   (syntax-rules ()
