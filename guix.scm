@@ -593,6 +593,8 @@
 				   (("rust-test-case" _) rust-test-case-2)
 				   (("rust-insta" _)
 				    (@ (gnu packages crates-io) rust-insta-1))
+				   (("rust-itoa" _)
+				    (@ (gnu packages crates-io) rust-itoa-1))
 				   (("rust-sct" _)
 				    (@ (gnu packages crates-io) rust-sct-0.7))
 				   (("rust-quote" _)
