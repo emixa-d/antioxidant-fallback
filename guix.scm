@@ -434,6 +434,7 @@
 				  "rust-compiler-builtins"
 				  "rust-compiletest-rs" ;; TODO: rustc-dev?
 				  "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
+				  "rust-security-framework" "rust-cocoa" "rust-cocoa-foundation" "rust-core-foundation" "rust-core-foundation-sys" "rust-core-text" "rust-fsevent" "rust-fsevent-sys" "rust-objc-foundation" ; non-Linux, non-Hurd things
 				  "rust-ws2-32-sys"
 				  "rust-winapi-util" "rust-winapi-build"
 				  "rust-doc-comment"
