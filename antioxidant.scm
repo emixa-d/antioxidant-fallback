@@ -281,11 +281,13 @@ with open(there, \"w\") as out_file:
 	 (saved-settings '())
 	 (link (assoc-ref package "links")) ; optional
 	 (extra-arguments '())) ; TODO: ad-hoc
-    (when (eq? features 'default)
-      (set! features default-features)
-      (format #t "Using features listed in Cargo.toml: ~a~%" features)
-      (set! features (features-closure features toml-features))
-      (format #t "With closure: ~a~%" features))
+    (if (eq? features 'default)
+	(begin
+	  (set! features default-features)
+	  (format #t "Using features listed in Cargo.toml: ~a~%" features))
+	(format #t "Using manually chosen features: ~a~%" features))
+    (set! features (features-closure features toml-features))
+    (format #t "With closure: ~a~%" features)
     (define (handle-line line)
       (when (string-prefix? "cargo:" line)
 	(let* ((rest (string-drop line (string-length "cargo:")))
