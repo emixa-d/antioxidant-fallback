@@ -145,7 +145,7 @@ with open(there, \"w\") as out_file:
     (delete-duplicates
      ;; lists are not sets, and the order is irrelevant here, so
      ;; pick some fixed arbitrary order.
-     (sort-list!
+     (sort-list
       (append-map (lambda (feature)
 		    (define extra
 		      (vector->list
