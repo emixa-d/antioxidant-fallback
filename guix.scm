@@ -721,6 +721,9 @@
 				   ;; build anymore.  (TODO remove from Guix)
 				   (("rust-http-body" _)
 				    (@ (gnu packages crates-io) rust-http-body-0.4))
+				   (("rust-crossbeam-channel" _)
+				    ;; avoid old version that don't build
+				    (@ (gnu packages crates-io) rust-crossbeam-channel-0.5))
 				   ;; Likewise.
 				   (("rust-hyper" _)
 				    (@ (gnu packages crates-io) rust-hyper-0.14))
