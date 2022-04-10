@@ -425,7 +425,9 @@ with open(there, \"w\") as out_file:
 			    binary)
 	     (list (string-append "--edition=" edition)
 		   (string-append "-Lnative=" (getcwd)))
-	     #:extern-crates extern-crates
+	     ;; A program can use its own crate without declaring it.
+	     ;; At least, hexyl tries to do so.
+	     #:extern-crates (cons crate-name extern-crates)
 	     ;; TODO: figure out how to override things
 	     (append
 	      arguments
