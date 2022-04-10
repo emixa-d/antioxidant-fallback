@@ -728,6 +728,8 @@
 			   (match (package-name pack)
 			     ;; rust-x509-parser requires bigint
 			     ("rust-der-parser" #~'("default" "bigint"))
+			     ;; rust-x509-parser required 'crypto' and 'x509'
+			     ("rust-oid-registry" #~'("default" "crypto" "x509"))
 			     ("rust-similar" #~'("default" "text" "inline"))
 			     ;; 'derive' is needed by rust-ron
 			     ("rust-serde" #~'("std" "alloc" "derive"))
