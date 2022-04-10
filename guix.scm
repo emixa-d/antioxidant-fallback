@@ -752,6 +752,8 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ("rust-hyper" #~'("full"))
+			     ("rust-itoa" #~'("std"))
 			     ;; rust-x509-parser requires bigint
 			     ("rust-der-parser" #~'("default" "bigint"))
 			     ;; rust-x509-parser required 'crypto' and 'x509'
