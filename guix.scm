@@ -651,6 +651,10 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-bindgen" _)
+				    ;; In the old version 'runtime' cannot be
+				    ;; disabled.
+				    (@ (gnu packages crates-io) rust-bindgen-0.59))
 				   (("rust-boxxy" _) rust-boxxy)
 				   (("rust-rustyline" _)
 				    (@ (gnu packages crates-io) rust-rustyline-9))
@@ -822,6 +826,10 @@
 			     ;; bindings for later versions which rust-bindgen might
 			     ;; need.
 			     ("rust-clang-sys" #~'("default" "clang_10_0"))
+			     ;; Do _not_ include 'runtime', as dlopen isn't used,
+			     ;; linking happens at compile time (and at program
+			     ;; startup).
+			     ("rust-bindgen" #~'("logging" "clap" "which-rustfmt"))
 			     ("rust-numtoa" #~'("std"))
 			     ;; rust-cargo-metadata requires the serialisation
 			     ;; / deserialisation traits.
