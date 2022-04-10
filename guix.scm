@@ -94,6 +94,13 @@
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
 					           (("^build =(.*)$") ""))))))
+					 ((string-prefix? "rust-clang-sys" name)
+					  ;; TODO: are there some paths that need to be
+					  ;; absolutised?
+				          #~((add-after 'unpack 'set-libclang-path
+					       (lambda* (#:key inputs #:allow-other-keys)
+						 (setenv "LIBCLANG_PATH"
+							 (dirname (search-input-file inputs "lib/libclang.so")))))))
 					 ;; TODO: when deciding what binaries to build,
 					 ;; respect [[bin]]/required-features, then this
 					 ;; phase can be removed.
@@ -729,7 +736,13 @@
 				   (_ dependency)))
 			  maybe-output)))))
 	 ;; Detect cycles early by unthunking
-	 (define i (filter-map fix-input (package-inputs pack)))
+	 (define i
+ 	   (append (match (package-name pack)
+		     ("rust-clang-sys"
+		      ;; TODO needs more work for
+		      (list (list "clang" (@ (gnu packages llvm) clang-13))))
+		     (_ '()))
+		   (filter-map fix-input (package-inputs pack))))
 	 (define n-i (append (filter-map fix-input cargo-development-inputs)
 			     ;; TODO: move zlib of rust-libz-sys-1 from
 			     ;; native-inputs to inputs.
