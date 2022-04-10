@@ -95,10 +95,15 @@ with open(there, \"w\") as out_file:
   (append-map (lambda (l) (list "-l" l)) c-libraries))
 
 (define* (compile-rust source destination extra-arguments
-		       #:key inputs native-inputs (configuration '())
+		       #:key inputs native-inputs outputs
+		       (configuration '())
+		       (self-crates? #false)
 		       (c-libraries '()) (extern-crates '())
 		       #:allow-other-keys)
-  (define crates (find-crates (append inputs (or native-inputs '()))))
+  (define crates (find-crates (append (if self-crates?
+					  outputs
+					  '())
+				      inputs (or native-inputs '()))))
   (mkdir-p (dirname destination))
   (apply invoke
 	 "rustc" "--verbose"
@@ -128,10 +133,10 @@ with open(there, \"w\") as out_file:
 (define* (compile-rust-binary source destination extra-arguments
 			      #:key outputs #:allow-other-keys
 			      #:rest arguments)
-  (define self-crates (find-crates outputs)) ; required by 'hexyl'
   (apply compile-rust source destination
 	 (append (list "--crate-type=bin")
 		 extra-arguments)
+	 #:self-crates? #true ; required by hexyl
 	 arguments))
 
 (define (features-closure features features-section)
