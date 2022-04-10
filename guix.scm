@@ -726,6 +726,8 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; rust-x509-parser requires bigint
+			     ("rust-der-parser" #~'("default" "bigint"))
 			     ("rust-similar" #~'("default" "text" "inline"))
 			     ;; 'derive' is needed by rust-ron
 			     ("rust-serde" #~'("std" "alloc" "derive"))
