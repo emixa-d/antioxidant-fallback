@@ -558,6 +558,10 @@
 				 (match (list (package-name dependency) (package-version dependency))
 				   (("rust-sct" _)
 				    (@ (gnu packages crates-io) rust-sct-0.7))
+				   (("rust-ron" _)
+				    (@ (gnu packages crates-io) rust-ron-0.6)) ; old versions don't build
+				   (("rust-serde" _)
+				    (@ (gnu packages crates-io) rust-serde-1)) ; old versions don't build
 				   (("rust-sha1" _)
 				    (@ (gnu packages crates-io) rust-sha1-0.6))
 				   (("rust-webpki" _)
