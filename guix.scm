@@ -369,6 +369,20 @@
      (sha256
       (base32 "17iqy9a8x0d8ydl5r28w8z9akhnwp74wyjxks055b617ryhgsla1"))))))
 
+;; rust-tokio-util needs a slab with 'compact'
+(define-public rust-slab
+  (package
+   (inherit (@ (gnu packages crates-io) rust-slab-0.4))
+   (name "rust-slab")
+   (version "0.4.6")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "slab" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "0cmvcy9ppsh3dz8mi6jljx7bxyknvgpas4aid2ayxk1vjpz3qw7b"))))))
+
 ;; old rust-test-case@1 is incompatible with new rust-syn
 (define-syntax p
   (syntax-rules ()
@@ -591,6 +605,7 @@
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
 				   (("rust-test-case" _) rust-test-case-2)
+				   (("rust-slab" _) rust-slab)
 				   (("rust-insta" _)
 				    (@ (gnu packages crates-io) rust-insta-1))
 				   (("rust-itoa" _)
