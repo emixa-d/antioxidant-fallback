@@ -818,6 +818,10 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; Don't just support libclang 3.5, also include
+			     ;; bindings for later versions which rust-bindgen might
+			     ;; need.
+			     ("rust-clang-sys" #~'("default" "clang_10_0"))
 			     ("rust-numtoa" #~'("std"))
 			     ;; rust-cargo-metadata requires the serialisation
 			     ;; / deserialisation traits.
