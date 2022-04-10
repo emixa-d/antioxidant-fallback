@@ -117,6 +117,16 @@
 					       (lambda _
 						 (substitute* "Cargo.toml"
 						   (("-preview\\]") "]"))))))
+					 ((string-prefix? "rust-tuikit" name)
+					  ;; TODO: upstream
+					  #~((add-after 'unpack 'fix-unresolved+deprecated
+					       (lambda _
+						 (substitute* "src/raw.rs"
+						   (("use nix::Error::Sys;") "")
+						   (("match err \\{") "{")
+						   (("nix::Error::from_errno\\(ENOTTY\\)") "ENOTTY")
+						   (("Sys\\((.*)") "err.into()")
+						   (("_ => (.*)$") ""))))))
 					 ;; 'cc' and 'c++' don't exist
 					 ((or (string-prefix? "rust-gcc-" name)
 					      (string-prefix? "rust-cc-" name))
