@@ -429,13 +429,8 @@
 		   (not (string=? (package-name dependency) "rust-futures-cpupool"))
 		   ;; The Redox operating system is not supported by Guix.
 		   (not (string-prefix? "rust-redox" (package-name dependency)))
-		   ;; Avoid cycle!
-		   (or (member (package-name pack)
-			       '("rust-serde-bytes" "rust-erased-serde" "rust-docopt"
-				 "rust-toml" "rust-serde-fmt" "rust-csv" "rust-serde-yaml"))
-		       (not (string=? (package-name dependency) "rust-serde")))
-		   (or (string=? (package-name pack) "rust-serde")
-		       (not (string=? (package-name dependency) "rust-serde-derive")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-serde-derive" "rust-serde")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-anyhow" "rust-thiserror")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
