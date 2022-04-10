@@ -640,8 +640,7 @@
 				   (("rust-webpki" _)
 				    (@ (gnu packages crates-io) rust-webpki-0.22))
 				   ;; Old versions don't build (because rust-tokio-io disappeared)
-				   (("rust-hyper-rustls" _)
-				    (@ (gnu packages crates-io) rust-hyper-rustls-0.22))
+				   (("rust-hyper-rustls" _) rust-hyper-rustls)
 				   (("rust-rustls" _)
 				    ;; Remove old (not-building) and potentially unsecure versions
 				    ;; Also, rust-tokio-rustls requires a newer rust-rustls.
