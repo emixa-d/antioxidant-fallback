@@ -407,7 +407,7 @@
 				  "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
 				  "rust-ws2-32-sys"
 				  "rust-winapi-util" "rust-winapi-build"
-				  "rust-serde-json" "rust-doc-comment"
+				  "rust-doc-comment"
 				  "rust-hermit-abi"
 				  "rust-model" ;; doesn't build, avoid for now
 				  "rust-tokio-core" ;; doesn't exist in recent tokios
@@ -445,6 +445,10 @@
 				(list "rust-failure-derive" "rust-failure")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-serde-bytes" "rust-bincode")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-serde-json" "rust-serde-stacker")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-erased-serde" "rust-serde-json")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-proc-macro2" "rust-quote")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
