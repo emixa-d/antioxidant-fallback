@@ -13,10 +13,12 @@ diff --git a/src/lib.rs b/src/lib.rs
 index c26bf35..c2bbd5e 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -46,6 +46,32 @@ use core::{ptr, slice, str};
+@@ -46,6 +46,34 @@ use core::{ptr, slice, str};
  
  /// A correctly sized stack allocation for the formatted integer to be written
  /// into.
++#[cfg(feature = "std")]
++extern crate std;
 +#[cfg(feature = "std")]
 +use std::{fmt, io};
 +
