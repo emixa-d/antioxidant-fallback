@@ -783,7 +783,7 @@
 			     ("rust-bitvec"
 			      #~'("std" "atomic" "alloc"))
 			     ;; Likewise.
-			     ("rust-chrono" #~'("alloc"))
+			     ("rust-chrono" #~'("default" "alloc"))
 			     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
 			     ("rust-nom"
 			      #~'("std" "lexical" "alloc"))
