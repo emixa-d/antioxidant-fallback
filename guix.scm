@@ -369,6 +369,35 @@
      (sha256
       (base32 "17iqy9a8x0d8ydl5r28w8z9akhnwp74wyjxks055b617ryhgsla1"))))))
 
+;; old rust-test-case@1 is incompatible with new rust-syn
+(define-syntax p
+  (syntax-rules ()
+    ((_ foo) (@ (gnu packages crates-io) foo))))
+(define-public rust-test-case-2
+  (package
+   (inherit (@ (gnu packages crates-io) rust-test-case-1))
+   (name "rust-test-case")
+   (version "2.0.2")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "test-case" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "07xgb68pfwb9j132wr3b78kzcbfapsy4scg8lipiv5ykk6d5hi33"))))
+   (arguments
+    `(#:cargo-inputs
+      (("rust-cfg-if" ,(p rust-cfg-if-1))
+       ("rust-proc-macro-error" ,(p rust-proc-macro-error-1))
+       ("rust-proc-macro2" ,(p rust-proc-macro2-1))
+       ("rust-quote" ,(p rust-quote-1))
+       ("rust-syn" ,(p rust-syn-1)))
+      #:cargo-development-inputs
+      (("rust-indexmap" ,(p rust-indexmap-1))
+       ("rust-insta" ,(p rust-insta-1))
+       ("rust-itertools" ,(p rust-itertools-0.10))
+       ("rust-lazy-static" ,(p rust-lazy-static-1)))))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -560,6 +589,9 @@
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-test-case" _) rust-test-case-2)
+				   (("rust-insta" _)
+				    (@ (gnu packages crates-io) rust-insta-1))
 				   (("rust-sct" _)
 				    (@ (gnu packages crates-io) rust-sct-0.7))
 				   (("rust-quote" _)
