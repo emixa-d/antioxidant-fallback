@@ -81,6 +81,20 @@
  (package-build %package-build)
  (package-links %package-links))
 
+;; TODO: not yet used.  Maybe in the future we could check for
+;; version incompatibilities?
+(define-json-mapping <dependency> make-dependency dependency?
+  %json->dependency <=> %package->dependency <=> scm->dependency <=> package->dependency
+  ;; String.  Not actually part of the JSON / TOML.
+  (name dependency-name)
+  (optional %dependency-optional) ; boolean
+  (path %dependency-path) ; string | #false
+  (version %dependency-version) ; string | #false
+  (git %dependency-git) ; string | #false
+  (branch %dependency-branch) ; string | #false
+  (default-features %dependency-default-features) ; boolean
+  (registry %dependency-registry)) ; string | #false
+
 (define (convert-toml->json from to)
   (invoke "python3" "-c"
 	  "import sys, toml, json
