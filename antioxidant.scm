@@ -27,8 +27,59 @@
   #:use-module (ice-9 textual-ports)
   #:use-module (json))
 
-(define (normalise-crate-name name)
-  (string-replace-substring name "-" "_"))
+;;;
+;;; Reading Cargo.toml files.
+;;;
+
+(define-json-mapping <package> make-package package?
+  %json->package <=> %package->json <=> scm->package <=> package->scm
+  (version %package-version) ; string
+  (authors %package-authors vector->list) ; vector of strings
+  (categories %package-categories vector->list) ; vector of strings
+  (name %package-name) ; string
+  (description %package-description) ; string
+  (homepage %package-homepage) ; string
+  (repository %package-repository) ; string
+  (license %package-license) ; string
+  (license-file %package-license-file) ; string
+  (edition %package-edition) ; string
+  (build %package-build) ; string | #false
+  (links %package-links)) ; string, despite the s suffix
+
+(define-syntax-rule (wrap-unspecified->default default (wrapped getter) ...)
+  (begin
+    (define (wrapped foo)
+      (let ((result (getter foo)))
+	(if (unspecified? result)
+	    default
+	    result)))
+    ...))
+
+(wrap-unspecified->default
+ "2015"
+ ;; rust-libc does not compile with edition=2018
+ (package-edition %package-edition))
+
+(wrap-unspecified->default
+ ""
+ (package-version %package-version)
+ (package-name %package-name)
+ (package-description %package-description)
+ (package-homepage %package-homepage)
+ (package-repository %package-repository)
+ (package-license %package-license)
+ (package-license-file %package-license-file))
+
+(wrap-unspecified->default
+ '()
+ (package-categories %package-categories)
+ (package-authors %package-authors))
+
+;; #false is to fit better in Guix, in JSON terms it is null, not false
+(wrap-unspecified->default
+ #false
+ (package-build %package-build)
+ (package-links %package-links))
 
 (define (convert-toml->json from to)
   (invoke "python3" "-c"
@@ -38,6 +89,11 @@ t = toml.load(here);
 with open(there, \"w\") as out_file:
 	json.dump(t, out_file);"
 	  from to))
+
+
+
+(define (normalise-crate-name name)
+  (string-replace-substring name "-" "_"))
 
 (define (crate-directory store-item)
   (string-append store-item "/lib/guixcrate"))
@@ -244,7 +300,7 @@ with open(there, \"w\") as out_file:
       #:encoding "UTF-8"))
   (pk 'pp parsed)
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
-  (let* ((package (pk 'pack (assoc-ref parsed "package")))
+  (let* ((package (pk 'pack (scm->package (assoc-ref parsed "package"))))
 	 (toml-features (assoc-ref parsed "features"))
 	 (extern-crates (toml-dependencies parsed))
 	 (default-features
@@ -253,17 +309,16 @@ with open(there, \"w\") as out_file:
 		     (assoc-ref toml-features "default"))
 		#())))
 	 (extra-configuration '()) ; --cfg options, computed by build.rs
-	 (crate-version (or (assoc-ref package "version") ""))
-	 (crate-authors (or (assoc-ref package "authors") #()))
-	 (crate-name (normalise-crate-name (assoc-ref package "name")))
-	 (crate-description (or (assoc-ref package "description") ""))
-	 (crate-homepage (or (assoc-ref package "homepage") ""))
-	 (crate-repository (or (assoc-ref package "repository") ""))
-	 (crate-license (or (assoc-ref package "license") ""))
-	 (crate-license-file (or (assoc-ref package "license-file") ""))
+	 (crate-authors (package-authors package))
+	 (crate-name (normalise-crate-name (package-name package)))
+	 (crate-description (package-description package))
+	 (crate-homepage (package-homepage package))
+	 (crate-repository (package-repository package))
+	 (crate-license (package-license package))
+	 (crate-license-file (package-license-file package))
 	 ;; rust-libc does not compile with edition=2018
-	 (edition (or (assoc-ref package "edition") "2015"))
-	 (build.rs (or (assoc-ref package "build")
+	 (edition (package-edition package))
+	 (build.rs (or (package-build package)
 		       ;; E.g, rust-proc-macros2 doesn't set 'build'
 		       ;; even though it has a configure script.
 		       (and (file-exists? "build.rs") "build.rs")))
@@ -279,7 +334,7 @@ with open(there, \"w\") as out_file:
 					     (assoc-ref lib "proc_macro"))))
 	 (c-libraries '())
 	 (saved-settings '())
-	 (link (assoc-ref package "links")) ; optional
+	 (link (package-links package)) ; optional
 	 (extra-arguments '())) ; TODO: ad-hoc
     (if (eq? features 'default)
 	(begin
@@ -336,14 +391,15 @@ with open(there, \"w\") as out_file:
     ;; that documentation, the environment variable needs to be set to the empty
     ;; string.
     (setenv "CARGO_MANIFEST_DIR" (getcwd)) ; directory containing the Cargo.toml
-    (setenv "CARGO_PKG_VERSION" crate-version)
-    (let ((set-version-environment-variables
+    (setenv "CARGO_PKG_VERSION" (or (package-version package) ""))
+    (let ((version (or (package-version package) ""))
+	  (set-version-environment-variables
 	   (lambda (major minor patch pre)
 	     (setenv "CARGO_PKG_VERSION_MAJOR" major)
 	     (setenv "CARGO_PKG_VERSION_MINOR" minor)
 	     (setenv "CARGO_PKG_VERSION_PATCH" patch)
 	     (setenv "CARGO_PKG_VERSION_PRE" pre))))
-      (match (string-split crate-version #\.)
+      (match (string-split version #\.)
 	((major minor patch pre)
 	 (set-version-environment-variables major minor patch pre))
 	((major minor patch)
@@ -354,8 +410,7 @@ with open(there, \"w\") as out_file:
 	 (set-version-environment-variables major "" "" ""))
 	(() ; not set in Cargo.toml
 	 (set-version-environment-variables "" "" "" ""))))
-    (setenv "CARGO_PKG_AUTHORS"
-	    (string-join (vector->list crate-authors) ":"))
+    (setenv "CARGO_PKG_AUTHORS" (string-join crate-authors ":"))
     (setenv "CARGO_PKG_NAME" crate-name)
     (setenv "CARGO_PKG_DESCRIPTION" crate-description)
     (setenv "CARGO_PKG_HOMEPAGE" crate-homepage)
