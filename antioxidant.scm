@@ -19,8 +19,10 @@
   #:export (find-crates crate-directory extract-crate-name extern-arguments
 			L-arguments compile-rust compile-rust-library
 			compile-rust-binary compile-cargo
-			read-dependency-environment-variables)
+			read-dependency-environment-variables
+			%standard-antioxidant-phases)
   #:use-module (guix build utils)
+  #:use-module (guix build gnu-build-system)
   #:use-module (srfi srfi-1)
   #:use-module (ice-9 match)
   #:use-module (ice-9 string-fun)
@@ -576,3 +578,12 @@ with open(there, \"w\") as out_file:
 	 (cb file (string-drop-right (basename file)
 				     (string-length ".rs")))))
      (find-files "src/bin"))))
+
+(define %standard-antioxidant-phases
+  (modify-phases %standard-phases
+    ;; TODO: before configure?
+    (add-after 'unpack 'read-dependency-environment-variables read-dependency-environment-variables)
+    (replace 'configure (lambda _ (pk 'todo)))
+    (replace 'build compile-cargo)
+    (delete 'check) ; TODO
+    (delete 'install))) ; TODO?
