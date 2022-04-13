@@ -31,66 +31,41 @@
 ;;; Reading Cargo.toml files.
 ;;;
 
+(define (or-constant constant)
+  (lambda (proc)
+    (lambda (foo)
+      (if (unspecified? foo)
+	  constant
+	  (proc foo)))))
+
+(define or-false (or-constant #false))
+(define or-empty (or-constant '()))
+(define or-false* ((or-constant #false) identity))
+(define or-true* ((or-constant #false) identity))
+(define or-emptystring* ((or-constant "") identity))
+
+;; rust-libc does not compile with edition=2018
+(define %default-edition "2015")
+(define or-default-edition* ((or-constant %default-edition) identity))
+
 (define-json-mapping <package> make-package package?
   %json->package <=> %package->json <=> scm->package <=> package->scm
-  (autobins %package-autobins) ; boolean
-  (autoexamples %package-autoexamples) ; boolean
-  (autotests %package-autotests) ; boolean
-  (autobenches %package-autobenches) ; boolean
-  (version %package-version) ; string
-  (authors %package-authors vector->list) ; vector of strings
-  (categories %package-categories vector->list) ; vector of strings
-  (name %package-name) ; string
-  (description %package-description) ; string
-  (homepage %package-homepage) ; string
-  (repository %package-repository) ; string
-  (license %package-license) ; string
-  (license-file %package-license-file) ; string
-  (edition %package-edition) ; string
-  (build %package-build) ; string | #false
-  (links %package-links)) ; string, despite the s suffix
-
-(define-syntax-rule (wrap-unspecified->default default (wrapped getter) ...)
-  (begin
-    (define (wrapped foo)
-      (let ((result (getter foo)))
-	(if (unspecified? result)
-	    default
-	    result)))
-    ...))
-
-(wrap-unspecified->default
- "2015"
- ;; rust-libc does not compile with edition=2018
- (package-edition %package-edition))
-
-(wrap-unspecified->default
- ""
- (package-version %package-version)
- (package-name %package-name)
- (package-description %package-description)
- (package-homepage %package-homepage)
- (package-repository %package-repository)
- (package-license %package-license)
- (package-license-file %package-license-file))
-
-(wrap-unspecified->default
- '()
- (package-categories %package-categories)
- (package-authors %package-authors))
-
-;; #false is to fit better in Guix, in JSON terms it is null, not false
-(wrap-unspecified->default
- #false
- (package-build %package-build)
- (package-links %package-links))
-
-(wrap-unspecified->default
- #true
- (package-autobins %package-autobins)
- (package-autoexamples %package-autoexamples)
- (package-autotests %package-autotests)
- (package-autobenches %package-autobenches))
+  (autobins package-autobins "autobins" or-true*) ; boolean
+  (autoexamples package-autoexamples "autoexamples" or-true*) ; boolean
+  (autotests package-autotests "autotests" or-true*) ; boolean
+  (autobenches package-autobenches "autobenches" or-true*) ; boolean
+  (version package-version "version" or-emptystring*) ; string
+  (authors package-authors "authors" (or-empty vector->list)) ; vector of strings
+  (categories package-categories "categories" (or-empty vector->list)) ; vector of strings
+  (name package-name) ; string
+  (description package-description "description" or-emptystring*) ; string
+  (homepage package-homepage "homepage" or-emptystring*) ; string
+  (repository package-repository "repository" or-emptystring*) ; string
+  (license package-license "license" or-emptystring*) ; string
+  (license-file package-license-file "license-file" or-emptystring*) ; string
+  (edition package-edition "edition" or-default-edition*) ; string
+  (build package-build "build" or-false*)
+  (links package-links "links" or-false*)) ; string, despite the s suffix
 
 ;; TODO: not yet used.  Maybe in the future we could check for
 ;; version incompatibilities?
@@ -106,6 +81,12 @@
   (default-features %dependency-default-features) ; boolean
   (registry %dependency-registry)) ; string | #false
 
+(define (scm->dependency-list scm)
+  (define f
+    (match-lambda
+      ((key . value) (scm->dependency `(("name" . ,key) ,@value)))))
+  (map f scm))
+
 ;;
 ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#configuring-a-target>
 ;;
@@ -114,7 +95,7 @@
 (define-json-mapping <target> make-target target?
   %json->target <=> %target->json <=> scm->target <=> target->scm
   (name %target-name)
-  (path %target-path)
+  (path target-path "path" or-false*)
   (test %target-test)
   (doctest %target-doctest)
   (bench %target-bench)
@@ -123,14 +104,10 @@
   (proc-macro %target-proc-macro)
   (proc_macro %target-proc_macro)
   (harness %target-harness)
-  (edition %target-edition)
+  (edition target-edition or-false*)
   (crate-type %target-crate-type)
   ;; NA for [lib]
   (required-features %target-required-features))
-
-(wrap-unspecified->default
- #false
- (target-path %target-path))
 
 (define (target-proc-macro target)
   ;; TODO: which one is it?  (For rust-derive-arbitrary,
@@ -140,6 +117,42 @@
     (((? unspecified?) (? boolean? x)) x)
     (((? unspecified?) (? unspecified?)) #false)))
 
+(define (scm->target-list s)
+  (map scm->target (vector->list s)))
+
+(define-json-mapping <target-specific> make-target-specific? target-specific?
+  %json->target-specific <=> %manifest->target-specific <=> scm->target-specific <=> target-specific->scm
+  (target %target-specific-target) ; string, not actually part of the json
+  (dependencies target-specific-dependencies "dependencies" (or-empty scm->dependency-list))
+  ;; For tests, examples and benchmarks
+  (dev-dependencies target-specific-dev-dependencies "dev-dependencies" (or-empty scm->dependency-list))
+  ;; For build scripts
+  (build-dependencies target-specific-build-dependencies "build-dependencies" (or-empty scm->dependency-list)))
+
+(define-json-mapping <manifest> make-manifest manifest?
+  %json->manifest <=> %manifest->json <=> scm->manifest <=> manifest->scm
+  (package manifest-package "package" scm->package)
+  (lib manifest-lib "lib" (or-false scm->target))
+  (bin manifest-bin "bin" (or-empty scm->target-list))
+  (bench manifest-bench "bench" (or-empty scm->target-list))
+  (example manifest-example "example" (or-empty scm->target-list))
+  (test manifest-test "test" (or-empty scm->target-list))
+  (features manifest-features (or-empty identity))
+  (dependencies manifest-dependencies "dependencies" (or-empty scm->dependency-list))
+  ;; For tests, examples and benchmarks
+  (dev-dependencies manifest-dev-dependencies "dev-dependencies" (or-empty scm->dependency-list))
+  ;; For build scripts
+  (build-dependencies manifest-build-dependencies "build-dependencies" (or-empty scm->dependency-list))
+  (target manifest-target-specific "target"
+	  ;; list of <target-specific>
+	  (or-empty
+	   (lambda (s)
+	     (map (match-lambda
+		    ((key . value)
+		     (scm->target-specific
+		      `(("target" . ,key) ,@value))))
+		  (vector->list s))))))
+
 (define (convert-toml->json from to)
   (invoke "python3" "-c"
 	  "import sys, toml, json
@@ -148,6 +161,15 @@ t = toml.load(here);
 with open(there, \"w\") as out_file:
 	json.dump(t, out_file);"
 	  from to))
+
+(define (open-manifest toml json)
+  (convert-toml->json toml json)
+  (define parsed
+    (call-with-input-file json
+      (lambda (port)
+	(json->scm port))
+      #:encoding "UTF-8"))
+  (scm->manifest parsed))
 
 
 
@@ -280,17 +302,21 @@ with open(there, \"w\") as out_file:
 ;; If too many crates are included in --extern, errors like
 ;; error[E0659]: `time` is ambiguous (name vs any other name during import resolution)
 ;; are possible.  Avoid them!
-(define (toml-dependencies toml)
+(define (manifest-all-dependencies manifest)
   "Return a list of Crate names that are dependencies"
-  (define (dependencies-sections1 toml)
-    (append (or (assoc-ref toml "dependencies") '())
-	    (or (assoc-ref toml "dev-dependencies") '())
-	    (or (assoc-ref toml "build-dependencies") '())))
+  ;; TODO: split dev, build & dependencies
   ;; For now ignore which target a dependency is for.
-  (define toml-list
-    (cons toml (map cdr (or (assoc-ref toml "target") '()))))
-  (define sections (append-map dependencies-sections1 toml-list))
-  (map normalise-crate-name (map car sections)))
+  (define (all-target-specific-dependencies target-specific)
+    (append (target-specific-dependencies manifest)
+	    (target-specific-dev-dependencies manifest)
+	    (target-specific-build-dependencies manifest)))
+  (define dependencies
+    (append (manifest-dependencies manifest)
+	    (manifest-dev-dependencies manifest)
+	    (manifest-build-dependencies manifest)
+	    (append-map all-target-specific-dependencies
+			(manifest-target-specific manifest))))
+  (map (compose normalise-crate-name dependency-name) dependencies))
 
 ;; Some cargo:??? lines from build.rs are ‘propagated’ to dependencies
 ;; as environment variables, see
@@ -351,17 +377,11 @@ with open(there, \"w\") as out_file:
   "Compile and install things described in Cargo.toml."
   (for-each (match-lambda ((name . value) (setenv name value)))
 	    cargo-env-variables) ; TODO: maybe move more things inside
-  (convert-toml->json "Cargo.toml" "Cargo.json")
-  (define parsed
-    (call-with-input-file "Cargo.json"
-      (lambda (port)
-	(json->scm port))
-      #:encoding "UTF-8"))
-  (pk 'pp parsed)
+  (define manifest (open-manifest "Cargo.toml" "Cargo.json"))
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
-  (let* ((package (pk 'pack (scm->package (assoc-ref parsed "package"))))
-	 (toml-features (assoc-ref parsed "features"))
-	 (extern-crates (toml-dependencies parsed))
+  (let* ((package (manifest-package manifest))
+	 (toml-features (manifest-features manifest))
+	 (extern-crates (manifest-all-dependencies manifest))
 	 (default-features
 	   (vector->list
 	    (or (and toml-features
@@ -375,13 +395,12 @@ with open(there, \"w\") as out_file:
 	 (crate-repository (package-repository package))
 	 (crate-license (package-license package))
 	 (crate-license-file (package-license-file package))
-	 ;; rust-libc does not compile with edition=2018
 	 (edition (package-edition package))
 	 (build.rs (or (package-build package)
 		       ;; E.g, rust-proc-macros2 doesn't set 'build'
 		       ;; even though it has a configure script.
 		       (and (file-exists? "build.rs") "build.rs")))
-	 (lib (and=> (assoc-ref parsed "lib") scm->target))
+	 (lib (manifest-lib manifest))
 	 ;; Location of the crate source code to compile.
 	 ;; The default location is src/lib.rs, some packages put
 	 ;; the code elsewhere.
