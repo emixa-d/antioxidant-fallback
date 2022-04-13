@@ -95,6 +95,40 @@
   (default-features %dependency-default-features) ; boolean
   (registry %dependency-registry)) ; string | #false
 
+;;
+;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#configuring-a-target>
+;;
+;; For a [lib], [[bin]], [[example]], [[test]] or [[bench]] section.
+;;
+(define-json-mapping <target> make-target target?
+  %json->target <=> %target->json <=> scm->target <=> target->scm
+  (name %target-name)
+  (path %target-path)
+  (test %target-test)
+  (doctest %target-doctest)
+  (bench %target-bench)
+  (doc %target-doc)
+  (plugin %target-plugin)
+  (proc-macro %target-proc-macro)
+  (proc_macro %target-proc_macro)
+  (harness %target-harness)
+  (edition %target-edition)
+  (crate-type %target-crate-type)
+  ;; NA for [lib]
+  (required-features %target-required-features))
+
+(wrap-unspecified->default
+ #false
+ (target-path %target-path))
+
+(define (target-proc-macro target)
+  ;; TODO: which one is it?  (For rust-derive-arbitrary,
+  ;; it is proc_macro)
+  (match (list (%target-proc-macro target) (%target-proc_macro target))
+    (((? boolean? x) _) x)
+    (((? unspecified?) (? boolean? x)) x)
+    (((? unspecified?) (? unspecified?)) #false)))
+
 (define (convert-toml->json from to)
   (invoke "python3" "-c"
 	  "import sys, toml, json
@@ -336,16 +370,14 @@ with open(there, \"w\") as out_file:
 		       ;; E.g, rust-proc-macros2 doesn't set 'build'
 		       ;; even though it has a configure script.
 		       (and (file-exists? "build.rs") "build.rs")))
-	 (lib (or (assoc-ref parsed "lib")))
+	 (lib (and=> (assoc-ref parsed "lib") scm->target))
 	 ;; Location of the crate source code to compile.
 	 ;; The default location is src/lib.rs, some packages put
 	 ;; the code elsewhere.
-	 (lib-path (or (and lib (assoc-ref lib "path"))
-		       "src/lib.rs"))
+	 (lib-path (or (and=> lib target-path) "src/lib.rs"))
 	 ;; TODO: which one is it?  (For rust-derive-arbitrary,
 	 ;; it is proc_macro)
-	 (lib-procedural-macro? (and lib (or (assoc-ref lib "proc-macro")
-					     (assoc-ref lib "proc_macro"))))
+	 (lib-procedural-macro? (and=> lib target-proc-macro))
 	 (c-libraries '())
 	 (saved-settings '())
 	 (link (package-links package)) ; optional
