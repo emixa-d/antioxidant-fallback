@@ -151,7 +151,7 @@
 		    ((key . value)
 		     (scm->target-specific
 		      `(("target" . ,key) ,@value))))
-		  (vector->list s))))))
+		  s)))))
 
 (define (convert-toml->json from to)
   (invoke "python3" "-c"
