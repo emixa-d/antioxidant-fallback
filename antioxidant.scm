@@ -139,7 +139,7 @@
   (bench manifest-bench "bench" (or-empty scm->target-list))
   (example manifest-example "example" (or-empty scm->target-list))
   (test manifest-test "test" (or-empty scm->target-list))
-  (features manifest-features (or-empty identity))
+  (features manifest-features "features" (or-empty identity))
   (dependencies manifest-dependencies "dependencies" (or-empty scm->dependency-list))
   ;; For tests, examples and benchmarks
   (dev-dependencies manifest-dev-dependencies "dev-dependencies" (or-empty scm->dependency-list))
