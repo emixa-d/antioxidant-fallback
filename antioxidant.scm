@@ -33,6 +33,10 @@
 
 (define-json-mapping <package> make-package package?
   %json->package <=> %package->json <=> scm->package <=> package->scm
+  (autobins %package-autobins) ; boolean
+  (autoexamples %package-autoexamples) ; boolean
+  (autotests %package-autotests) ; boolean
+  (autobenches %package-autobenches) ; boolean
   (version %package-version) ; string
   (authors %package-authors vector->list) ; vector of strings
   (categories %package-categories vector->list) ; vector of strings
@@ -80,6 +84,13 @@
  #false
  (package-build %package-build)
  (package-links %package-links))
+
+(wrap-unspecified->default
+ #true
+ (package-autobins %package-autobins)
+ (package-autoexamples %package-autoexamples)
+ (package-autotests %package-autotests)
+ (package-autobenches %package-autobenches))
 
 ;; TODO: not yet used.  Maybe in the future we could check for
 ;; version incompatibilities?
