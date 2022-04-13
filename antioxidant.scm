@@ -307,9 +307,9 @@ with open(there, \"w\") as out_file:
   ;; TODO: split dev, build & dependencies
   ;; For now ignore which target a dependency is for.
   (define (all-target-specific-dependencies target-specific)
-    (append (target-specific-dependencies manifest)
-	    (target-specific-dev-dependencies manifest)
-	    (target-specific-build-dependencies manifest)))
+    (append (target-specific-dependencies target-specific)
+	    (target-specific-dev-dependencies target-specific)
+	    (target-specific-build-dependencies target-specific)))
   (define dependencies
     (append (manifest-dependencies manifest)
 	    (manifest-dev-dependencies manifest)
