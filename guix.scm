@@ -80,11 +80,7 @@
 		     #:features #$features
 		     #:optimisation-level '#$optimisation-level
 		     #:cargo-env-variables #$cargo-env-variables
-		     #:phases (modify-phases %standard-phases
-				;; TODO: before configure?
-				(add-before 'unpack 'read-dependency-environment-variables
-					    read-dependency-environment-variables)
-				(delete 'configure)
+		     #:phases (modify-phases %standard-antioxidant-phases
 				#$@(cond ((string-prefix? "rust-backtrace-sys" name)
 				          #~((add-after 'unpack 'break-cycle
 					       (lambda _
@@ -135,10 +131,7 @@
 						 (substitute* "src/lib.rs"
 						   (("\"cc\"") "\"gcc\"")
 						   (("\"c++\"") "\"g++\""))))))
-					 (#true #~()))
-				(replace 'build compile-cargo)
-				(delete 'check)
-				(delete 'install)))))))
+					 (#true #~()))))))))
   ;; TODO graft stuff, package->derivation guile-for-build
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
 

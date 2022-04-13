@@ -379,11 +379,10 @@ with open(there, \"w\") as out_file:
   "Compile and install things described in Cargo.toml."
   (for-each (match-lambda ((name . value) (setenv name value)))
 	    cargo-env-variables) ; TODO: maybe move more things inside
-  (define manifest (open-manifest "Cargo.toml" "Cargo.json"))
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
-  (let* ((package (manifest-package manifest))
-	 (toml-features (manifest-features manifest))
-	 (extern-crates (manifest-all-dependencies manifest))
+  (let* ((package (manifest-package *manifest*))
+	 (toml-features (manifest-features *manifest*))
+	 (extern-crates (manifest-all-dependencies *manifest*))
 	 (default-features
 	   (vector->list
 	    (or (and toml-features
@@ -402,7 +401,7 @@ with open(there, \"w\") as out_file:
 		       ;; E.g, rust-proc-macros2 doesn't set 'build'
 		       ;; even though it has a configure script.
 		       (and (file-exists? "build.rs") "build.rs")))
-	 (lib (manifest-lib manifest))
+	 (lib (manifest-lib *manifest*))
 	 ;; Location of the crate source code to compile.
 	 ;; The default location is src/lib.rs, some packages put
 	 ;; the code elsewhere.
@@ -462,39 +461,7 @@ with open(there, \"w\") as out_file:
 	    (#true
 	     (format #t "info from build.rs: ~a~%" line))))
 
-    ;; Set some variables that Cargo can set and that might
-    ;; be expected by build.rs.  A (full?) list is avialable
-    ;; at <https://doc.rust-lang.org/cargo/reference/environment-variables.html>.
-    ;; When something does not appear in the Cargo.toml or such, according to
-    ;; that documentation, the environment variable needs to be set to the empty
-    ;; string.
     (setenv "CARGO_MANIFEST_DIR" (getcwd)) ; directory containing the Cargo.toml
-    (setenv "CARGO_PKG_VERSION" (or (package-version package) ""))
-    (let ((version (or (package-version package) ""))
-	  (set-version-environment-variables
-	   (lambda (major minor patch pre)
-	     (setenv "CARGO_PKG_VERSION_MAJOR" major)
-	     (setenv "CARGO_PKG_VERSION_MINOR" minor)
-	     (setenv "CARGO_PKG_VERSION_PATCH" patch)
-	     (setenv "CARGO_PKG_VERSION_PRE" pre))))
-      (match (string-split version #\.)
-	((major minor patch pre)
-	 (set-version-environment-variables major minor patch pre))
-	((major minor patch)
-	 (set-version-environment-variables major minor patch ""))
-	((major minor)
-	 (set-version-environment-variables major minor "" ""))
-	((major)
-	 (set-version-environment-variables major "" "" ""))
-	(() ; not set in Cargo.toml
-	 (set-version-environment-variables "" "" "" ""))))
-    (setenv "CARGO_PKG_AUTHORS" (string-join crate-authors ":"))
-    (setenv "CARGO_PKG_NAME" crate-name)
-    (setenv "CARGO_PKG_DESCRIPTION" crate-description)
-    (setenv "CARGO_PKG_HOMEPAGE" crate-homepage)
-    (setenv "CARGO_PKG_REPOSITORY" crate-repository)
-    (setenv "CARGO_PKG_LICENSE" crate-license)
-    (setenv "CARGO_PKG_LICENSE_FILE" crate-license-file)
     (define configuration (append extra-configuration (map feature->config features)))
     (when build.rs
       (format #t "building configuration script~%")
@@ -579,10 +546,52 @@ with open(there, \"w\") as out_file:
 				     (string-length ".rs")))))
      (find-files "src/bin"))))
 
+(define *manifest* #false)
+(define* (load-manifest . rest)
+  "Parse Cargo.toml and save it in @code{*manifest*}."
+  (set! *manifest* (open-manifest "Cargo.toml" "Cargo.json")))
+
+;; Set some variables that Cargo can set and that might
+;; be expected by build.rs.  A (full?) list is avialable
+;; at <https://doc.rust-lang.org/cargo/reference/environment-variables.html>.
+;; When something does not appear in the Cargo.toml or such, according to
+;; that documentation, the environment variable needs to be set to the empty
+;; string.
+(define (set-platform-independent-manifest-variables . _)
+  (define package (manifest-package *manifest*))
+  (let ((set-version-environment-variables
+	 (lambda (major minor patch pre)
+	   (setenv "CARGO_PKG_VERSION_MAJOR" major)
+	   (setenv "CARGO_PKG_VERSION_MINOR" minor)
+	   (setenv "CARGO_PKG_VERSION_PATCH" patch)
+	   (setenv "CARGO_PKG_VERSION_PRE" pre))))
+    (match (string-split (package-version package) #\.)
+      ((major minor patch pre)
+       (set-version-environment-variables major minor patch pre))
+      ((major minor patch)
+       (set-version-environment-variables major minor patch ""))
+      ((major minor)
+       (set-version-environment-variables major minor "" ""))
+      ((major)
+       (set-version-environment-variables major "" "" ""))
+      (() ; not set in Cargo.toml
+       (set-version-environment-variables "" "" "" ""))))
+  (setenv "CARGO_PKG_VERSION" (package-version package))
+  (setenv "CARGO_PKG_AUTHORS" (string-join (package-authors package) ":"))
+  (setenv "CARGO_PKG_NAME" (package-name package))
+  (setenv "CARGO_PKG_DESCRIPTION" (package-description package))
+  (setenv "CARGO_PKG_HOMEPAGE" (package-homepage package))
+  (setenv "CARGO_PKG_REPOSITORY" (package-repository package))
+  (setenv "CARGO_PKG_LICENSE" (package-license package))
+  (setenv "CARGO_PKG_LICENSE_FILE" (package-license-file package)))
+
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
     (add-after 'unpack 'read-dependency-environment-variables read-dependency-environment-variables)
+    (add-after 'unpack 'set-platform-independent-manifest-variables
+      set-platform-independent-manifest-variables)
+    (add-after 'unpack 'load-manifest load-manifest)
     (replace 'configure (lambda _ (pk 'todo)))
     (replace 'build compile-cargo)
     (delete 'check) ; TODO
