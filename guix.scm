@@ -43,7 +43,13 @@
 	    (#true (unrecognised))))
     ("CARGO_CFG_TARGET_POINTER_WIDTH" .
      ,(cond ((target-64bit? target) "64")
-	    (#true "32")))))
+	    (#true "32")))
+    ;; These CPU features are set by default, but antioxidant needs to know
+    ;; these as well to set the appropriate environment variables expected by,
+    ;; e.g., rust-sleef-sys.  TODO: CPU tuning.
+    ,@(if (target-x86-64? target)
+	  '(("CARGO_CFG_TARGET_FEATURE" . "sse,sse2"))
+	  '())))
 
 (define* (antioxidant-build name inputs #:key
 			    system target source search-paths outputs
