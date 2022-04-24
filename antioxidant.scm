@@ -280,6 +280,7 @@ with open(there, \"w\") as out_file:
 	 ;; Make sure that it will be used.
 	 "--extern=proc_macro"
 	 "--cap-lints" "warn" ;; ignore #[deny(warnings)], it's too noisy
+	 "-C" "prefer-dynamic" ;; for C dependencies & grafting and such?
 	 source "-o" destination
 	 (append (extern-arguments crates extern-crates)
 		 (L-arguments (append crates
@@ -403,19 +404,34 @@ default features implied by the \"default\" feature."
 	  ("rustc-link-lib"
 	   (set! *c-libraries* (cons y *c-libraries*)))
 	  ("rustc-link-search"
-	   (set! *c-library-directories* (cons y *c-library-directories*)))
+	   (unless (string-prefix? "/tmp" y) ;; TODO: don't include /tmp/guix-build things in propagated-environment?
+	     (set! *c-library-directories* (cons y *c-library-directories*))))
 	  (_ #false))))
      (call-with-input-file stuff read #:encoding "UTF-8")))
   (define* (do stuff #:optional (c-libraries? #false))
     (match stuff
-      ((_ . input)
+      ((name . input)
        (define where (string-append input "/lib/guixlinks"))
+       ;; Rustc knows how to find glibc anyway, and including
+       ;; these in -L cause ‘undefined reference to symbol '__tls_get_addr@@GLIBC_2.3'.
+       ;;
+       ;; Including libc:static causes Rust to try use the static library,
+       ;; which causes relocation errors.
+       (when (and (not (member name '("libc:static" "libc")))
+		  (directory-exists? (string-append input "/lib")))
+	 ;; TODO: only if there are .so or .a, to reduce command-line
+	 ;; length?  TODO: why does rustc not recognise LIBRARY_PATH?
+	 (set! *c-library-directories*
+	       (cons (string-append input "/lib") *c-library-directories*)))
        (when (file-exists? where)
 	 (for-each (cut do* <> c-libraries?)
 		   (find-files where "\\.propagated-environment$"))))))
   (define (do/with-libraries input) (do input #true))
   (for-each do native-inputs) ;; TODO: make propagated c libraries available to build.rs, _if_ they are native-inputs
-  (for-each do/with-libraries inputs))
+  (set! *c-library-directories* (append *c-library-directories*))
+  (for-each do/with-libraries inputs)
+  (set! *c-library-directories* (delete-duplicates *c-library-directories*))
+  (set! *c-libraries* (delete-duplicates *c-libraries*)))
 
 (define* (save-environment-variables link-name saved-settings
 				     #:key outputs #:allow-other-keys)
@@ -620,6 +636,10 @@ default features implied by the \"default\" feature."
 ;; string.
 (define (set-platform-independent-manifest-variables . _)
   (define package (manifest-package *manifest*))
+  ;; Used by rust-cmake.  TODO: actually set the various profile flags,
+  ;; optimisation levels, ...
+  (setenv "PROFILE" "release")
+  (setenv "DEBUG" "true")
   (let ((set-version-environment-variables
 	 (lambda (major minor patch pre)
 	   (setenv "CARGO_PKG_VERSION_MAJOR" major)
@@ -653,6 +673,15 @@ CARGO_CFG_TARGET_ARCH."
   (for-each (match-lambda ((name . value) (setenv name value)))
 	    cargo-env-variables)) ; TODO: maybe move more things inside
 
+(define* (install-pwd-libraries #:key outputs #:allow-other-keys)
+  ;; TODO: necessary for rust-sct@0.7?
+  (define p (file-name-predicate "\\.(a|so)$"))
+  (for-each (cute install-file <>
+		 (string-append (or (assoc-ref outputs "lib")
+				    (assoc-ref outputs "out"))
+				"/lib"))
+	    ((@ (ice-9 ftw) scandir) "." (cut p <> 'unused))))
+
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
@@ -667,4 +696,5 @@ CARGO_CFG_TARGET_ARCH."
     (replace 'build build)
     (add-after 'build 'build-binaries build-binaries)
     (delete 'check) ; TODO
-    (delete 'install))) ; TODO?
+    (delete 'install) ; TODO?
+    (add-after 'install 'install-pwd-libraries install-pwd-libraries))) ; TODO: necessary?

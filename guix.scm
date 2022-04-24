@@ -45,7 +45,8 @@
      ,(cond ((target-64bit? target) "64")
 	    (#true "32")))))
 
-(define* (antioxidant-build name inputs #:key system target source search-paths outputs
+(define* (antioxidant-build name inputs #:key
+			    system target source search-paths outputs
 			    ;; TODO: consider optimisations (what does cargo-build-system
 			    ;; do?)
 			    (optimisation-level 0)
@@ -88,6 +89,14 @@
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
 					           (("^build =(.*)$") ""))))))
+					 ;; TODO: change in Guix upstream.
+					 ;; TODO: adjust README.md? Make sure LICENSE-APACHE
+					 ;; is installed?
+					 ((string-prefix? "rust-cmake" name)
+					  #~((add-after 'unpack 'absolute-cmake
+					       (lambda* (#:key inputs #:allow-other-keys)
+						 (substitute* "src/lib.rs"
+						   (("\"cmake\"") (format #f "\"~a\"" (search-input-file inputs "bin/cmake"))))))))
 					 ((string-prefix? "rust-clang-sys" name)
 					  ;; TODO: are there some paths that need to be
 					  ;; absolutised?
@@ -782,6 +791,8 @@
 		     ;; No need to avoid Rust dependencies.
 		     ("rust-flate2"
 		      (list (list "zlib" (@ (gnu packages compression) zlib))))
+		     ("rust-cmake"
+		      (list (list "cmake" (@ (gnu packages cmake) cmake-minimal))))
 		     ("rust-clang-sys"
 		      ;; TODO needs more work for
 		      (list (list "clang" (@ (gnu packages llvm) clang-13))))
