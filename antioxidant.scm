@@ -44,7 +44,7 @@
 (define or-false (or-constant #false))
 (define or-empty (or-constant '()))
 (define or-false* ((or-constant #false) identity))
-(define or-true* ((or-constant #false) identity))
+(define or-true* ((or-constant #true) identity))
 (define or-emptystring* ((or-constant "") identity))
 
 ;; rust-libc does not compile with edition=2018
