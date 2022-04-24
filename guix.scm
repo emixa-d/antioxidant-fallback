@@ -504,6 +504,137 @@
        ("rust-itertools" ,(p rust-itertools-0.10))
        ("rust-lazy-static" ,(p rust-lazy-static-1)))))))
 
+;; needed for rcgen
+(define-public rust-yasna
+  (package
+    (name "rust-yasna")
+    (version "0.5.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "yasna" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0k1gk11hq4rwlppv9f50bz8bnmgr73r66idpp7rybly96si38v9l"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+      `(#:cargo-inputs
+        (("rust-bit-vec" ,(@ (gnu packages crates-io) rust-bit-vec-0.6))
+         ("rust-num-bigint" ,(@ (gnu packages crates-io) rust-num-bigint-0.4))
+         ("rust-time" ,(@ (gnu packages crates-io) rust-time-0.3)))
+        #:cargo-development-inputs
+        (("rust-num-traits" ,(@ (gnu packages crates-io) rust-num-traits-0.2)))))
+    (home-page "https://github.com/qnighy/yasna.rs")
+    (synopsis "ASN.1 library for Rust")
+    (description "ASN.1 library for Rust")
+    (license '(list license:expat license:asl2.0))))
+
+;; not yet in Guix, but needed for updated agate
+(define-public rust-rcgen
+  (package
+    (name "rust-rcgen")
+    (version "0.9.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "rcgen" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0ppwfl9g504x2qwk7m7mag8c3l70w9mcfha93013nlzqdlw2vynp"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:tests? #false ;; some test dependencies removed
+       #:cargo-inputs
+        (("rust-pem" ,(@ (gnu packages crates-io) rust-pem-1))
+         ("rust-ring" ,(@ (gnu packages crates-io) rust-ring-0.16))
+         ("rust-time" ,(@ (gnu packages crates-io) rust-time-0.3))
+	 ;; TODO: 0.13
+         ("rust-x509-parser" ,(@ (gnu packages crates-io) rust-x509-parser-0.12))
+         ("rust-yasna" ,rust-yasna)
+         ("rust-zeroize" ,(@ (gnu packages crates-io) rust-zeroize-1)))
+        #:cargo-development-inputs
+        (#;("rust-botan" ,(@ (gnu packages crates-io) rust-botan-0.8))
+         ("rust-openssl" ,(@ (gnu packages crates-io) rust-openssl-0.10))
+         ("rust-rand" ,(@ (gnu packages crates-io) rust-rand-0.8))
+         ("rust-rsa" ,(@ (gnu packages crates-io) rust-rsa-0.5))
+         ("rust-webpki" ,(@ (gnu packages crates-io) rust-webpki-0.22))
+         ("rust-x509-parser" ,(@ (gnu packages crates-io) rust-x509-parser-0.12)))))
+    (home-page "https://github.com/est31/rcgen")
+    (synopsis "Rust X.509 certificate generator")
+    (description "Rust X.509 certificate generator") ;; TODO
+    (license '(list license:expat license:asl2.0))))
+
+;; Old agate doesn't build
+(define-public agate
+  (package
+    (inherit (@ (gnu packages rust-apps) agate))
+    (name "agate")
+    (version "3.2.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "agate" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "1bxar93jh80jv5xvr6rnlc6gcsvzlf673m9874jzhjp78mhdbmwx"))))
+    (inputs
+     (modify-inputs (package-inputs (@ (gnu packages rust-apps) agate))
+       (append rust-rcgen rust-futures-util-0.3)))))
+
+;; Old version doesn't have the block_buffer required by rust-sha3
+(define-public rust-block-buffer
+  (package
+    (inherit (@ (gnu packages crates-io) rust-block-buffer-0.10))
+    (name "rust-block-buffer")
+    (version "0.10.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "block-buffer" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "097k9xkd8gqrl03qg4fwhjvanp3ac0pq4drg8pynk9cyhi8zxxqb"))))))
+
+;; Doesn't build against new block-buffer
+(define-public rust-md-5
+  (package
+    (inherit (@ (gnu packages crates-io) rust-md-5-0.9))
+    (name "rust-md-5")
+    (version "0.10.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "md-5" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "10h5kna43cpggp9hy1hz4zb1qpixdl4anf3hdj3gfwhb3sr4d1k5"))))))
+
+(define-public rust-digest
+  (package
+    (inherit (@ (gnu packages crates-io) rust-digest-0.10))
+    (name "rust-digest")
+    (version "0.10.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "digest" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "01nmj9cci5qdm4q4wlmz104rzr68d5m823kdzd95bypslq68dyzj"))))))
+
+(define-public rust-crypto-common
+  (package
+    (inherit (@ (gnu packages crates-io) rust-crypto-common-0.1))
+    (name "rust-crypto-common")
+    (version "0.1.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "crypto-common" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1s1wpm88qlrp079mzh3dlxm9vbqs4ch016yp9pzhcdjygfi2r5ap"))))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -713,7 +844,17 @@
 				    ;; In the old version 'runtime' cannot be
 				    ;; disabled.
 				    (@ (gnu packages crates-io) rust-bindgen-0.59))
+				   (("rust-sha-1" _) 
+				    (@ (gnu packages crates-io) rust-sha-1-0.10))
+				   (("rust-sha2" _) 
+				    (@ (gnu packages crates-io) rust-sha2-0.10))
 				   (("rust-boxxy" _) rust-boxxy)
+				   (("rust-block-buffer" _) rust-block-buffer)
+				   (("rust-md-5" _) rust-md-5)
+				   ;; TODO version conflict -- AUTOMATE?
+				   (("rust-generic-array" _) (@ (gnu packages crates-io) rust-generic-array-0.14))
+				   (("rust-digest" _) rust-digest)
+				   (("rust-crypto-common" _) rust-crypto-common)
 				   (("rust-rustyline" _)
 				    (@ (gnu packages crates-io) rust-rustyline-9))
 				   (("rust-base64" _)
@@ -894,6 +1035,8 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; Required by hmac.
+			     ("rust-digest" #~'("default" "std" "mac"))
 			     ;; Required by 'sniffglue'
 			     ("rust-pktparse" #~'("serde"))
 			     ;; Avoid extra dependencies by using the C library that

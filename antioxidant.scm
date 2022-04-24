@@ -547,32 +547,34 @@ default features implied by the \"default\" feature."
 	 ;; Location of the crate source code to compile.
 	 ;; The default location is src/lib.rs, some packages put
 	 ;; the code elsewhere.
-	 (lib-path (or (and=> lib target-path) "src/lib.rs"))
+	 (lib-path (or (and=> lib target-path)
+		       (and (file-exists? "src/lib.rs") "src/lib.rs")))
 	 ;; TODO: which one is it?  (For rust-derive-arbitrary,
 	 ;; it is proc_macro)
 	 (lib-procedural-macro? (and=> lib target-proc-macro)))
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
-    (apply compile-rust-library lib-path
-	   (apply library-destination crate-name
-		  (if lib-procedural-macro?
-		      "so"
-		      "rlib")
-		  arguments)
-	   (normalise-crate-name (package-name package))
-	   ;; Version of the Rust language (cf. -std=c11)
-	   ;; -- required by rust-proc-macro2
-	   (list (string-append "--edition=" (package-edition package))
-		 ;; Some build.rs put libraries in the current directory
-		 ;; (or, at least, in OUT_DIR or something like that).
-		 ;; TODO: can be done tidier.
-		 (string-append "-Lnative=" (getcwd)))
-	   #:crate-type (if lib-procedural-macro?
-			    "proc-macro"
-			    "rlib")
-	   #:extern-crates extern-crates
-	   ;; TODO: does the order matter?
-	   (append arguments (list #:configuration *configuration*)))))
+    (when lib-path
+      (apply compile-rust-library lib-path
+	     (apply library-destination crate-name
+		    (if lib-procedural-macro?
+			"so"
+			"rlib")
+		    arguments)
+	     (normalise-crate-name (package-name package))
+	     ;; Version of the Rust language (cf. -std=c11)
+	     ;; -- required by rust-proc-macro2
+	     (list (string-append "--edition=" (package-edition package))
+		   ;; Some build.rs put libraries in the current directory
+		   ;; (or, at least, in OUT_DIR or something like that).
+		   ;; TODO: can be done tidier.
+		   (string-append "-Lnative=" (getcwd)))
+	     #:crate-type (if lib-procedural-macro?
+			      "proc-macro"
+			      "rlib")
+	     #:extern-crates extern-crates
+	     ;; TODO: does the order matter?
+	     (append arguments (list #:configuration *configuration*))))))
 
 (define* (build-binaries #:key outputs #:allow-other-keys #:rest arguments)
   "Compile the Rust binaries described in Cargo.toml"
