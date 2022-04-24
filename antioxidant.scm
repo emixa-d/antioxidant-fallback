@@ -189,6 +189,7 @@ with open(there, \"w\") as out_file:
 (define *features* '())
 (define *configuration* '()) ;; set by 'configure'
 (define *extra-arguments* '()) ; likewise (TODO doc)
+(define *c-libraries* '()) ; likewise
 
 ;; Initialised by the 'load-manifest' phase.
 (define *manifest* #false)
@@ -412,7 +413,6 @@ default features implied by the \"default\" feature."
 (define* (configure #:key target build optimisation-level #:allow-other-keys #:rest arguments)
   (define saved-settings '())
   (define extra-configuration '()) ; --cfg options, computed by build.rs
-  (define c-libraries '()) ; TODO: unused?
   (define (handle-line line)
     (when (string-prefix? "cargo:" line)
       (let* ((rest (string-drop line (string-length "cargo:")))
@@ -432,7 +432,7 @@ default features implied by the \"default\" feature."
 	  ((string-prefix? "cargo:rustc-link-lib=" line)
 	   (let ((c-library (string-drop line (string-length "cargo:rustc-link-lib="))))
 	     (format #t "Building with C library ~a~%" c-library)
-	     (set! c-libraries (cons c-library c-libraries))))
+	     (set! *c-libraries* (cons c-library *c-libraries*))))
 	  ((string-prefix? "cargo:rustc-link-search=" line)
 	   (set! *extra-arguments*
 		 `("-L" ,(string-drop line (string-length "cargo:rustc-link-search="))
@@ -554,6 +554,7 @@ default features implied by the \"default\" feature."
 	   ;; At least, hexyl tries to do so.
 	   #:extern-crates (cons (normalise-crate-name (package-name package))
 				 extern-crates)
+	   #:c-libraries *c-libraries*
 	   ;; TODO: figure out how to override things
 	   (append
 	    arguments
