@@ -86,7 +86,11 @@
 (define (scm->dependency-list scm)
   (define f
     (match-lambda
-      ((key . value) (scm->dependency `(("name" . ,key) ,@value)))))
+      ((key . value)
+       (match value
+	 ((? string? version)
+	  (scm->dependency `(("name" . ,key) ("version" . ,version))))
+	 ((? list?) (scm->dependency `(("name" . ,key) ,@value)))))))
   (map f scm))
 
 ;;
