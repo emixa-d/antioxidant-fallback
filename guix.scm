@@ -433,6 +433,47 @@
      (sha256
       (base32 "1q0wpz955y3iwd35bqk3pbx2vx904fhyj75j7d6mrb7ib5fs5kxg"))))))
 
+;; Old versions don't support the new nom
+(define-public rust-pktparse
+  (package
+   (inherit (@ (gnu packages crates-io) rust-pktparse-0.5))
+   (name "rust-pktparse")
+   (version "0.7.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "pktparse" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "06sy7lwnhwmkyqfdbi4cs11z55rihipxafbdspnd5zg76pnbgbm8"))))))
+
+;; Old versions don't support the new nom
+(define-public rust-pure-rust-locales
+  (package
+   (inherit (@ (gnu packages crates-io) rust-pure-rust-locales-0.5))
+   (name "rust-pure-rust-locales")
+   (version "0.5.6")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "pure-rust-locales" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1n1jqy8g7ph9lvzncc8vy5jaqq2dljryp1agcnp5pwwi9zy4jp5l"))))))
+
+;; Old version doesn't build
+(define-public sniffglue
+  (package
+    (inherit (@ (gnu packages rust-apps) sniffglue))
+    (name "sniffglue")
+    (version "0.15.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "sniffglue" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "038wcjiiay825wc8inmn62flklc1adxskg5fmjhmxqnhwmj1k5gn"))))))
 
 ;; old rust-test-case@1 is incompatible with new rust-syn
 (define-syntax p
@@ -682,6 +723,14 @@
 				   (("rust-socket2" _) (@ (gnu packages crates-io) rust-socket2-0.4))
 				   (("rust-insta" _)
 				    (@ (gnu packages crates-io) rust-insta-1))
+				   (("rust-nom" _) ; avoid version conflicts
+				    (@ (gnu packages crates-io) rust-nom-7))
+				   ;; rust-pktparse@0.5 doesn't build against nom@7
+				   (("rust-pktparse" _) rust-pktparse)
+				   (("rust-rusticata-macros" _) ; old version doesn't build against nom@7 
+				    (@ (gnu packages crates-io) rust-rusticata-macros-4))
+				   (("rust-pure-rust-locales" _) ; old version doesn't build against nom@7
+				    rust-pure-rust-locales)
 				   (("rust-itoa" _)
 				    (@ (gnu packages crates-io) rust-itoa-1))
 				   (("rust-sct" _)
@@ -844,6 +893,8 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; Required by 'sniffglue'
+			     ("rust-pktparse" #~'("serde"))
 			     ;; Avoid extra dependencies by using the C library that
 			     ;; is used elsewhere anyway.
 			     ("rust-flate2" #~'("zlib"))
