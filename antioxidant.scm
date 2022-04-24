@@ -413,13 +413,7 @@ default features implied by the \"default\" feature."
   (let* ((package (manifest-package *manifest*))
 	 (extern-crates (manifest-all-dependencies *manifest*))
 	 (extra-configuration '()) ; --cfg options, computed by build.rs
-	 (crate-authors (package-authors package))
 	 (crate-name (normalise-crate-name (package-name package)))
-	 (crate-description (package-description package))
-	 (crate-homepage (package-homepage package))
-	 (crate-repository (package-repository package))
-	 (crate-license (package-license package))
-	 (crate-license-file (package-license-file package))
 	 (edition (package-edition package))
 	 (build.rs (or (package-build package)
 		       ;; E.g, rust-proc-macros2 doesn't set 'build'
