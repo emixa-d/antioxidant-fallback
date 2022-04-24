@@ -611,6 +611,9 @@ default features implied by the \"default\" feature."
 					*features*))))
   (for-each compile-bin-target (manifest-bin *manifest*))
   (when (package-autobins package)
+    (when (and (file-exists? "src/main.rs")
+	       (not (member "src/main.rs" files-visited)))
+      (cb "src/main.rs" (package-name package) (package-edition package)))
     (for-each ;; TODO: support [[bin]]
      (lambda (file)
        (when (and (string-suffix? ".rs" file)
@@ -620,9 +623,7 @@ default features implied by the \"default\" feature."
 	 (cb file (string-drop-right (basename file)
 				     (string-length ".rs"))
 	     (package-edition package))))
-     (append
-      (if (file-exists? "src/main.rs") '("src/main.rs") '())
-      (find-files "src/bin")))))
+     (find-files "src/bin"))))
 
 (define* (load-manifest . rest)
   "Parse Cargo.toml and save it in @code{*manifest*}."

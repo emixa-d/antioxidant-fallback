@@ -868,6 +868,7 @@
 						   ;; possibly only required by new version
 						   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
 						   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
+						   ("sniffglue" `(("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
 						   ;; TODO: is this sufficient?
 						   ("rust-futures-core-preview"
 						    `(("rust-futures-core" ,rust-futures-core-0.3)))
@@ -1029,7 +1030,4 @@
 
 ;; todo: cycle between rust-demo-hack and rust-demo-hack-impl
 
-(vitaminate/auto (@ (gnu packages rust-apps) hexyl))
-(vitaminate/auto (@ (gnu packages crates-io) rust-serde-bytes-0.11))
-(vitaminate/auto (@ (gnu packages rust-apps) sniffglue))
-(vitaminate/auto (@ (gnu packages crates-io) rust-bytes-0.3))
+(map vitaminate/auto (list sniffglue (@ (gnu packages rust-apps) hexyl)))
