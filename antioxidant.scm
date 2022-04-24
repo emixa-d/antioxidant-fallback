@@ -547,7 +547,7 @@ default features implied by the \"default\" feature."
 		       (assoc-ref outputs "out"))
 		   "/bin/" binary))
   (define* (cb source binary edition)
-    (apply compile-rust-binary source
+    (apply compile-rust-binary source binary
 	   (list (string-append "--edition=" edition)
 		 (string-append "-Lnative=" (getcwd)))
 	   ;; A program can use its own crate without declaring it.
