@@ -96,7 +96,7 @@
 ;;
 (define-json-mapping <target> make-target target?
   %json->target <=> %target->json <=> scm->target <=> target->scm
-  (name %target-name)
+  (name target-name "target" or-false*)
   (path target-path "path" or-false*)
   (test %target-test)
   (doctest %target-doctest)
