@@ -377,8 +377,6 @@ with open(there, \"w\") as out_file:
 			(cargo-env-variables '())
 			#:allow-other-keys #:rest arguments)
   "Compile and install things described in Cargo.toml."
-  (for-each (match-lambda ((name . value) (setenv name value)))
-	    cargo-env-variables) ; TODO: maybe move more things inside
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
 	 (toml-features (manifest-features *manifest*))
@@ -585,12 +583,20 @@ with open(there, \"w\") as out_file:
   (setenv "CARGO_PKG_LICENSE" (package-license package))
   (setenv "CARGO_PKG_LICENSE_FILE" (package-license-file package)))
 
+(define* (set-platform-dependent-variables #:key cargo-env-variables
+					   #:allow-other-keys)
+  "Set environment variables like CARGO_CFG_TARGET_POINTER_WIDTH and
+CARGO_CFG_TARGET_ARCH."
+  (for-each (match-lambda ((name . value) (setenv name value)))
+	    cargo-env-variables)) ; TODO: maybe move more things inside
+
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
     (add-after 'unpack 'read-dependency-environment-variables read-dependency-environment-variables)
     (add-after 'unpack 'set-platform-independent-manifest-variables
-      set-platform-independent-manifest-variables)
+	       set-platform-independent-manifest-variables)
+    (add-after 'unpack 'set-platform-dependent-variables set-platform-dependent-variables)
     (add-after 'unpack 'load-manifest load-manifest)
     (replace 'configure (lambda _ (pk 'todo)))
     (replace 'build compile-cargo)
