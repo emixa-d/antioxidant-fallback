@@ -175,6 +175,20 @@ with open(there, \"w\") as out_file:
 
 
 
+;;
+;; State.
+;;
+
+;; Set in the 'choose-features' phase.  Can be extended in later
+;; (package-specific) phases, until the 'make-feature-closure'
+;; (TODO build.rs) phase.
+(define *features* '())
+
+;; Initialised by the 'load-manifest' phase.
+(define *manifest* #false)
+
+
+
 (define (normalise-crate-name name)
   (string-replace-substring name "-" "_"))
 
@@ -278,6 +292,11 @@ with open(there, \"w\") as out_file:
 	 #:self-crates? #true ; required by hexyl
 	 arguments))
 
+
+
+;;;
+;;; Features.
+;;;
 (define (features-closure features features-section)
   "Include features and the features implied by those features and so on."
   (define new-features
@@ -300,6 +319,19 @@ with open(there, \"w\") as out_file:
 (define (feature->config feature)
   ;; TODO: escapes?
   (string-append "feature=\"" feature "\""))
+
+(define* (choose-features #:key (features '("default")) #:allow-other-keys)
+  "Initialise *features* according to #:features.  By default, this enables
+the \"default\" feature, and the later 'make-feature-closure' will enable all
+default features implied by the \"default\" feature."
+  (format #t "Using the features ~a and their implied features.~%" features)
+  (set! *features* (append features *features*)))
+
+(define (make-features-closure . _)
+  (set! *features* (features-closure *features* (manifest-features *manifest*)))
+  (format #t "The following features will be used: ~a~%." *features*))
+
+
 
 ;; If too many crates are included in --extern, errors like
 ;; error[E0659]: `time` is ambiguous (name vs any other name during import resolution)
@@ -371,7 +403,7 @@ with open(there, \"w\") as out_file:
       (lambda (o) (write saved-settings o))
       #:encoding "UTF-8")))
 
-(define* (compile-cargo #:key name features outputs
+(define* (compile-cargo #:key name outputs
 			target build
 			(optimisation-level 0)
 			(cargo-env-variables '())
@@ -379,13 +411,7 @@ with open(there, \"w\") as out_file:
   "Compile and install things described in Cargo.toml."
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
-	 (toml-features (manifest-features *manifest*))
 	 (extern-crates (manifest-all-dependencies *manifest*))
-	 (default-features
-	   (vector->list
-	    (or (and toml-features
-		     (assoc-ref toml-features "default"))
-		#())))
 	 (extra-configuration '()) ; --cfg options, computed by build.rs
 	 (crate-authors (package-authors package))
 	 (crate-name (normalise-crate-name (package-name package)))
@@ -411,13 +437,6 @@ with open(there, \"w\") as out_file:
 	 (saved-settings '())
 	 (link (package-links package)) ; optional
 	 (extra-arguments '())) ; TODO: ad-hoc
-    (if (eq? features 'default)
-	(begin
-	  (set! features default-features)
-	  (format #t "Using features listed in Cargo.toml: ~a~%" features))
-	(format #t "Using manually chosen features: ~a~%" features))
-    (set! features (features-closure features toml-features))
-    (format #t "With closure: ~a~%" features)
     (define (handle-line line)
       (when (string-prefix? "cargo:" line)
 	(let* ((rest (string-drop line (string-length "cargo:")))
@@ -460,7 +479,7 @@ with open(there, \"w\") as out_file:
 	     (format #t "info from build.rs: ~a~%" line))))
 
     (setenv "CARGO_MANIFEST_DIR" (getcwd)) ; directory containing the Cargo.toml
-    (define configuration (append extra-configuration (map feature->config features)))
+    (define configuration (append extra-configuration (map feature->config *features*)))
     (when build.rs
       (format #t "building configuration script~%")
       (apply
@@ -493,7 +512,7 @@ with open(there, \"w\") as out_file:
 	    (match r
 	      ((? string? line) (handle-line line) (loop (get-line port)))
 	      ((? eof-object? line) (values)))))))
-    (set! configuration (append extra-configuration (map feature->config features)))
+    (set! configuration (append extra-configuration (map feature->config *features*)))
     (when link
       (apply save-environment-variables link saved-settings arguments))
     (format #t "Building with configuration options: ~a~%" configuration)
@@ -544,7 +563,6 @@ with open(there, \"w\") as out_file:
 				     (string-length ".rs")))))
      (find-files "src/bin"))))
 
-(define *manifest* #false)
 (define* (load-manifest . rest)
   "Parse Cargo.toml and save it in @code{*manifest*}."
   (set! *manifest* (open-manifest "Cargo.toml" "Cargo.json")))
@@ -593,6 +611,8 @@ CARGO_CFG_TARGET_ARCH."
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
+    (add-after 'unpack 'make-features-closure make-features-closure)
+    (add-after 'unpack 'choose-features choose-features)
     (add-after 'unpack 'read-dependency-environment-variables read-dependency-environment-variables)
     (add-after 'unpack 'set-platform-independent-manifest-variables
 	       set-platform-independent-manifest-variables)
