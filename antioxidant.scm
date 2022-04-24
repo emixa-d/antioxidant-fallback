@@ -499,12 +499,11 @@ default features implied by the \"default\" feature."
       (apply save-environment-variables link saved-settings arguments)))
   (format #t "Building with configuration options: ~a~%" *configuration*))
 
-(define* (compile-cargo #:key outputs
-			#:allow-other-keys #:rest arguments)
-  "Compile and install things described in Cargo.toml."
+(define* (build . arguments)
+  "Build the Rust crates (library) described in Cargo.toml."
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
-	 (extern-crates (manifest-all-dependencies *manifest*))
+	 (extern-crates (manifest-all-dependencies *manifest*)) ;; todo only ??? crates
 	 (crate-name (normalise-crate-name (package-name package)))
 	 (edition (package-edition package))
 	 (lib (manifest-lib *manifest*))
@@ -514,8 +513,7 @@ default features implied by the \"default\" feature."
 	 (lib-path (or (and=> lib target-path) "src/lib.rs"))
 	 ;; TODO: which one is it?  (For rust-derive-arbitrary,
 	 ;; it is proc_macro)
-	 (lib-procedural-macro? (and=> lib target-proc-macro))
-	 (link (package-links package))) ; optional
+	 (lib-procedural-macro? (and=> lib target-proc-macro)))
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (apply compile-rust-library lib-path
@@ -524,43 +522,59 @@ default features implied by the \"default\" feature."
 		      "so"
 		      "rlib")
 		  arguments)
-	   crate-name
+	   (normalise-crate-name (package-name package))
 	   ;; Version of the Rust language (cf. -std=c11)
 	   ;; -- required by rust-proc-macro2
-	   (list (string-append "--edition=" edition)
+	   (list (string-append "--edition=" (package-edition package))
 		 ;; Some build.rs put libraries in the current directory
 		 ;; (or, at least, in OUT_DIR or something like that).
 		 ;; TODO: can be done tidier.
 		 (string-append "-Lnative=" (getcwd)))
-	   ;; TODO: figure out how to override things
 	   #:crate-type (if lib-procedural-macro?
 			    "proc-macro"
 			    "rlib")
 	   #:extern-crates extern-crates
+	   ;; TODO: does the order matter?
+	   (append arguments (list #:configuration *configuration*)))))
+
+(define* (build-binaries #:key outputs #:allow-other-keys #:rest arguments)
+  "Compile the Rust binaries described in Cargo.toml"
+  (define package (manifest-package *manifest*))
+  (define files-visited '())
+  (define extern-crates (manifest-all-dependencies *manifest*)) ;; TODO: only ??? dependencies
+  (define (binary-location binary)
+    (string-append (or (assoc-ref outputs "bin")
+		       (assoc-ref outputs "out"))
+		   "/bin/" binary))
+  (define* (cb source binary edition)
+    (apply compile-rust-binary source
+	   (list (string-append "--edition=" edition)
+		 (string-append "-Lnative=" (getcwd)))
+	   ;; A program can use its own crate without declaring it.
+	   ;; At least, hexyl tries to do so.
+	   #:extern-crates (cons (normalise-crate-name (package-name package))
+				 extern-crates)
+	   ;; TODO: figure out how to override things
 	   (append
 	    arguments
-	    (list #:configuration *configuration*)))
-    ;; Compile binaries
-    (define (cb source binary)
-      (apply compile-rust-binary source
-	     (string-append (or (assoc-ref outputs "bin")
-				(assoc-ref outputs "out"))
-			    "/bin/"
-			    binary)
-	     (list (string-append "--edition=" edition)
-		   (string-append "-Lnative=" (getcwd)))
-	     ;; A program can use its own crate without declaring it.
-	     ;; At least, hexyl tries to do so.
-	     #:extern-crates (cons crate-name extern-crates)
-	     ;; TODO: figure out how to override things
-	     (append
-	      arguments
-	      (list #:configuration *configuration*))))
-    (for-each
+	    (list #:configuration *configuration*))))
+  ;; TODO: respect required-features.
+  (define (compile-bin-target target)
+    (define source (or (target-path target) "src/main.rs"))
+    (set! files-visited (cons source files-visited))
+    (cb source (or (target-name target) (package-name package))
+	(or (target-edition target) (package-edition package))))
+  (for-each compile-bin-target (manifest-bin *manifest*))
+  (when (package-autobins package)
+    (for-each ;; TODO: support [[bin]]
      (lambda (file)
-       (when (string-suffix? ".rs" file)
+       (when (and (string-suffix? ".rs" file)
+		  ;; Possibly the binary was already in [[bin]]
+		  ;; and hence is pointless to compile again.
+		  (not (member file files-visited)))
 	 (cb file (string-drop-right (basename file)
-				     (string-length ".rs")))))
+				     (string-length ".rs"))
+	     (package-edition package))))
      (find-files "src/bin"))))
 
 (define* (load-manifest . rest)
@@ -619,6 +633,7 @@ CARGO_CFG_TARGET_ARCH."
     (add-after 'unpack 'set-platform-dependent-variables set-platform-dependent-variables)
     (add-after 'unpack 'load-manifest load-manifest)
     (replace 'configure configure)
-    (replace 'build compile-cargo)
+    (replace 'build build)
+    (add-after 'build 'build-binaries build-binaries)
     (delete 'check) ; TODO
     (delete 'install))) ; TODO?
