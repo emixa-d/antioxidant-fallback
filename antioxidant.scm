@@ -183,6 +183,8 @@ with open(there, \"w\") as out_file:
 ;; (package-specific) phases, until the 'make-feature-closure'
 ;; (TODO build.rs) phase.
 (define *features* '())
+(define *configuration* '()) ;; set by 'configure'
+(define *extra-arguments* '()) ; likewise (TODO doc)
 
 ;; Initialised by the 'load-manifest' phase.
 (define *manifest* #false)
@@ -403,22 +405,104 @@ default features implied by the \"default\" feature."
       (lambda (o) (write saved-settings o))
       #:encoding "UTF-8")))
 
-(define* (compile-cargo #:key name outputs
-			target build
-			(optimisation-level 0)
-			(cargo-env-variables '())
+(define* (configure #:key target build optimisation-level #:allow-other-keys #:rest arguments)
+  (define saved-settings '())
+  (define extra-configuration '()) ; --cfg options, computed by build.rs
+  (define c-libraries '()) ; TODO: unused?
+  (define (handle-line line)
+    (when (string-prefix? "cargo:" line)
+      (let* ((rest (string-drop line (string-length "cargo:")))
+	     (=-index (string-index rest #\=)))
+	(if =-index
+	    (let ((this (substring rest 0 =-index))
+		  (that (substring rest (+ 1 =-index))))
+	      (set! saved-settings (cons (list this that) saved-settings)))
+	    (begin
+	      (pk 'l rest)
+	      (error "cargo: line doesn't look right, = missing?")))))
+    (cond ((string-prefix? "cargo:rustc-cfg=" line)
+	   (format #t "Building with --cfg ~a~%" line) ;; todo invalid
+	   (set! extra-configuration
+		 (cons (string-drop line (string-length "cargo:rustc-cfg="))
+		       extra-configuration)))
+	  ((string-prefix? "cargo:rustc-link-lib=" line)
+	   (let ((c-library (string-drop line (string-length "cargo:rustc-link-lib="))))
+	     (format #t "Building with C library ~a~%" c-library)
+	     (set! c-libraries (cons c-library c-libraries))))
+	  ((string-prefix? "cargo:rustc-link-search=" line)
+	   (set! *extra-arguments*
+		 `("-L" ,(string-drop line (string-length "cargo:rustc-link-search="))
+		   ,@*extra-arguments*)))
+	  ((string-prefix? "cargo:rustc-env=" line)
+	   (putenv (string-drop line (string-length "cargo:rustc-env="))))
+	  ((string-prefix? "cargo:warning=" line)
+	   (format (current-error-port)
+		   "configuration script: warning: ~a~%"
+		   (string-drop line (string-length "cargo:warning="))))
+	  ((string-prefix? "cargo:" line)
+	   (pk 'l line)
+	   (format #t "warning: ~a: unrecognised build.rs instruction~%" line)
+	   (format #t "hint: maybe the crate is just saving an environment variable for dependencies, maybe nothing needs to be changed.\n"))
+	  ;; Some build.rs (e.g. the one of rust-pico-sys)
+	  ;; print strings like "TARGET = Some(\"TARGET\")". Maybe
+	  ;; they are just debugging information that can be ignored
+	  ;; by cargo -- err, antioxidant.
+	  (#true
+	   (format #t "info from build.rs: ~a~%" line))))
+
+  (setenv "CARGO_MANIFEST_DIR" (getcwd)) ; directory containing the Cargo.toml
+  (define package (manifest-package *manifest*))
+  (define build.rs
+    (or (package-build package)
+	;; E.g, rust-proc-macros2 doesn't set 'build'
+	;; even though it has a configure script.
+	(and (file-exists? "build.rs") "build.rs")))
+  (when build.rs
+    (format #t "building configuration script~%")
+    (apply
+     compile-rust-binary build.rs "configuration-script"
+     (list (string-append "--edition=" (package-edition package)))
+     (append arguments
+	     (list #:extern-crates (manifest-all-dependencies *manifest*) ;; TODO: only build dependencies?
+		   #:configuration (map feature->config *features*))))
+    ;; Expected by rust-const-fn's build.rs
+    (setenv "OUT_DIR" (getcwd))
+    ;; Expected by rust-libm's build.rs
+    (setenv "OPT_LEVEL" (if (number? optimisation-level)
+			    (number->string optimisation-level)
+			    optimisation-level))
+    ;; Expected by some configuration scripts, e.g. rust-libc
+    (setenv "RUSTC" (which "rustc"))
+    ;; This improves error messages
+    (setenv "RUST_BACKTRACE" "full")
+    ;; rust-indexmap expectes this to be set (TODO: this is rather ad-hoc)
+    (setenv "CARGO_FEATURE_STD" "")
+    (setenv "TARGET" target) ; used by rust-proc-macro2's build.rs
+    (setenv "HOST" build) ; used by rust-pico-sys
+    ;; TODO: use pipes
+    (format #t "running configuration script~%")
+    (unless (= 0 (system "./configuration-script > .guix-config"))
+      (error "configuration script failed"))
+    (call-with-input-file ".guix-config"
+      (lambda (port)
+	(let loop ((r (get-line port)))
+	  (match r
+	    ((? string? line) (handle-line line) (loop (get-line port)))
+	    ((? eof-object? line) (values)))))))
+  (set! *configuration* (append extra-configuration (map feature->config *features*)))
+  (let ((link (package-links package)))
+    (when link
+      (apply save-environment-variables link saved-settings arguments)))
+  (format #t "Building with configuration options: ~a~%" *configuration*))
+
+(define* (compile-cargo #:key outputs
 			#:allow-other-keys #:rest arguments)
   "Compile and install things described in Cargo.toml."
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
 	 (extern-crates (manifest-all-dependencies *manifest*))
-	 (extra-configuration '()) ; --cfg options, computed by build.rs
 	 (crate-name (normalise-crate-name (package-name package)))
 	 (edition (package-edition package))
-	 (build.rs (or (package-build package)
-		       ;; E.g, rust-proc-macros2 doesn't set 'build'
-		       ;; even though it has a configure script.
-		       (and (file-exists? "build.rs") "build.rs")))
 	 (lib (manifest-lib *manifest*))
 	 ;; Location of the crate source code to compile.
 	 ;; The default location is src/lib.rs, some packages put
@@ -427,89 +511,7 @@ default features implied by the \"default\" feature."
 	 ;; TODO: which one is it?  (For rust-derive-arbitrary,
 	 ;; it is proc_macro)
 	 (lib-procedural-macro? (and=> lib target-proc-macro))
-	 (c-libraries '())
-	 (saved-settings '())
-	 (link (package-links package)) ; optional
-	 (extra-arguments '())) ; TODO: ad-hoc
-    (define (handle-line line)
-      (when (string-prefix? "cargo:" line)
-	(let* ((rest (string-drop line (string-length "cargo:")))
-	       (=-index (string-index rest #\=)))
-	  (if =-index
-	      (let ((this (substring rest 0 =-index))
-		    (that (substring rest (+ 1 =-index))))
-		(set! saved-settings (cons (list this that) saved-settings)))
-	      (begin
-		(pk 'l rest)
-		(error "cargo: line doesn't look right, = missing?")))))
-      (cond ((string-prefix? "cargo:rustc-cfg=" line)
-	     (format #t "Building with --cfg ~a~%" line) ;; todo invalid
-	     (set! extra-configuration
-		   (cons (string-drop line (string-length "cargo:rustc-cfg="))
-			 extra-configuration)))
-	    ((string-prefix? "cargo:rustc-link-lib=" line)
-	     (let ((c-library (string-drop line (string-length "cargo:rustc-link-lib="))))
-	       (format #t "Building with C library ~a~%" c-library)
-	       (set! c-libraries (cons c-library c-libraries))))
-	    ((string-prefix? "cargo:rustc-link-search=" line)
-	     (set! extra-arguments
-		   `("-L" ,(string-drop line (string-length "cargo:rustc-link-search="))
-		     ,@extra-arguments)))
-	    ((string-prefix? "cargo:rustc-env=" line)
-	     (putenv (string-drop line (string-length "cargo:rustc-env="))))
-	    ((string-prefix? "cargo:warning=" line)
-	     (format (current-error-port)
-		     "configuration script: warning: ~a~%"
-		     (string-drop line (string-length "cargo:warning="))))
-	    ((string-prefix? "cargo:" line)
-	     (pk 'l line)
-	     (format #t "warning: ~a: unrecognised build.rs instruction~%" line)
-	     (format #t "hint: maybe the crate is just saving an environment variable for dependencies, maybe nothing needs to be changed.\n"))
-	    ;; Some build.rs (e.g. the one of rust-pico-sys)
-	    ;; print strings like "TARGET = Some(\"TARGET\")". Maybe
-	    ;; they are just debugging information that can be ignored
-	    ;; by cargo -- err, antioxidant.
-	    (#true
-	     (format #t "info from build.rs: ~a~%" line))))
-
-    (setenv "CARGO_MANIFEST_DIR" (getcwd)) ; directory containing the Cargo.toml
-    (define configuration (append extra-configuration (map feature->config *features*)))
-    (when build.rs
-      (format #t "building configuration script~%")
-      (apply
-       compile-rust-binary build.rs "configuration-script"
-       (list (string-append "--edition=" edition))
-       (append arguments
-	       (list #:extern-crates extern-crates
-		     #:configuration configuration))) ; TODO: do something less impure
-      ;; Expected by rust-const-fn's build.rs
-      (setenv "OUT_DIR" (getcwd))
-      ;; Expected by rust-libm's build.rs
-      (setenv "OPT_LEVEL" (if (number? optimisation-level)
-			      (number->string optimisation-level)
-			      optimisation-level))
-      ;; Expected by some configuration scripts, e.g. rust-libc
-      (setenv "RUSTC" (which "rustc"))
-      ;; This improves error messages
-      (setenv "RUST_BACKTRACE" "full")
-      ;; rust-indexmap expectes this to be set (TODO: this is rather ad-hoc)
-      (setenv "CARGO_FEATURE_STD" "")
-      (setenv "TARGET" target) ; used by rust-proc-macro2's build.rs
-      (setenv "HOST" build) ; used by rust-pico-sys
-      ;; TODO: use pipes
-      (format #t "running configuration script~%")
-      (unless (= 0 (system "./configuration-script > .guix-config"))
-	(error "configuration script failed"))
-      (call-with-input-file ".guix-config"
-	(lambda (port)
-	  (let loop ((r (get-line port)))
-	    (match r
-	      ((? string? line) (handle-line line) (loop (get-line port)))
-	      ((? eof-object? line) (values)))))))
-    (set! configuration (append extra-configuration (map feature->config *features*)))
-    (when link
-      (apply save-environment-variables link saved-settings arguments))
-    (format #t "Building with configuration options: ~a~%" configuration)
+	 (link (package-links package))) ; optional
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (apply compile-rust-library lib-path
@@ -533,7 +535,7 @@ default features implied by the \"default\" feature."
 	   #:extern-crates extern-crates
 	   (append
 	    arguments
-	    (list #:configuration configuration)))
+	    (list #:configuration *configuration*)))
     ;; Compile binaries
     (define (cb source binary)
       (apply compile-rust-binary source
@@ -549,7 +551,7 @@ default features implied by the \"default\" feature."
 	     ;; TODO: figure out how to override things
 	     (append
 	      arguments
-	      (list #:configuration configuration))))
+	      (list #:configuration *configuration*))))
     (for-each
      (lambda (file)
        (when (string-suffix? ".rs" file)
@@ -612,7 +614,7 @@ CARGO_CFG_TARGET_ARCH."
 	       set-platform-independent-manifest-variables)
     (add-after 'unpack 'set-platform-dependent-variables set-platform-dependent-variables)
     (add-after 'unpack 'load-manifest load-manifest)
-    (replace 'configure (lambda _ (pk 'todo)))
+    (replace 'configure configure)
     (replace 'build compile-cargo)
     (delete 'check) ; TODO
     (delete 'install))) ; TODO?
