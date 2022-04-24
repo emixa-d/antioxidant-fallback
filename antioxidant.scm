@@ -583,8 +583,15 @@ default features implied by the \"default\" feature."
   (define (compile-bin-target target)
     (define source (or (target-path target) "src/main.rs"))
     (set! files-visited (cons source files-visited))
-    (cb source (or (target-name target) (package-name package))
-	(or (target-edition target) (package-edition package))))
+    (if (lset<= string=? (target-required-features target) *features*)
+	(begin
+	  (format #t "Compiling ~a~%" source)
+	  (cb source (or (target-name target) (package-name package))
+	      (or (target-edition target) (package-edition package))))
+	(format #t "not compiling ~a, because the following features are missing: ~a~%"
+		source (lset-difference string=?
+					(target-required-features target)
+					*features*))))
   (for-each compile-bin-target (manifest-bin *manifest*))
   (when (package-autobins package)
     (for-each ;; TODO: support [[bin]]
