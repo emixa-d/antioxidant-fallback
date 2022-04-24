@@ -45,13 +45,11 @@
      ,(cond ((target-64bit? target) "64")
 	    (#true "32")))))
 
-;; features = default: Use whatever Cargo.toml lists as defaults (or nothing if nothing
-;; is listed).
 (define* (antioxidant-build name inputs #:key system target source search-paths outputs
 			    ;; TODO: consider optimisations (what does cargo-build-system
 			    ;; do?)
 			    (optimisation-level 0)
-			    (features #~'default)
+			    (features #~'("default"))
 			    (cargo-env-variables
 			     #~'#$(target-environment-variables
 				   (or target
@@ -136,7 +134,7 @@
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
 
 (define* (lower name #:key system source inputs native-inputs outputs target
-		(features #~'default)
+		(features #~'("default"))
 		#:rest arguments)
   (define private-keywords
     '(#:inputs #:native-inputs #:outputs))
@@ -166,7 +164,7 @@
 ;; Convert from cargo-build-system to antioxidant-build-system,
 ;; for now leaving inputs intact.
 (define* (vitaminate-library/no-inputs crate-package
-				       #:key (features #~'default))
+				       #:key (features #~'("default")))
   (package
     (inherit crate-package)
     (build-system antioxidant-build-system)
@@ -459,7 +457,7 @@
 		 (phases '%standard-phases)
 		 ;; TODO: cargo test flags
 		 skip-build? cargo-test-flags tests?
-		 (features #~'default))
+		 (features #~'("default")))
 	 (unless (or (eq? phases '%standard-phases)
 		     (not (is-cargo-toml-phases? phases)))
 	   (error "phases?"))
