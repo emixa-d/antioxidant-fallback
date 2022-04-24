@@ -110,7 +110,7 @@
   (proc-macro %target-proc-macro)
   (proc_macro %target-proc_macro)
   (harness %target-harness)
-  (edition target-edition or-false*)
+  (edition target-edition "edition" or-false*)
   (crate-type %target-crate-type)
   ;; NA for [lib]
   (required-features %target-required-features))
