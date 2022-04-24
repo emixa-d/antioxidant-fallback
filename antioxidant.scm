@@ -596,7 +596,9 @@ default features implied by the \"default\" feature."
 	 (cb file (string-drop-right (basename file)
 				     (string-length ".rs"))
 	     (package-edition package))))
-     (find-files "src/bin"))))
+     (append
+      (if (file-exists? "src/main.rs") '("src/main.rs") '())
+      (find-files "src/bin")))))
 
 (define* (load-manifest . rest)
   "Parse Cargo.toml and save it in @code{*manifest*}."
