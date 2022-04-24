@@ -24,6 +24,7 @@
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
   #:use-module (ice-9 string-fun)
   #:use-module (ice-9 textual-ports)
@@ -189,7 +190,10 @@ with open(there, \"w\") as out_file:
 (define *features* '())
 (define *configuration* '()) ;; set by 'configure'
 (define *extra-arguments* '()) ; likewise (TODO doc)
-(define *c-libraries* '()) ; likewise
+
+;; TODO: inputs/native-inputs distinction
+(define *c-libraries* '())
+(define *c-library-directories* '())
 
 ;; Initialised by the 'load-manifest' phase.
 (define *manifest* #false)
@@ -258,7 +262,10 @@ with open(there, \"w\") as out_file:
 		       #:key inputs native-inputs outputs
 		       (configuration '())
 		       (self-crates? #false)
-		       (c-libraries '()) (extern-crates '())
+		       (c-libraries *c-libraries*)
+		       ;; TODO: don't use 'extra-arguments' for this
+		       (c-library-directories *c-library-directories*)
+		       (extern-crates '())
 		       #:allow-other-keys)
   (define crates (find-crates (append (if self-crates?
 					  outputs
@@ -274,7 +281,9 @@ with open(there, \"w\") as out_file:
 	 "--cap-lints" "warn" ;; ignore #[deny(warnings)], it's too noisy
 	 source "-o" destination
 	 (append (extern-arguments crates extern-crates)
-		 (L-arguments crates)
+		 (L-arguments (append crates
+				      (map (cut string-append <> "/remove-me")
+					   c-library-directories)))
 		 (configuration-arguments configuration)
 		 (l-arguments c-libraries)
 		 extra-arguments)))
@@ -369,7 +378,7 @@ default features implied by the \"default\" feature."
   (define (setenv* x y)
     (format #t "setting ~a to ~a~%" x y)
     (setenv x y))
-  (define (do* stuff)
+  (define (do* stuff c-libraries?)
     (format #t "reading extra environment variables from ~a~%" stuff)
     (for-each
      (match-lambda
@@ -385,16 +394,27 @@ default features implied by the \"default\" feature."
 		  x))
 		"-"
 		"_")
-	       y)))
+	       y)
+	;; Currently, shared libraries are not supported, and static libraries
+	;; do not appear to have an equivalent to ELF's NEEDED, so we have to
+	;; mannually ‘propagate’ the -l and -L flags.
+	(match x
+	  ("rustc-link-lib"
+	   (set! *c-libraries* (cons y *c-libraries*)))
+	  ("rustc-link-search"
+	   (set! *c-library-directories* (cons y *c-library-directories*)))
+	  (_ #false))))
      (call-with-input-file stuff read #:encoding "UTF-8")))
-  (define do
-    (match-lambda
+  (define* (do stuff #:optional (c-libraries? #false))
+    (match stuff
       ((_ . input)
        (define where (string-append input "/lib/guixlinks"))
        (when (file-exists? where)
-	 (for-each do* (find-files where "\\.propagated-environment$"))))))
-  (for-each do native-inputs)
-  (for-each do inputs))
+	 (for-each (cut do* <> c-libraries?)
+		   (find-files where "\\.propagated-environment$"))))))
+  (define (do/with-libraries input) (do input #true))
+  (for-each do native-inputs) ;; TODO: make propagated c libraries available to build.rs, _if_ they are native-inputs
+  (for-each do/with-libraries inputs))
 
 (define* (save-environment-variables link-name saved-settings
 				     #:key outputs #:allow-other-keys)
@@ -547,14 +567,14 @@ default features implied by the \"default\" feature."
 		       (assoc-ref outputs "out"))
 		   "/bin/" binary))
   (define* (cb source binary edition)
-    (apply compile-rust-binary source binary
+    (apply compile-rust-binary source
+	   (binary-location binary)
 	   (list (string-append "--edition=" edition)
 		 (string-append "-Lnative=" (getcwd)))
 	   ;; A program can use its own crate without declaring it.
 	   ;; At least, hexyl tries to do so.
 	   #:extern-crates (cons (normalise-crate-name (package-name package))
 				 extern-crates)
-	   #:c-libraries *c-libraries*
 	   ;; TODO: figure out how to override things
 	   (append
 	    arguments
