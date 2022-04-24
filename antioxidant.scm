@@ -114,7 +114,8 @@
   (edition target-edition "edition" or-false*)
   (crate-type %target-crate-type)
   ;; NA for [lib]
-  (required-features %target-required-features))
+  (required-features target-required-features "required-features"
+		     (or-empty vector->list)))
 
 (define (target-proc-macro target)
   ;; TODO: which one is it?  (For rust-derive-arbitrary,

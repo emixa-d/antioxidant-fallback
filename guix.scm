@@ -559,6 +559,13 @@
 				(list "rust-tokio-io" "rust-tokio-current-thread")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-core" "rust-flate2")))
+		   ;; Remove unused dependencies
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-flate2" "rust-cloudflare-zlib-sys")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-flate2" "rust-miniz-sys")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-flate2" "rust-miniz-oxide")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-core" "rust-httparse")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
@@ -772,6 +779,9 @@
 	 ;; Detect cycles early by unthunking
 	 (define i
  	   (append (match (package-name pack)
+		     ;; No need to avoid Rust dependencies.
+		     ("rust-flate2"
+		      (list (list "zlib" (@ (gnu packages compression) zlib))))
 		     ("rust-clang-sys"
 		      ;; TODO needs more work for
 		      (list (list "clang" (@ (gnu packages llvm) clang-13))))
@@ -813,6 +823,9 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; Avoid extra dependencies by using the C library that
+			     ;; is used elsewhere anyway.
+			     ("rust-flate2" #~'("zlib"))
 			     ;; Don't just support libclang 3.5, also include
 			     ;; bindings for later versions which rust-bindgen might
 			     ;; need.
