@@ -482,6 +482,8 @@
 	      ;; Some of these are only used for tests, cause cycles, ???
 	      (and (not (member (package-name dependency)
 				'("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
+				  "rust-skeptic" ; @0.13.4doesn't build
+				  "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
 				  "rust-macrotest"
 				  "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
 				  "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
@@ -500,6 +502,8 @@
 				  "rust-compiletest-rs" ;; TODO: rustc-dev?
 				  "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
 				  "rust-nodrop-union" ; required unstable, and deprecated
+				  "rust-sleef-sys" ; requires unstable
+				  "rust-packed-simd" ; requires unstable (TODO: rust-packed-simd-2?)
 				  "rust-security-framework" "rust-cocoa" "rust-cocoa-foundation" "rust-core-foundation" "rust-core-foundation-sys" "rust-core-text" "rust-fsevent" "rust-fsevent-sys" "rust-objc-foundation" ; non-Linux, non-Hurd things
 				  "rust-ws2-32-sys"
 				  "rust-winapi-util" "rust-winapi-build"
