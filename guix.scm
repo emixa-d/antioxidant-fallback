@@ -635,6 +635,100 @@
         (sha256
           (base32 "1s1wpm88qlrp079mzh3dlxm9vbqs4ch016yp9pzhcdjygfi2r5ap"))))))
 
+(define-public rust-sha3
+  (package
+    (inherit (@ (gnu packages crates-io) rust-sha3-0.9))
+    (name "rust-sha3")
+    (version "0.10.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "sha3" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "11hclx8ijnlx82dyd0bh9hi629zb3vqjfsyaqlgk1dl7dhazh6w8"))))))
+
+;; Old things don't build?
+(define-public rust-scrypt
+  (package
+    (inherit (@ (gnu packages crates-io) rust-scrypt-0.8))
+    (name "rust-scrypt")
+    (version "0.10.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "scrypt" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "0pglmppcl8mdzfxdv2x9dsjrwxhc1bm9zvxjibnlv59jnv9297lz"))))))
+(define-public rust-salsa20
+  (package
+    (inherit (@ (gnu packages crates-io) rust-salsa20-0.9))
+    (name "rust-salsa20")
+    (version "0.10.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "salsa20" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "04w211x17xzny53f83p8f7cj7k2hi8zck282q5aajwqzydd2z8lp"))))))
+(define-public rust-cipher;; TODO WIP
+  (package
+    (inherit (@ (gnu packages crates-io) rust-cipher-0.3))
+    (name "rust-cipher")
+    (version "0.4.3")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (crate-uri "cipher" version))
+      (file-name (string-append name "-" version ".tar.gz"))
+      (sha256
+       (base32 "17mmmqaalirdx7bpdhrgzp1sd392zm08mjrr24cjr57pz1q351yi"))))
+    (inputs
+     (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-cipher-0.3))
+		    (append rust-crypto-common rust-inout)))))
+(define-public rust-block-padding ; 0.3.2 required by rust-cipher
+  (package
+    (inherit (@ (gnu packages crates-io) rust-block-padding-0.2))
+    (name "rust-block-padding")
+    (version "0.3.2")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (crate-uri "block-padding" version))
+      (file-name (string-append name "-" version ".tar.gz"))
+      (sha256
+       (base32 "0y5v92alqzn9ikmyqfl3a4j6va87j967ii2n3jh2h330z4nyr40a"))))
+    (inputs
+     (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-block-padding-0.2))
+		    (append (@ (gnu packages crates-io) rust-generic-array-0.14))))))
+
+;;Not yet inGuix,requiredby rust-cipher
+(define-public rust-inout
+  (package
+   (name "rust-inout")
+   (version "0.1.3")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "inout" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1xf9gf09nc7y1a261xlfqsf66yn6mb81ahlzzyyd1934sr9hbhd0"))))
+   (build-system (@ (guix build-system cargo) cargo-build-system))
+   (arguments
+    `(#:cargo-inputs
+      (("rust-block-padding" ,(@ (gnu packages crates-io) rust-block-padding-0.2)) ;; XXX 0.3
+       ("rust-generic-array" ,(@ (gnu packages crates-io) rust-generic-array-0.14)))))
+   (home-page "https://github.com/RustCrypto/utils")
+   (synopsis
+    "Custom reference types for code generic over in-place and buffer-to-buffer modes of operation.")
+   (description
+    "Custom reference types for code generic over in-place and buffer-to-buffer modes
+of operation.")
+   (license '(list license:expat license:asl2.0))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -848,6 +942,14 @@
 				    (@ (gnu packages crates-io) rust-sha-1-0.10))
 				   (("rust-sha2" _) 
 				    (@ (gnu packages crates-io) rust-sha2-0.10))
+				   (("rust-sha3" _) rust-sha3)
+				   (("rust-scrypt" _) rust-scrypt)
+				   (("rust-salsa20" _) rust-salsa20)
+				   (("rust-cipher" _) rust-cipher)
+				   (("rust-block-padding" _) rust-block-padding)
+				   (("rust-streebog" _) (@ (gnu packages crates-io) rust-streebog-0.10))
+				   (("rust-pbkdf2" _) (@ (gnu packages crates-io) rust-pbkdf2-0.10))
+				   (("rust-hmac" _) (@ (gnu packages crates-io) rust-hmac-0.12))
 				   (("rust-boxxy" _) rust-boxxy)
 				   (("rust-block-buffer" _) rust-block-buffer)
 				   (("rust-md-5" _) rust-md-5)
@@ -910,6 +1012,8 @@
 				    (@ (gnu packages crates-io) rust-webpki-roots-0.22))
 				   (("rust-nix" _)
 				    (@ (gnu packages crates-io) rust-nix-0.23))
+				   (("rust-autocfg" _)
+				    (@ (gnu packages crates-io) rust-autocfg-1))
 				   (("rust-bytes" _)
 				    (@ (gnu packages crates-io) rust-bytes-1))
 				   (("rust-tokio-io" _)
@@ -1035,6 +1139,7 @@
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ("rust-der" #~'("std" "alloc" "oid"))
 			     ;; Required by hmac.
 			     ("rust-digest" #~'("default" "std" "mac"))
 			     ;; Required by 'sniffglue'
