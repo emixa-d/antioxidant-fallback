@@ -342,8 +342,24 @@ with open(there, \"w\") as out_file:
   "Initialise *features* according to #:features.  By default, this enables
 the \"default\" feature, and the later 'make-feature-closure' will enable all
 default features implied by the \"default\" feature."
-  (format #t "Using the features ~a and their implied features.~%" features)
-  (set! *features* (append features *features*)))
+  (match (list (->bool (member "default" features))
+	       (->bool (assoc "default" (manifest-features *manifest*))))
+    ((#t #f)
+     ;; See: https://doc.rust-lang.org/cargo/reference/features.html,
+     ;; ‘the default feature’.
+     (format #t "The default features are requested but the defaults are not
+chosen, enabling all features like Cargo does.~%")
+     (set! *features* (append (map car (manifest-features *manifest*))
+			      features
+			      *features*)))
+    ((#f _)
+     (format #t "warning: not enabling the default features!~%")
+     (format #t "Using the features ~a and their implied features.~%" features)
+     (set! *features* (append features *features*)))
+    (_
+     (format #t "Using the features ~a and their implied features.~%" features)
+     (set! *features* (append features *features*))))
+  (set! *features* (delete-duplicates *features*)))
 
 (define (make-features-closure . _)
   (set! *features* (features-closure *features* (manifest-features *manifest*)))
