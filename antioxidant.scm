@@ -243,10 +243,10 @@ with open(there, \"w\") as out_file:
 				    "=" crate)))
 	      crates))
 
-(define (L-arguments crates)
+(define* (L-arguments crates #:optional (kind "all"))
   (delete-duplicates
    (map (lambda (crate)
-	  (string-append "-L" (dirname crate)))
+	  (string-append "-L" kind "=" (dirname crate)))
 	crates)
    string=?))
 
@@ -283,9 +283,13 @@ with open(there, \"w\") as out_file:
 	 "-C" "prefer-dynamic" ;; for C dependencies & grafting and such?
 	 source "-o" destination
 	 (append (extern-arguments crates extern-crates)
-		 (L-arguments (append crates
-				      (map (cut string-append <> "/remove-me")
-					   c-library-directories)))
+		 (L-arguments crates)
+		 (L-arguments (map (cut string-append <> "/remove-me")
+				   c-library-directories)
+			      ;; This does not mean the same in Rust as in
+			      ;; Guix -- here it means ‘regular libraries’,
+			      ;; not libraries for the current architecture.
+			      "native")
 		 (configuration-arguments configuration)
 		 (l-arguments c-libraries)
 		 extra-arguments)))
@@ -374,19 +378,30 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 ;; If too many crates are included in --extern, errors like
 ;; error[E0659]: `time` is ambiguous (name vs any other name during import resolution)
 ;; are possible.  Avoid them!
-(define (manifest-all-dependencies manifest)
+(define* (manifest-all-dependencies manifest #:optional (kinds '(dependency dev build)))
   "Return a list of Crate names that are dependencies"
-  ;; TODO: split dev, build & dependencies
   ;; For now ignore which target a dependency is for.
-  (define (all-target-specific-dependencies target-specific)
-    (append (target-specific-dependencies target-specific)
-	    (target-specific-dev-dependencies target-specific)
-	    (target-specific-build-dependencies target-specific)))
+  (define (the-target-specific-dependencies target-specific)
+    (append (if (memq 'dependency kinds)
+		(target-specific-dependencies target-specific)
+		'())
+	    (if (memq 'dev kinds)
+		(target-specific-dev-dependencies target-specific)
+		'())
+	    (if (memq 'build kinds)
+		(target-specific-build-dependencies target-specific)
+		'())))
   (define dependencies
-    (append (manifest-dependencies manifest)
-	    (manifest-dev-dependencies manifest)
-	    (manifest-build-dependencies manifest)
-	    (append-map all-target-specific-dependencies
+    (append (if (memq 'dependency kinds)
+		(manifest-dependencies manifest)
+		'())
+	    (if (memq 'dev kinds)
+		(manifest-dev-dependencies manifest)
+		'())
+	    (if (memq 'build kinds)
+		(manifest-build-dependencies manifest)
+		'())
+	    (append-map the-target-specific-dependencies
 			(manifest-target-specific manifest))))
   (map (compose normalise-crate-name dependency-name) dependencies))
 
@@ -492,7 +507,8 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	     (set! *c-libraries* (cons c-library *c-libraries*))))
 	  ((string-prefix? "cargo:rustc-link-search=" line)
 	   (set! *extra-arguments*
-		 `("-L" ,(string-drop line (string-length "cargo:rustc-link-search="))
+		 ;; native == non-crate libraries, in Cargo terminology
+		 `("-Lnative" ,(string-drop line (string-length "cargo:rustc-link-search="))
 		   ,@*extra-arguments*)))
 	  ((string-prefix? "cargo:rustc-env=" line)
 	   (putenv (string-drop line (string-length "cargo:rustc-env="))))
@@ -524,7 +540,11 @@ chosen, enabling all features like Cargo does (except nightly).~%")
      compile-rust-binary build.rs "configuration-script"
      (list (string-append "--edition=" (package-edition package)))
      (append arguments
-	     (list #:extern-crates (manifest-all-dependencies *manifest*) ;; TODO: only build dependencies?
+	     ;; In Cargo, the build script _does not_ have access to dependencies
+	     ;; in 'dependencies' or 'dev-dependencies', only 'build-dependencies',
+	     ;; see
+	     ;; <https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html>.
+	     (list #:extern-crates (manifest-all-dependencies *manifest* '(build))
 		   #:configuration (map feature->config *features*))))
     ;; Expected by rust-const-fn's build.rs
     (setenv "OUT_DIR" (getcwd))
@@ -560,7 +580,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
   "Build the Rust crates (library) described in Cargo.toml."
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
-	 (extern-crates (manifest-all-dependencies *manifest*)) ;; todo only ??? crates
+	 (extern-crates (manifest-all-dependencies *manifest* '(dependency)))
 	 (crate-name (normalise-crate-name (package-name package)))
 	 (edition (package-edition package))
 	 (lib (manifest-lib *manifest*))
@@ -600,7 +620,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
   "Compile the Rust binaries described in Cargo.toml"
   (define package (manifest-package *manifest*))
   (define files-visited '())
-  (define extern-crates (manifest-all-dependencies *manifest*)) ;; TODO: only ??? dependencies
+  (define extern-crates (manifest-all-dependencies *manifest* '(dependency)))
   (define (binary-location binary)
     (string-append (or (assoc-ref outputs "bin")
 		       (assoc-ref outputs "out"))
