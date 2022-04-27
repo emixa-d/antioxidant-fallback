@@ -1139,6 +1139,11 @@ of operation.")
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ("rust-smallvec" #~'()) ; default features require non-stable
+			     ;; Default serde1_lib requires unpackaged rust-serde1-lib
+			     ("rust-sval" #~'("alloc" "arbitrary-depth" "derive" "fmt" "std"))
+			     ;; Likewise.
+			     ("rust-value-bag" #~'("std"))
 			     ("rust-der" #~'("std" "alloc" "oid"))
 			     ;; Required by hmac.
 			     ("rust-digest" #~'("default" "std" "mac"))
