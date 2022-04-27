@@ -357,7 +357,7 @@ default features implied by the \"default\" feature."
      ;; ‘the default feature’.
      (format #t "The default features are requested but the defaults are not
 chosen, enabling all features like Cargo does (except nightly).~%")
-     (set! *features* (append (map maybe-car (manifest-features *manifest*))
+     (set! *features* (append (filter-map maybe-car (manifest-features *manifest*))
 			      features
 			      *features*)))
     ((#f _)
