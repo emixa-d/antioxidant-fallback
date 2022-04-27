@@ -342,14 +342,18 @@ with open(there, \"w\") as out_file:
   "Initialise *features* according to #:features.  By default, this enables
 the \"default\" feature, and the later 'make-feature-closure' will enable all
 default features implied by the \"default\" feature."
+  (define maybe-car
+    (match-lambda
+      (("nightly" . _) #false) ; unlikely to work in Guix, e.g. rust-lock-api@0.4
+      ((x . y) x)))
   (match (list (->bool (member "default" features))
 	       (->bool (assoc "default" (manifest-features *manifest*))))
     ((#t #f)
      ;; See: https://doc.rust-lang.org/cargo/reference/features.html,
      ;; ‘the default feature’.
      (format #t "The default features are requested but the defaults are not
-chosen, enabling all features like Cargo does.~%")
-     (set! *features* (append (map car (manifest-features *manifest*))
+chosen, enabling all features like Cargo does (except nightly).~%")
+     (set! *features* (append (map maybe-car (manifest-features *manifest*))
 			      features
 			      *features*)))
     ((#f _)
