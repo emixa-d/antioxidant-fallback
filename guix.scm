@@ -702,7 +702,7 @@
       (file-name (string-append name "-" version ".tar.gz"))
       (sha256
        (base32 "17mmmqaalirdx7bpdhrgzp1sd392zm08mjrr24cjr57pz1q351yi"))))
-    (inputs
+    (propagated-inputs ;; TODO
      (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-cipher-0.3))
 		    (append rust-crypto-common rust-inout)))))
 (define-public rust-block-padding ; 0.3.2 required by rust-cipher
@@ -717,7 +717,7 @@
       (file-name (string-append name "-" version ".tar.gz"))
       (sha256
        (base32 "0y5v92alqzn9ikmyqfl3a4j6va87j967ii2n3jh2h330z4nyr40a"))))
-    (inputs
+    (propagated-inputs ;; TODO
      (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-block-padding-0.2))
 		    (append (@ (gnu packages crates-io) rust-generic-array-0.14))))))
 
@@ -1108,39 +1108,41 @@ of operation.")
 			  maybe-output)))))
 	 ;; Detect cycles early by unthunking
 	 (define i
- 	   (append (match (package-name pack)
-		     ;; No need to avoid Rust dependencies.
-		     ("rust-flate2"
-		      (list (list "zlib" (@ (gnu packages compression) zlib))))
-		     ("rust-cmake"
-		      (list (list "cmake" (@ (gnu packages cmake) cmake-minimal))))
-		     ("rust-clang-sys"
-		      ;; TODO needs more work for
-		      (list (list "clang" (@ (gnu packages llvm) clang-13))))
-		     (_ '()))
-		   (filter-map fix-input (package-inputs pack))))
-	 (define n-i (append (filter-map fix-input cargo-development-inputs)
-			     ;; TODO: move zlib of rust-libz-sys-1 from
-			     ;; native-inputs to inputs.
-			     (package-native-inputs pack)))
-	 (define p-i (append (filter-map fix-input
-					 (append cargo-inputs
-						 ;; Add missing dependencies (TODO upstream Guix)
-						 (match (package-name pack)
-						   ;; possibly only required by new version
-						   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
-						   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
-						   ("sniffglue" `(("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
-						   ;; TODO: is this sufficient?
-						   ("rust-futures-core-preview"
-						    `(("rust-futures-core" ,rust-futures-core-0.3)))
-						   ("rust-http-body" ; at least for 0.4
-						    `(("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
-						   ("rust-tokio-sync"
-						    `(("rust-futures-core" ,rust-futures-core-0.3)
-						      ("rust-futures-util" ,rust-futures-util-0.3)))
-						   (_ '()))))
-			     (package-propagated-inputs pack)))
+ 	   (filter-map fix-input
+		       (append (match (package-name pack)
+				 ;; No need to avoid Rust dependencies.
+				 ("rust-flate2"
+				  (list (list "zlib" (@ (gnu packages compression) zlib))))
+				 ("rust-cmake"
+				  (list (list "cmake" (@ (gnu packages cmake) cmake-minimal))))
+				 ("rust-clang-sys"
+				  ;; TODO needs more work for
+				  (list (list "clang" (@ (gnu packages llvm) clang-13))))
+				 (_ '()))
+			       (package-inputs pack))))
+	 (define n-i (filter-map fix-input
+				 (append cargo-development-inputs
+					 ;; TODO: move zlib of rust-libz-sys-1 from
+					 ;; native-inputs to inputs.
+					 (package-native-inputs pack))))
+	 (define p-i (filter-map fix-input
+				 (append cargo-inputs
+					 (package-propagated-inputs pack)
+					 ;; Add missing dependencies (TODO upstream Guix)
+					 (match (package-name pack)
+					   ;; possibly only required by new version
+					   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
+					   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
+					   ("sniffglue" `(("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
+					   ;; TODO: is this sufficient?
+					   ("rust-futures-core-preview"
+					    `(("rust-futures-core" ,rust-futures-core-0.3)))
+					   ("rust-http-body" ; at least for 0.4
+					    `(("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
+					   ("rust-tokio-sync"
+					    `(("rust-futures-core" ,rust-futures-core-0.3)
+					      ("rust-futures-util" ,rust-futures-util-0.3)))
+					   (_ '())))))
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (source
