@@ -1272,8 +1272,9 @@ of operation.")
 			     ("rust-rand"
 			      #~'("std" "std_rng" "getrandom"
 				  "alloc" "small_rng"))
-			     ;; Required by rust-rand when using the getrandom feature
-			     ("rust-rand-core" #~'("std" "getrandom"))
+			     ;; Some features required rust-rand when using the getrandom feature,
+			     ;; serde for rust-rand-isaac@0.3.0 ... (now building with all features)
+			     ;; ("rust-rand-core" #~'("std" "getrandom"))
 			     ;; Required by rust-rand-core.
 			     ("rust-getrandom" #~'("std"))
 			     ;; Required by rust-env-logger
