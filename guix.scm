@@ -1029,6 +1029,9 @@ of operation.")
 				    (@ (gnu packages crates-io) rust-sct-0.7))
 				   (("rust-quote" _)
 				    (@ (gnu packages crates-io) rust-quote-1))
+				   ;; 0.3.0 fails to build against new rust-serde
+				   (("rust-linked-hash-map" _)
+				    (@ (gnu packages crates-io) rust-linked-hash-map-0.5))
 				   (("rust-rustls-native-certs" _)
 				    ;; Old versio incompatible with new rustls
 				    (@ (gnu packages crates-io) rust-rustls-native-certs-0.6))
