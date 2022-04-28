@@ -704,7 +704,8 @@
        (base32 "17mmmqaalirdx7bpdhrgzp1sd392zm08mjrr24cjr57pz1q351yi"))))
     (propagated-inputs ;; TODO
      (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-cipher-0.3))
-		    (append rust-crypto-common rust-inout)))))
+		    (append rust-crypto-common rust-inout
+			    (@ (gnu packages crates-io) rust-zeroize-1))))))
 (define-public rust-block-padding ; 0.3.2 required by rust-cipher
   (package
     (inherit (@ (gnu packages crates-io) rust-block-padding-0.2))
@@ -733,6 +734,19 @@
       (file-name (string-append name "-" version ".tar.gz"))
       (sha256
        (base32 "07pjna64v0ng30j8ss9w7rv7k7l7gsii37yxm011a1kzh6q128ly"))))))
+
+(define-public rust-ctr ; 0.8.1 uses private ciphererrors:LoopError
+  (package
+    (inherit (@ (gnu packages crates-io) rust-ctr-0.8))
+    (name "rust-ctr")
+    (version "0.9.1")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (crate-uri "ctr" version))
+      (file-name (string-append name "-" version ".tar.gz"))
+      (sha256
+       (base32 "18222kdhghd2j5vc5lm7bqy6glk5wbvzz1sydghd1xdsrwlz650d"))))))
 
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
@@ -975,6 +989,7 @@ of operation.")
 				   (("rust-sha3" _) rust-sha3)
 				   (("rust-scrypt" _) rust-scrypt)
 				   (("rust-block-modes" _) rust-block-modes)
+				   (("rust-ctr" _) rust-ctr)
 				   (("rust-salsa20" _) rust-salsa20)
 				   (("rust-cipher" _) rust-cipher)
 				   (("rust-block-padding" _) rust-block-padding)
@@ -1179,6 +1194,8 @@ of operation.")
 			     ("rust-crypto-common" #~'("std" "rand_core"))
 			     ;; Require rust-cipher.
 			     ("rust-inout" #~'("std" "block-padding"))
+			     ;; zeroize required by rust-ctr
+			     ("rust-cipher" #~'("alloc" "std" "block-padding" "rand_core" "dev" "zeroize"))
 			     ;; Likewise.
 			     ("rust-value-bag" #~'("std"))
 			     ("rust-der" #~'("std" "alloc" "oid"))
