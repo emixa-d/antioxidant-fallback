@@ -1193,6 +1193,7 @@ of operation.")
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ("rust-openssl-sys" #~'()) ;; avoid the 'vendored' feature
 			     ;; The 'backtrace' dependency has been removed.
 			     ("rust-parking-lot-core" #~'())
 			     ;; asm! syntax not supported anymore, and "capture"
