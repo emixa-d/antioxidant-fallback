@@ -1195,6 +1195,9 @@ of operation.")
 			   (match (package-name pack)
 			     ;; The 'backtrace' dependency has been removed.
 			     ("rust-parking-lot-core" #~'())
+			     ;; asm! syntax not supported anymore, and "capture"
+			     ;; requires non-existent io::set_panic
+			     ("rust-rustc-test" #~'())
 			     ;; The 'inline-asm' feature requires non-stable
 			     ("rust-riscv" #~'())
 			     ("rust-smallvec" #~'()) ; default features require non-stable
