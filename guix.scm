@@ -94,7 +94,24 @@
 					         ;; on crate-cc, breaking a cycle
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
-					           (("^build =(.*)$") ""))))))
+							      (("^build =(.*)$") ""))))))
+					 ((equal? "rust-cipher-0.4.3" name)
+					  ;; XXX upstream, fix build failure?
+					  #~((add-after 'unpack 'fix-static
+					       (lambda _
+						 (substitute* '("src/block.rs" "src/stream_core.rs")
+						   (("struct BlockCtx<'inp, 'out, BS: ArrayLength<u8>> \\{")
+						    "struct BlockCtx<'inp, 'out, BS: ArrayLength<u8> + 'static> {")
+						   (("struct BlocksCtx<'inp, 'out, BS: ArrayLength<u8>> \\{")
+						    "struct BlocksCtx<'inp, 'out, BS: ArrayLength<u8> + 'static> {")
+						   (("struct WriteBlockCtx<'a, BS: ArrayLength<u8>> \\{")
+						    "struct WriteBlockCtx<'a, BS: ArrayLength<u8> + 'static> {")
+						   (("struct WriteBlocksCtx<'a, BS: ArrayLength<u8>> \\{")
+						    "struct WriteBlocksCtx<'a, BS: ArrayLength<u8> + 'static> {")
+						   (("struct ApplyBlockCtx<'inp, 'out, BS: ArrayLength<u8>> \\{")
+						    "struct ApplyBlockCtx<'inp, 'out, BS: ArrayLength<u8> + 'static> {")
+						   (("struct ApplyBlocksCtx<'inp, 'out, BS: ArrayLength<u8>> \\{")
+						    "struct ApplyBlocksCtx<'inp, 'out, BS: ArrayLength<u8> + 'static> {"))))))
 					 ;; TODO: change in Guix upstream.
 					 ;; TODO: adjust README.md? Make sure LICENSE-APACHE
 					 ;; is installed?
