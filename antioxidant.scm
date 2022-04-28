@@ -415,6 +415,13 @@ chosen, enabling all features like Cargo does (except nightly).~%")
   (define (setenv* x y)
     (format #t "setting ~a to ~a~%" x y)
     (setenv x y))
+  (define (drop-native=-prefix directory)
+    ;; Strip native= and all= prefixes from 'directory'
+    (cond ((string-prefix? "native=" directory)
+	   (string-drop directory (string-length "native=")))
+	  ((string-prefix? "all=" directory)
+	   (string-drop directory (string-length "all=")))
+	  (#t directory)))
   (define (do* stuff c-libraries?)
     (format #t "reading extra environment variables from ~a~%" stuff)
     (for-each
@@ -440,7 +447,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	   (set! *c-libraries* (cons y *c-libraries*)))
 	  ("rustc-link-search"
 	   (unless (string-prefix? "/tmp" y) ;; TODO: don't include /tmp/guix-build things in propagated-environment?
-	     (set! *c-library-directories* (cons y *c-library-directories*))))
+	     (set! *c-library-directories* (cons (drop-native=-prefix y) *c-library-directories*))))
 	  (_ #false))))
      (call-with-input-file stuff read #:encoding "UTF-8")))
   (define* (do stuff #:optional (c-libraries? #false))
