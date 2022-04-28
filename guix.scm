@@ -1142,6 +1142,10 @@ of operation.")
 			     ("rust-smallvec" #~'()) ; default features require non-stable
 			     ;; Default serde1_lib requires unpackaged rust-serde1-lib
 			     ("rust-sval" #~'("alloc" "arbitrary-depth" "derive" "fmt" "std"))
+			     ;; rust-cipher requires non-default rand_core
+			     ("rust-crypto-common" #~'("std" "rand_core"))
+			     ;; Require rust-cipher.
+			     ("rust-inout" #~'("std" "block-padding"))
 			     ;; Likewise.
 			     ("rust-value-bag" #~'("std"))
 			     ("rust-der" #~'("std" "alloc" "oid"))
