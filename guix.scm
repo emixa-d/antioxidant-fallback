@@ -721,6 +721,19 @@
      (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-block-padding-0.2))
 		    (append (@ (gnu packages crates-io) rust-generic-array-0.14))))))
 
+(define-public rust-block-modes ; 0.8.1 uses removed NewBlockCipher
+  (package
+    (inherit (@ (gnu packages crates-io) rust-block-modes-0.8))
+    (name "rust-block-modes")
+    (version "0.9.1")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (crate-uri "block-modes" version))
+      (file-name (string-append name "-" version ".tar.gz"))
+      (sha256
+       (base32 "07pjna64v0ng30j8ss9w7rv7k7l7gsii37yxm011a1kzh6q128ly"))))))
+
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
   (package
@@ -961,6 +974,7 @@ of operation.")
 				    (@ (gnu packages crates-io) rust-sha2-0.10))
 				   (("rust-sha3" _) rust-sha3)
 				   (("rust-scrypt" _) rust-scrypt)
+				   (("rust-block-modes" _) rust-block-modes)
 				   (("rust-salsa20" _) rust-salsa20)
 				   (("rust-cipher" _) rust-cipher)
 				   (("rust-block-padding" _) rust-block-padding)
