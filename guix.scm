@@ -1193,6 +1193,8 @@ of operation.")
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; The 'backtrace' dependency has been removed.
+			     ("rust-parking-lot-core" #~'())
 			     ;; The 'inline-asm' feature requires non-stable
 			     ("rust-riscv" #~'())
 			     ("rust-smallvec" #~'()) ; default features require non-stable
