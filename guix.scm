@@ -95,23 +95,6 @@
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
 							      (("^build =(.*)$") ""))))))
-					 ((equal? "rust-cipher-0.4.3" name)
-					  ;; XXX upstream, fix build failure?
-					  #~((add-after 'unpack 'fix-static
-					       (lambda _
-						 (substitute* '("src/block.rs" "src/stream_core.rs")
-						   (("struct BlockCtx<'inp, 'out, BS: ArrayLength<u8>> \\{")
-						    "struct BlockCtx<'inp, 'out, BS: ArrayLength<u8> + 'static> {")
-						   (("struct BlocksCtx<'inp, 'out, BS: ArrayLength<u8>> \\{")
-						    "struct BlocksCtx<'inp, 'out, BS: ArrayLength<u8> + 'static> {")
-						   (("struct WriteBlockCtx<'a, BS: ArrayLength<u8>> \\{")
-						    "struct WriteBlockCtx<'a, BS: ArrayLength<u8> + 'static> {")
-						   (("struct WriteBlocksCtx<'a, BS: ArrayLength<u8>> \\{")
-						    "struct WriteBlocksCtx<'a, BS: ArrayLength<u8> + 'static> {")
-						   (("struct ApplyBlockCtx<'inp, 'out, BS: ArrayLength<u8>> \\{")
-						    "struct ApplyBlockCtx<'inp, 'out, BS: ArrayLength<u8> + 'static> {")
-						   (("struct ApplyBlocksCtx<'inp, 'out, BS: ArrayLength<u8>> \\{")
-						    "struct ApplyBlocksCtx<'inp, 'out, BS: ArrayLength<u8> + 'static> {"))))))
 					 ;; TODO: change in Guix upstream.
 					 ;; TODO: adjust README.md? Make sure LICENSE-APACHE
 					 ;; is installed?
@@ -748,6 +731,21 @@
       (sha256
        (base32 "18222kdhghd2j5vc5lm7bqy6glk5wbvzz1sydghd1xdsrwlz650d"))))))
 
+;; rust-cipher expects a rust-typenum that has 'static' lifetimes in some places,
+;; see <https://github.com/RustCrypto/traits/pull/937>.
+(define-public rust-typenum
+  (package
+   (inherit (@ (gnu packages crates-io) rust-typenum-1))
+   (name "rust-typenum")
+   (version "1.15.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "typenum" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "11yrvz1vd43gqv738yw1v75rzngjbs7iwcgzjy3cq5ywkv2imy6w"))))))
+
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
   (package
@@ -982,6 +980,7 @@ of operation.")
 				    ;; In the old version 'runtime' cannot be
 				    ;; disabled.
 				    (@ (gnu packages crates-io) rust-bindgen-0.59))
+				   (("rust-typenum" _) rust-typenum)
 				   (("rust-sha-1" _) 
 				    (@ (gnu packages crates-io) rust-sha-1-0.10))
 				   (("rust-sha2" _) 
@@ -1193,6 +1192,10 @@ of operation.")
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (package-name pack)
+			     ;; For now avoid optional dependencies
+			     ("rust-typenum" #~'())
+			     ;; serde1 failure requires undeclared ‘Glob’ dependency
+			     ("rust-globset" #~'())
 			     ("rust-openssl-sys" #~'()) ;; avoid the 'vendored' feature
 			     ;; The 'backtrace' dependency has been removed.
 			     ("rust-parking-lot-core" #~'())
