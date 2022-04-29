@@ -562,7 +562,7 @@
         (#;("rust-botan" ,(@ (gnu packages crates-io) rust-botan-0.8))
          ("rust-openssl" ,(@ (gnu packages crates-io) rust-openssl-0.10))
          ("rust-rand" ,(@ (gnu packages crates-io) rust-rand-0.8))
-         ("rust-rsa" ,(@ (gnu packages crates-io) rust-rsa-0.5))
+         ("rust-rsa" ,rust-rsa)
          ("rust-webpki" ,(@ (gnu packages crates-io) rust-webpki-0.22))
          ("rust-x509-parser" ,(@ (gnu packages crates-io) rust-x509-parser-0.12)))))
     (home-page "https://github.com/est31/rcgen")
@@ -921,6 +921,18 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0bw56hxajrgb3pjg0cr5xrvmx0jna39564iw2p14ama5cmzlwzy7"))))))
+(define-public rust-rsa ;; rust-rsa@0.5 doesn't build against new rust-pkcs1
+  (package
+   (inherit (@ (gnu packages crates-io) rust-rsa-0.5))
+   (name "rust-rsa")
+   (version "0.6.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "rsa" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "02viiiylxpk2hx5h5qrpm4lcd8ildvafbw0rn6rx44wnqia2gwjc"))))))
 
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
@@ -999,8 +1011,11 @@ of operation.")
     "rust-wasm-bindgen-test"))
 
 (define %features
-  ;; rust-rsa requires "prime"
-  `(("rust-num-bigint-dig" ,#~'("default" "prime"))
+  ;; rust-rsa requires "prime" and "zeroize"
+  `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; rust-num-bigint-dig's zeroize feature requires the "derive"
+    ;; feature of rust-zeroize
+    ("rust-zeroize" ,#~'("default" "derive"))
     ;; For now avoid optional dependencies
     ("rust-typenum" ,#~'())
     ;; serde1 failure requires undeclared ‘Glob’ dependency
@@ -1372,6 +1387,7 @@ of operation.")
 				   (("rust-serde" _)
 				    (@ (gnu packages crates-io) rust-serde-1)) ; old versions don't build
 				   (("rust-sha1" _) rust-sha1)
+				   (("rust-rsa" _) rust-rsa)
 				   (("rust-hashbrown" _)
 				    (@ (gnu packages crates-io) rust-hashbrown-0.11))
 				   (("rust-scopeguard" _)
