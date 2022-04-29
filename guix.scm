@@ -95,6 +95,12 @@
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
 							      (("^build =(.*)$") ""))))))
+					 ((string-prefix? "rust-pkcs1" name)
+					  #~((add-after 'unpack 'fix-typing
+					       (lambda _
+						 ;; Already upstream: <https://github.com/RustCrypto/formats/blob/fbf4334be7717e1f393c3f7b9b4c85c584ce8395/pkcs1/src/lib.rs#L49>, but not yet in any release.
+						 (substitute* "src/lib.rs"
+						   (("ObjectIdentifier::new") "ObjectIdentifier::new_unwrap"))))))
 					 ;; TODO: change in Guix upstream.
 					 ;; TODO: adjust README.md? Make sure LICENSE-APACHE
 					 ;; is installed?
@@ -992,8 +998,7 @@ of operation.")
     "rust-wasm-bindgen-test"))
 
 (define %features
-  `(("rust-pkcs1" ,#~'("std"))
-    ;; For now avoid optional dependencies
+  `(;; For now avoid optional dependencies
     ("rust-typenum" ,#~'())
     ;; serde1 failure requires undeclared ‘Glob’ dependency
     ("rust-globset" ,#~'())
