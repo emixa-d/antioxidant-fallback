@@ -328,8 +328,18 @@ with open(there, \"w\") as out_file:
      (sort-list
       (append-map (lambda (feature)
 		    (define extra
-		      (vector->list
-		       (or (assoc-ref features-section feature) #())))
+		      (append
+		       (vector->list
+			(or (assoc-ref features-section feature) #()))
+		       ;; "package-name/feature-name" is used for enabling
+		       ;; optional dependencies.  Apparently, when enabling
+		       ;; optional dependencies, some crates expect the
+		       ;; "package-name" feature to be enabled as well?
+		       ;; (at least rust-pkcs1@0.3.3)
+		       (match (string-index feature #\/)
+			 ((? integer? k)
+			  (list (substring feature 0 k)))
+			 (#false '()))))
 		    (cons feature extra))
 		  features)
       string<?)))
