@@ -771,6 +771,56 @@
 of operation.")
    (license '(list license:expat license:asl2.0))))
 
+;; Some of these are only used for tests, cause cycles, ???,
+;; so remove them.  (TODO: some of them can probably now be removed.)
+;; TODO: write a "guix style" thing for doing this.
+(define %removed-dependencies
+  '("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
+    "rust-skeptic" ; @0.13.4doesn't build
+    "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
+    "rust-macrotest"
+    "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
+    "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
+    "rust-cortex-m" ; ARM targets not yet supported for Rust in Guix
+    ;;"rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
+    "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
+    "rust-bencher" ; FTB
+    "rust-criterion"
+    "rust-proptest"
+    "rust-futures-util-preview" ; futures-util has been updated?
+    "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
+    ;; TODO: how do the two following crates even work?
+    "rust-rustc-std-workspace-std"
+    "rust-rustc-std-workspace-core"
+    "rust-compiler-builtins"
+    "rust-compiletest-rs" ;; TODO: rustc-dev?
+    "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
+    "rust-nodrop-union" ; required unstable, and deprecated
+    "rust-sleef-sys" ; requires unstable
+    "rust-packed-simd" ; requires unstable (TODO: rust-packed-simd-2?)
+    "rust-security-framework" "rust-cocoa" "rust-cocoa-foundation" "rust-core-foundation" "rust-core-foundation-sys" "rust-core-text" "rust-fsevent" "rust-fsevent-sys" "rust-objc-foundation" ; non-Linux, non-Hurd things
+    "rust-ws2-32-sys"
+    "rust-winapi-util" "rust-winapi-build"
+    "rust-core-arch" ; doesn't build, nowadays part of Rust itself?
+    "rust-doc-comment"
+    "rust-hermit-abi"
+    "rust-model" ;; doesn't build, avoid for now
+    "rust-tokio-core" ;; doesn't exist in recent tokios
+    "rust-tokio-process" ;; doesn't exist in recent tokios
+    "rust-tokio-executor" ;; doesn't exist in recent tokios, I think?
+    "rust-tokio-io" ;; doesn't exist in recent tokios, I think?
+    #;"rust-lazy-static"
+    "rust-version-sync"
+    "rust-rustversion" "rust-trybuild"
+    "rust-clippy"
+    "rust-tokio-mock-task" ; doesn't build
+    "rust-tokio-test"
+    "rust-rand-xorshift"
+    "rust-walkdir"
+    "rust-serde-test"
+    "rust-wasm-bindgen" "rust-wasi"
+    "rust-wasm-bindgen-test"))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -787,52 +837,7 @@ of operation.")
 	 (define fix-input
 	   (match-lambda
 	     ((label dependency . maybe-output)
-	      ;; Some of these are only used for tests, cause cycles, ???
-	      (and (not (member (package-name dependency)
-				'("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
-				  "rust-skeptic" ; @0.13.4doesn't build
-				  "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
-				  "rust-macrotest"
-				  "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
-				  "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
-				  "rust-cortex-m" ; ARM targets not yet supported for Rust in Guix
-				  ;;"rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
-				  "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
-				  "rust-bencher" ; FTB
-				  "rust-criterion"
-				  "rust-proptest"
-				  "rust-futures-util-preview" ; futures-util has been updated?
-				  "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
-				  ;; TODO: how do the two following crates even work?
-				  "rust-rustc-std-workspace-std"
-				  "rust-rustc-std-workspace-core"
-				  "rust-compiler-builtins"
-				  "rust-compiletest-rs" ;; TODO: rustc-dev?
-				  "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
-				  "rust-nodrop-union" ; required unstable, and deprecated
-				  "rust-sleef-sys" ; requires unstable
-				  "rust-packed-simd" ; requires unstable (TODO: rust-packed-simd-2?)
-				  "rust-security-framework" "rust-cocoa" "rust-cocoa-foundation" "rust-core-foundation" "rust-core-foundation-sys" "rust-core-text" "rust-fsevent" "rust-fsevent-sys" "rust-objc-foundation" ; non-Linux, non-Hurd things
-				  "rust-ws2-32-sys"
-				  "rust-winapi-util" "rust-winapi-build"
-				  "rust-core-arch" ; doesn't build, nowadays part of Rust itself?
-				  "rust-doc-comment"
-				  "rust-hermit-abi"
-				  "rust-model" ;; doesn't build, avoid for now
-				  "rust-tokio-core" ;; doesn't exist in recent tokios
-				  "rust-tokio-process" ;; doesn't exist in recent tokios
-				  "rust-tokio-executor" ;; doesn't exist in recent tokios, I think?
-				  "rust-tokio-io" ;; doesn't exist in recent tokios, I think?
-				  #;"rust-lazy-static" "rust-version-sync"
-				  "rust-rustversion" "rust-trybuild"
-				  "rust-clippy"
-				  "rust-tokio-mock-task" ; doesn't build
-				  "rust-tokio-test"
-				  "rust-rand-xorshift"
-				  "rust-walkdir"
-				  "rust-serde-test"
-				  "rust-wasm-bindgen" "rust-wasi"
-				  "rust-wasm-bindgen-test")))
+	      (and (not (member (package-name dependency) %removed-dependencies))
 		   ;; rust-futures-cpupool isn't updated anymore and doesn't
 		   ;; build anymore?
 		   (not (string=? (package-name dependency) "rust-futures-cpupool"))
