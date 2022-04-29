@@ -95,6 +95,14 @@
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
 							      (("^build =(.*)$") ""))))))
+					 ;; TODO: upstream / update
+					 ((string-prefix? "rust-x509-parser" name)
+					  #~((add-after 'unpack 'use-nondeprecated
+					       (lambda _
+						 (substitute* "src/time.rs"
+						   (("use std::time::Duration;")
+						    "use std::time::Duration;use std::convert::TryInto;")
+						   (("\\.to_std\\(\\)") ".try_into()"))))))
 					 ((string-prefix? "rust-chrono" name)
 					  #~((add-after 'unpack 'use-nondeprecated-names
 					       (lambda _
@@ -1392,7 +1400,7 @@ of operation.")
 				   (("rust-pkcs8" _) rust-pkcs8)
 				   (("rust-pkcs5" _) rust-pkcs5)
 				   (("rust-pkcs1" _) rust-pkcs1)
-				   ;; (("rust-spki" _) rust-spki) (TODO: why was this removed?)
+				   (("rust-spki" _) rust-spki)
 				   (("rust-der" _) rust-der)
 				   (("rust-sha-1" _) 
 				    (@ (gnu packages crates-io) rust-sha-1-0.10))
