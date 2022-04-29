@@ -23,6 +23,7 @@
 			%standard-antioxidant-phases)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
+  #:use-module (rnrs records syntactic)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
   #:use-module (ice-9 match)
@@ -74,8 +75,15 @@
 ;; version incompatibilities?
 (define-json-mapping <dependency> make-dependency dependency?
   %json->dependency <=> %package->dependency <=> scm->dependency <=> package->dependency
-  ;; String.  Not actually part of the JSON / TOML.
-  (name dependency-name)
+  ;; 'name' is the name of the crate, inside the current Rust project.
+  ;; By default, the name inside the crate is the name ooutside the crate.
+  ;; However, a crate can choose to use a crate that names itself 'foo'
+  ;; but use it as-if it was named 'bar', by setting 'name' to "bar"
+  ;; and 'package' to "foo".
+  ;;
+  ;; 'name' is not actually part of the JSON / TOML.
+  (name dependency-name) ; string
+  (package dependency-package "package" or-false*) ; string | #false
   (optional %dependency-optional) ; boolean
   (path %dependency-path) ; string | #false
   (version %dependency-version) ; string | #false
@@ -201,6 +209,34 @@ with open(there, \"w\") as out_file:
 
 
 
+;;
+;; Information on how to use a crate.
+;;
+;; TODO: maybe add information like:
+;;
+;;  * Where is the crate located?
+;;  * Is it a direct depency of a transitive dependency?
+;;    (marking it transitive makes 'rustc' stricer in some aspects)
+;;  * non-crate libraries to link
+;;  * non-crate library directories to look at
+;;
+;; ... instead of the current ad-hoc *c-libraries*, *extra-arguments*
+;; system.
+;;
+;; Crate names are normalised by the constructor.
+;;
+(define-record-type (<crate> %make-crate crate?)
+  ;; What does the crate name itself?
+  (fields (immutable true-name crate-true-name) ; string
+	  ;; What does the crate that is using this crate
+	  ;; expect as name?  Usually the same as 'self-name'.
+	  (immutable local-name crate-local-name) ; string
+	  ;; TODO more stuff ....
+	  ))
+(define (make-crate true-name local-name)
+  (%make-crate (normalise-crate-name true-name)
+	       (normalise-crate-name local-name)))
+
 (define (normalise-crate-name name)
   (string-replace-substring name "-" "_"))
 
@@ -235,13 +271,16 @@ with open(there, \"w\") as out_file:
 			     (format #t "Unrecognised: ~a~%" lib))))
    (string-length "lib")))
 
-(define (extern-arguments crates allowed-crates)
-  (filter-map (lambda (crate)
-		(define name (extract-crate-name crate))
-		(and (member name allowed-crates)
-		     (string-append "--extern=" (extract-crate-name crate)
-				    "=" crate)))
-	      crates))
+(define (extern-arguments crate-file-names allowed-crates)
+  ;; allowed-crate: list of <crate> objects
+  (define (process-crate crate)
+    ;; "rustc" will sort out duplicates (by emitting an error)
+    (define (try-file-name file-name)
+      (and (string=? (crate-true-name crate) (extract-crate-name file-name))
+	   (string-append "--extern=" (crate-local-name crate)
+			  "=" file-name)))
+    (filter-map try-file-name crate-file-names))
+  (append-map process-crate allowed-crates))
 
 (define* (L-arguments crates #:optional (kind "all"))
   (delete-duplicates
@@ -389,7 +428,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 ;; error[E0659]: `time` is ambiguous (name vs any other name during import resolution)
 ;; are possible.  Avoid them!
 (define* (manifest-all-dependencies manifest #:optional (kinds '(dependency dev build)))
-  "Return a list of Crate names that are dependencies"
+  "Return a list of crates that are dependencies, as <crate> records."
   ;; For now ignore which target a dependency is for.
   (define (the-target-specific-dependencies target-specific)
     (append (if (memq 'dependency kinds)
@@ -413,7 +452,11 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 		'())
 	    (append-map the-target-specific-dependencies
 			(manifest-target-specific manifest))))
-  (map (compose normalise-crate-name dependency-name) dependencies))
+  (define (construct-crate dependency)
+    (make-crate (or (dependency-package dependency)
+		    (dependency-name dependency))
+		(dependency-name dependency)))
+  (map construct-crate dependencies))
 
 ;; Some cargo:??? lines from build.rs are ‘propagated’ to dependencies
 ;; as environment variables, see
@@ -649,8 +692,9 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 		 (string-append "-Lnative=" (getcwd)))
 	   ;; A program can use its own crate without declaring it.
 	   ;; At least, hexyl tries to do so.
-	   #:extern-crates (cons (normalise-crate-name (package-name package))
-				 extern-crates)
+	   #:extern-crates (let ((this-name (package-name package)))
+			     (cons (make-crate this-name this-name)
+				   extern-crates))
 	   ;; TODO: figure out how to override things
 	   (append
 	    arguments
