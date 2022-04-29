@@ -564,6 +564,56 @@
     (description "Rust X.509 certificate generator") ;; TODO
     (license '(list license:expat license:asl2.0))))
 
+;; Old pkcs5 doesn't build
+(define-public rust-pkcs5
+  (package
+    (inherit (@ (gnu packages crates-io) rust-pkcs5-0.3))
+    (name "rust-pkcs5")
+    (version "0.5.0-pre.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "pkcs5" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "1n605kk594vif1rzrc09739nw6fky41mz6jpz9czs7lagq75jkvs"))))))
+(define-public rust-der
+  (package
+    (inherit (@ (gnu packages crates-io) rust-der-0.4))
+    (name "rust-der")
+    (version "0.6.0-pre.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "der" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "1qag0zb2n7fj8qv7a83pmm9rqqz0zxvx5zpyzfy05a1rxxz73vdk"))))))
+(define-public rust-pkcs1 ; old doesn't build against new rust-der
+  (package
+    (inherit (@ (gnu packages crates-io) rust-pkcs1-0.2))
+    (name "rust-pkcs1")
+    (version "0.3.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "pkcs1" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "0813szfx13n4xl6l19m3lwj7pqgljqwc6ipxhr2dv0yc9k06d3x7"))))))
+(define-public rust-spki ; old doesn't build against new rust-der
+  (package
+    (inherit (@ (gnu packages crates-io) rust-spki-0.4))
+    (name "rust-spki")
+    (version "0.6.0-pre.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "spki" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "1cbdffcfp1zivxw4hiqj681api2gqxcgcqf64rq2wbvrk10jffq9"))))))
+
 ;; Old agate doesn't build
 (define-public agate
   (package
@@ -900,7 +950,8 @@ of operation.")
     ("rust-cipher" ,#~'("alloc" "std" "block-padding" "rand_core" "dev" "zeroize"))
     ;; Likewise.
     ("rust-value-bag" ,#~'("std"))
-    ("rust-der" ,#~'("std" "alloc" "oid"))
+    ;; rust-pkcs1 requires "pem"
+    ("rust-der" ,#~'("std" "alloc" "oid" "pem"))
     ;; Required by hmac.
     ("rust-digest" ,#~'("default" "std" "mac"))
     ;; Required by 'sniffglue'
@@ -1178,6 +1229,10 @@ of operation.")
 				   (("rust-typenum" _) rust-typenum)
 				   (("rust-aes" _) rust-aes)
 				   (("rust-des" _) rust-des)
+				   (("rust-pkcs5" _) rust-pkcs5)
+				   (("rust-pkcs1" _) rust-pkcs1)
+				   (("rust-spki" _) rust-spki)
+				   (("rust-der" _) rust-der)
 				   (("rust-sha-1" _) 
 				    (@ (gnu packages crates-io) rust-sha-1-0.10))
 				   (("rust-sha2" _) 
@@ -1362,6 +1417,8 @@ of operation.")
 					 (package-propagated-inputs pack)
 					 ;; Add missing dependencies (TODO upstream Guix)
 					 (match (package-name pack)
+					   ;; for "pem" feature
+					   ("rust-der" `(("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
 					   ;; possibly only required by new version
 					   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
 					   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
