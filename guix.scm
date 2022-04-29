@@ -877,6 +877,20 @@
      (sha256
       (base32 "11yrvz1vd43gqv738yw1v75rzngjbs7iwcgzjy3cq5ywkv2imy6w"))))))
 
+;; Some packages require new_unwrap, which is not present in old versions
+(define-public rust-const-oid
+  (package
+   (inherit (@ (gnu packages crates-io) rust-const-oid-0.6))
+   (name "rust-const-oid")
+   (version "0.9.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "const-oid" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "0q8n1zsa73130hxa2w88qw36g8nprz21j52abpva3khm59a26bkj"))))))
+
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
   (package
@@ -1257,6 +1271,8 @@ of operation.")
 				    ;; disabled.
 				    (@ (gnu packages crates-io) rust-bindgen-0.59))
 				   (("rust-typenum" _) rust-typenum)
+				   ;; rust-pkcs5@0.5.0-pre.1 requires new_unwrap
+				   (("rust-const-oid" _) rust-const-oid)
 				   (("rust-aes" _) rust-aes)
 				   (("rust-des" _) rust-des)
 				   (("rust-pkcs5" _) rust-pkcs5)
