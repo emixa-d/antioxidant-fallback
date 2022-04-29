@@ -1427,8 +1427,8 @@ of operation.")
 					   ("rust-pkcs1" `(("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
 					   ;; for "sha1" and "sha2" features
 					   ("rust-spki" `(("rust-sha1" ,(@ (gnu packages crates-io) rust-sha1-0.6))
-							  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))
-))					   ;; possibly only required by new version
+							  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
+					   ;; possibly only required by new version
 					   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
 					   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
 					   ("sniffglue" `(("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
