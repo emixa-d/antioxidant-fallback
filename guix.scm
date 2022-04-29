@@ -933,6 +933,42 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "02viiiylxpk2hx5h5qrpm4lcd8ildvafbw0rn6rx44wnqia2gwjc"))))))
+(define-public rust-backtrace ;; old rust-backtrace doesn't build against new rust-object
+  (package
+   (inherit (p rust-backtrace-0.3))
+   (name "rust-backtrace")
+   (version "0.3.65")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "backtrace" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "0qggp0d8pbw5vfnpm0r7lrn6wmh5yjiz4yc4bzynb8l26i2pv88i"))))))
+(define-public rust-gimli ;; new rust-backtrace doesn't build against old rust-gimli
+  (package
+   (inherit (p rust-gimli-0.23))
+   (name "rust-giml")
+   (version "0.26.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "gimli" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1m0vi36ypv4gx9gzcw6y456yqnlypizhwlcqrmg6vkwd0lnkgk3q"))))))
+(define-public rust-addr2line ;; new rust-addr2line doesn't build against old rust-gimli
+  (package
+   (inherit (p rust-addr2line-0.14))
+   (name "rust-addr2line")
+   (version "0.17.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "addr2line" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "0sw16zqy6w0ar633z69m7lw6gb0k1y7xj3387a8wly43ij5div5r"))))))
 
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
@@ -1320,6 +1356,8 @@ of operation.")
 				    ;; disabled.
 				    (@ (gnu packages crates-io) rust-bindgen-0.59))
 				   (("rust-typenum" _) rust-typenum)
+				   (("rust-backtrace" _) rust-backtrace) ; old backtrace doesn't build with the new rust-object
+				   (("rust-gimli" _) rust-gimli)
 				   ;; rust-pkcs5@0.5.0-pre.1 requires new_unwrap
 				   (("rust-const-oid" _) rust-const-oid)
 				   (("rust-aes" _) rust-aes)
@@ -1353,7 +1391,7 @@ of operation.")
 				   ;; TODO version conflict -- AUTOMATE?
 				   (("rust-syn" _) (p rust-syn-1))
 				   (("rust-object" _) (p rust-object-0.28))
-				   (("rust-addr2line" _) (p rust-addr2line-0.14))
+				   (("rust-addr2line" _) rust-addr2line)
 				   (("rust-generic-array" _) (@ (gnu packages crates-io) rust-generic-array-0.14))
 				   (("rust-digest" _) rust-digest)
 				   (("rust-crypto-common" _) rust-crypto-common)
