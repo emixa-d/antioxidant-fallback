@@ -821,6 +821,141 @@ of operation.")
     "rust-wasm-bindgen" "rust-wasi"
     "rust-wasm-bindgen-test"))
 
+(define %features
+  `(;; For now avoid optional dependencies
+    ("rust-typenum" ,#~'())
+    ;; serde1 failure requires undeclared ‘Glob’ dependency
+    ("rust-globset" ,#~'())
+    ("rust-openssl-sys" ,#~'()) ;; avoid the 'vendored' feature
+    ;; The 'backtrace' dependency has been removed.
+    ("rust-parking-lot-core" ,#~'())
+    ;; asm! syntax not supported anymore, and "capture"
+    ;; requires non-existent io::set_panic
+    ("rust-rustc-test" ,#~'())
+    ;; The 'inline-asm' feature requires non-stable
+    ("rust-riscv" ,#~'())
+    ("rust-smallvec" ,#~'()) ; default features require non-stable
+    ;; Default serde1_lib requires unpackaged rust-serde1-lib
+    ("rust-sval" ,#~'("alloc" "arbitrary-depth" "derive" "fmt" "std"))
+    ;; rust-cipher requires non-default rand_core
+    ("rust-crypto-common" ,#~'("std" "rand_core"))
+    ;; Require rust-cipher.
+    ("rust-inout" ,#~'("std" "block-padding"))
+    ;; zeroize required by rust-ctr
+    ("rust-cipher" ,#~'("alloc" "std" "block-padding" "rand_core" "dev" "zeroize"))
+    ;; Likewise.
+    ("rust-value-bag" ,#~'("std"))
+    ("rust-der" ,#~'("std" "alloc" "oid"))
+    ;; Required by hmac.
+    ("rust-digest" ,#~'("default" "std" "mac"))
+    ;; Required by 'sniffglue'
+    ("rust-pktparse" ,#~'("serde"))
+    ;; Avoid extra dependencies by using the C library that
+    ;; is used elsewhere anyway.
+    ("rust-flate2" ,#~'("zlib"))
+    ;; Don't just support libclang 3.5, also include
+    ;; bindings for later versions which rust-bindgen might
+    ;; need.
+    ("rust-clang-sys" ,#~'("default" "clang_10_0"))
+    ;; Do _not_ include 'runtime', as dlopen isn't used,
+    ;; linking happens at compile time (and at program
+    ;; startup).
+    ("rust-bindgen" ,#~'("logging" "clap" "which-rustfmt"))
+    ("rust-numtoa" ,#~'("std"))
+    ;; rust-cargo-metadata requires the serialisation
+    ;; / deserialisation traits.
+    ("rust-semver" ,#~'("default" "serde"))
+    ("rust-hyper" ,#~'("full"))
+    ("rust-itoa" ,#~'("std"))
+    ;; rust-x509-parser requires bigint
+    ("rust-der-parser" ,#~'("default" "bigint"))
+    ;; rust-x509-parser required 'crypto' and 'x509'
+    ("rust-oid-registry" ,#~'("default" "crypto" "x509"))
+    ("rust-similar" ,#~'("default" "text" "inline"))
+    ;; 'derive' is needed by rust-ron
+    ("rust-serde" ,#~'("std" "alloc" "derive"))
+    ("rust-webpki" ,#~'("std" "alloc"))
+    ;; Required by rust-tokio
+    ;; TODO remove os-poll, as implied features are implemented.
+    ("rust-mio"
+     ,#~'("net" "os-ext" "os-poll"))
+    ;; By default zero features are enabled, which is rather
+    ;; minimalistic and often not sufficient.  TODO: teach
+    ;; antioxidant about ‘implied’ features.
+    ("rust-tokio"
+     ,#~'("full" "io-util" "io-std"
+	  ;;"feature=\"macros\""  ;; TODO
+	  "net"
+	  "parking_lot"
+	  "process"
+	  "rt"
+	  "rt-multi-thread"
+	  "signal"
+	  "sync"
+	  "time"))
+    ("rust-tokio-util" ,#~'("full" "codec"))
+    ;; extra-traits is required by rust-nix
+    ("rust-libc" ,#~'("std" "extra_traits"))
+    ;; Enable some features such that "rust-futures" actually builds.
+    ("rust-futures-task"
+     ,#~'("std" "alloc"))
+    ("rust-futures-util"
+     ,#~'("std" "alloc" "sink"
+	  "io" "async-await"
+	  "async-await-macro"
+	  "channel"))
+    ("rust-futures-core"
+     ,#~'("std" "alloc"))
+    ("rust-futures-channel"
+     ,#~'("std" "alloc"))
+    ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
+    ;; small_rngs is required by rust-phf-generator.
+    ("rust-rand"
+     ,#~'("std" "std_rng" "getrandom"
+	  "alloc" "small_rng"))
+    ;; Some features required rust-rand when using the getrandom feature,
+    ;; serde for rust-rand-isaac@0.3.0 ... (now building with all features)
+    ;; ("rust-rand-core" #~'("std" "getrandom"))
+    ;; Required by rust-rand-core.
+    ("rust-getrandom" ,#~'("std"))
+    ;; Required by rust-env-logger
+    ("rust-log" ,#~'("std"))
+    ;; The feature "alloc" is not set by default, causing the
+    ;; build to fail (TODO: maybe report upstream?)
+    ("rust-bitvec"
+     ,#~'("std" "atomic" "alloc"))
+    ;; Likewise.
+    ("rust-chrono" ,#~'("default" "alloc"))
+    ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
+    ("rust-nom"
+     ,#~'("std" "lexical" "alloc"))
+    ;; This addresses the build failure
+    ;; ‘could not find `collector` in the crate root’
+    ;; and ‘cannot find function `pin` in crate `epoch`’
+    ("rust-crossbeam-epoch"
+     ,#~'("std" "alloc"))
+    ;; Required by rust-unicode-normalization
+    ("rust-tinyvec" ,#~'("alloc"))
+    ;; TODO: use default features from Cargo.toml
+    ;; rust-serde-bytes requires the 'parsing' feature.
+    ;; visit is required by rust-synstructure.
+    ;; visit-mut is used by rust-tracing-attributes.
+    ("rust-syn"
+     ,#~'("derive" "parsing" "printing"
+	  "clone-impls"
+	  "proc-macro" "full"
+	  "visit" "visit-mut"
+	  ;; Used by rust-strum-macros
+	  "extra-traits"))
+    ("rust-proc-macro2"
+     ;; Required by rust-serde-bytes via rust-syn.  If
+     ;; absent, this causes errors like
+     ;; <<https://github.com/google/cargo-raze/issues/159>.
+     ,#~'("proc-macro"))
+    ;; TODO: move into Guix proper?
+    ("rust-hashbrown" ,#~'("raw"))
+    ("rust-os-str-bytes" ,#~'("raw"))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -1196,145 +1331,13 @@ of operation.")
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
-			   (match (package-name pack)
-			     ;; For now avoid optional dependencies
-			     ("rust-typenum" #~'())
-			     ;; serde1 failure requires undeclared ‘Glob’ dependency
-			     ("rust-globset" #~'())
-			     ("rust-openssl-sys" #~'()) ;; avoid the 'vendored' feature
-			     ;; The 'backtrace' dependency has been removed.
-			     ("rust-parking-lot-core" #~'())
-			     ;; asm! syntax not supported anymore, and "capture"
-			     ;; requires non-existent io::set_panic
-			     ("rust-rustc-test" #~'())
-			     ;; The 'inline-asm' feature requires non-stable
-			     ("rust-riscv" #~'())
-			     ("rust-smallvec" #~'()) ; default features require non-stable
-			     ;; Default serde1_lib requires unpackaged rust-serde1-lib
-			     ("rust-sval" #~'("alloc" "arbitrary-depth" "derive" "fmt" "std"))
-			     ;; rust-cipher requires non-default rand_core
-			     ("rust-crypto-common" #~'("std" "rand_core"))
-			     ;; Require rust-cipher.
-			     ("rust-inout" #~'("std" "block-padding"))
-			     ;; zeroize required by rust-ctr
-			     ("rust-cipher" #~'("alloc" "std" "block-padding" "rand_core" "dev" "zeroize"))
-			     ;; Likewise.
-			     ("rust-value-bag" #~'("std"))
-			     ("rust-der" #~'("std" "alloc" "oid"))
-			     ;; Required by hmac.
-			     ("rust-digest" #~'("default" "std" "mac"))
-			     ;; Required by 'sniffglue'
-			     ("rust-pktparse" #~'("serde"))
-			     ;; Avoid extra dependencies by using the C library that
-			     ;; is used elsewhere anyway.
-			     ("rust-flate2" #~'("zlib"))
-			     ;; Don't just support libclang 3.5, also include
-			     ;; bindings for later versions which rust-bindgen might
-			     ;; need.
-			     ("rust-clang-sys" #~'("default" "clang_10_0"))
-			     ;; Do _not_ include 'runtime', as dlopen isn't used,
-			     ;; linking happens at compile time (and at program
-			     ;; startup).
-			     ("rust-bindgen" #~'("logging" "clap" "which-rustfmt"))
-			     ("rust-numtoa" #~'("std"))
-			     ;; rust-cargo-metadata requires the serialisation
-			     ;; / deserialisation traits.
-			     ("rust-semver" #~'("default" "serde"))
-			     ("rust-hyper" #~'("full"))
-			     ("rust-itoa" #~'("std"))
-			     ;; rust-x509-parser requires bigint
-			     ("rust-der-parser" #~'("default" "bigint"))
-			     ;; rust-x509-parser required 'crypto' and 'x509'
-			     ("rust-oid-registry" #~'("default" "crypto" "x509"))
-			     ("rust-similar" #~'("default" "text" "inline"))
-			     ;; 'derive' is needed by rust-ron
-			     ("rust-serde" #~'("std" "alloc" "derive"))
-			     ("rust-webpki" #~'("std" "alloc"))
-			     ;; Required by rust-tokio
-			     ;; TODO remove os-poll, as implied features are implemented.
-			     ("rust-mio"
-			      #~'("net" "os-ext" "os-poll"))
-			     ;; By default zero features are enabled, which is rather
-			     ;; minimalistic and often not sufficient.  TODO: teach
-			     ;; antioxidant about ‘implied’ features.
-			     ("rust-tokio"
-			      #~'("full" "io-util" "io-std"
-				  ;;"feature=\"macros\""  ;; TODO
-				  "net"
-				  "parking_lot"
-				  "process"
-				  "rt"
-				  "rt-multi-thread"
-				  "signal"
-				  "sync"
-				  "time"))
-			     ("rust-tokio-util" #~'("full" "codec"))
-			     ;; extra-traits is required by rust-nix
-			     ("rust-libc" #~'("std" "extra_traits"))
-			     ;; Enable some features such that "rust-futures" actually builds.
-			     ("rust-futures-task"
-			      #~'("std" "alloc"))
-			     ("rust-futures-util"
-			      #~'("std" "alloc" "sink"
-				  "io" "async-await"
-				  "async-await-macro"
-				  "channel"))
-			     ("rust-futures-core"
-			      #~'("std" "alloc"))
-			     ("rust-futures-channel"
-			      #~'("std" "alloc"))
-			     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
-			     ;; small_rngs is required by rust-phf-generator.
-			     ("rust-rand"
-			      #~'("std" "std_rng" "getrandom"
-				  "alloc" "small_rng"))
-			     ;; Some features required rust-rand when using the getrandom feature,
-			     ;; serde for rust-rand-isaac@0.3.0 ... (now building with all features)
-			     ;; ("rust-rand-core" #~'("std" "getrandom"))
-			     ;; Required by rust-rand-core.
-			     ("rust-getrandom" #~'("std"))
-			     ;; Required by rust-env-logger
-			     ("rust-log" #~'("std"))
-			     ;; The feature "alloc" is not set by default, causing the
-			     ;; build to fail (TODO: maybe report upstream?)
-			     ("rust-bitvec"
-			      #~'("std" "atomic" "alloc"))
-			     ;; Likewise.
-			     ("rust-chrono" #~'("default" "alloc"))
-			     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
-			     ("rust-nom"
-			      #~'("std" "lexical" "alloc"))
-			     ;; This addresses the build failure
-			     ;; ‘could not find `collector` in the crate root’
-			     ;; and ‘cannot find function `pin` in crate `epoch`’
-			     ("rust-crossbeam-epoch"
-			      #~'("std" "alloc"))
-			     ;; Required by rust-unicode-normalization
-			     ("rust-tinyvec" #~'("alloc"))
-			     ;; TODO: use default features from Cargo.toml
-			     ;; rust-serde-bytes requires the 'parsing' feature.
-			     ;; visit is required by rust-synstructure.
-			     ;; visit-mut is used by rust-tracing-attributes.
-			     ("rust-syn"
-			      #~'("derive" "parsing" "printing"
-				  "clone-impls"
-				  "proc-macro" "full"
-				  "visit" "visit-mut"
-				  ;; Used by rust-strum-macros
-				  "extra-traits"))
-			     ("rust-proc-macro2"
-			      ;; Required by rust-serde-bytes via rust-syn.  If
-			      ;; absent, this causes errors like
-			      ;; <<https://github.com/google/cargo-raze/issues/159>.
-			      #~'("proc-macro"))
-			     ;; TODO: move into Guix proper?
-			     ((or "rust-hashbrown" "rust-os-str-bytes")
-			      #~'("raw"))
-			     (_ (match features
-				  ((? gexp? f) f)
-				  (('quote l)
-				   ;; TODO: escapes, less ad-hoc
-				   #~'#$l))))))
+			   (match (assoc (package-name pack) %features)
+			     ((_ value) value)
+			     (#false (match features
+				       ((? gexp? f) f)
+				       (('quote l)
+					;; TODO: escapes, less ad-hoc
+					#~'#$l))))))
 	  (inputs i)
 	  (native-inputs n-i)
 	  (propagated-inputs p-i)))
