@@ -964,7 +964,8 @@ of operation.")
 ;; TODO: write a "guix style" thing for doing this.
 (define %removed-dependencies
   '("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
-    "rust-skeptic" ; @0.13.4doesn't build
+    "rust-speculate" ; @0.1.2 doesn't build against recent rust-syn
+    "rust-skeptic" ; @0.13.4 doesn't build
     "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
     "rust-macrotest"
     "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
