@@ -969,6 +969,18 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0sw16zqy6w0ar633z69m7lw6gb0k1y7xj3387a8wly43ij5div5r"))))))
+(define-public rust-instant
+  (package
+   (inherit (p rust-instant-0.1))
+   (name "rust-instant")
+   (version "0.1.12")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "instant" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "0b2bx5qdlwayriidhrag8vhy10kdfimfhmb3jnjmsz2h9j1bwnvs"))))))
 
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
@@ -1365,12 +1377,16 @@ of operation.")
 				   (("rust-pkcs8" _) rust-pkcs8)
 				   (("rust-pkcs5" _) rust-pkcs5)
 				   (("rust-pkcs1" _) rust-pkcs1)
-				   (("rust-spki" _) rust-spki)
+				   ;; (("rust-spki" _) rust-spki) (TODO: why was this removed?)
 				   (("rust-der" _) rust-der)
 				   (("rust-sha-1" _) 
 				    (@ (gnu packages crates-io) rust-sha-1-0.10))
 				   (("rust-sha2" _) 
 				    (@ (gnu packages crates-io) rust-sha2-0.10))
+				   (("rust-time" _) ; resolve version conflict
+				    (@ (gnu packages crates-io) rust-time-0.3))
+				   (("rust-instant" _) ; 0.1.4 doesn't build against rust-time@0.3
+				    rust-instant)
 				   ;; 0.3 requires unstable
 				   (("rust-hex" _)
 				    (@ (gnu packages crates-io) rust-hex-0.4))
