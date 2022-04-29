@@ -577,6 +577,18 @@
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
          (base32 "1n605kk594vif1rzrc09739nw6fky41mz6jpz9czs7lagq75jkvs"))))))
+(define-public rust-pkcs8 ;; old pkcs8 doesn't build against new rust-der
+  (package
+    (inherit (p rust-pkcs8-0.7))
+    (name "rust-pkcs8")
+    (version "0.9.0-pre.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "pkcs8" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "0257q8i3xqar8lb9lg6hvd17aykf5f3n1v3v7p7r4g1wsrncm7pk"))))))
 (define-public rust-der
   (package
     (inherit (@ (gnu packages crates-io) rust-der-0.4))
@@ -980,7 +992,7 @@ of operation.")
     "rust-wasm-bindgen-test"))
 
 (define %features
-  `(("rust-pkcs1" #~'("std"))
+  `(("rust-pkcs1" ,#~'("std"))
     ;; For now avoid optional dependencies
     ("rust-typenum" ,#~'())
     ;; serde1 failure requires undeclared ‘Glob’ dependency
@@ -1288,6 +1300,7 @@ of operation.")
 				   (("rust-const-oid" _) rust-const-oid)
 				   (("rust-aes" _) rust-aes)
 				   (("rust-des" _) rust-des)
+				   (("rust-pkcs8" _) rust-pkcs8)
 				   (("rust-pkcs5" _) rust-pkcs5)
 				   (("rust-pkcs1" _) rust-pkcs1)
 				   (("rust-spki" _) rust-spki)
