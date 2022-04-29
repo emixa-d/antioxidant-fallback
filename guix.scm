@@ -927,7 +927,8 @@ of operation.")
     "rust-wasm-bindgen-test"))
 
 (define %features
-  `(;; For now avoid optional dependencies
+  `(("rust-pkcs1" #~'("std"))
+    ;; For now avoid optional dependencies
     ("rust-typenum" ,#~'())
     ;; serde1 failure requires undeclared ‘Glob’ dependency
     ("rust-globset" ,#~'())
@@ -1079,6 +1080,9 @@ of operation.")
 	   (match-lambda
 	     ((label dependency . maybe-output)
 	      (and (not (member (package-name dependency) %removed-dependencies))
+		   ;; Not a dependency anymore, resolve cycle.
+		   (not (and (string=? (package-name dependency) "rust-pkcs1")
+			     (string=? (package-name pack) "rust-pkcs8")))
 		   ;; rust-futures-cpupool isn't updated anymore and doesn't
 		   ;; build anymore?
 		   (not (string=? (package-name dependency) "rust-futures-cpupool"))
@@ -1419,7 +1423,12 @@ of operation.")
 					 (match (package-name pack)
 					   ;; for "pem" feature
 					   ("rust-der" `(("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
-					   ;; possibly only required by new version
+					   ;; for "pem" and "alloc" feature
+					   ("rust-pkcs1" `(("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
+					   ;; for "sha1" and "sha2" features
+					   ("rust-spki" `(("rust-sha1" ,(@ (gnu packages crates-io) rust-sha1-0.6))
+							  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))
+))					   ;; possibly only required by new version
 					   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
 					   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
 					   ("sniffglue" `(("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
