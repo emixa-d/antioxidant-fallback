@@ -661,6 +661,35 @@
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
          (base32 "0pglmppcl8mdzfxdv2x9dsjrwxhc1bm9zvxjibnlv59jnv9297lz"))))))
+
+;; rust-scrypt@0.8 doesn't build against rust-password-hash@0.3
+(define-public rust-password-hash
+  (package
+   (inherit (@ (gnu packages crates-io) rust-password-hash-0.3))
+   (name "rust-password-hash")
+   (version "0.4.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "password-hash" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1552dd98v6yd4l5myz4g1r2hzln8dfng22638590dc4gpi5fjag0"))))))
+
+;; rust-pbkkdf2@0.10 doesn't build
+(define-public rust-pbkdf2
+  (package
+   (inherit (@ (gnu packages crates-io) rust-pbkdf2-0.10))
+   (name "rust-pbkdf2")
+   (version "0.11.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "pbkdf2" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "05q9wqjvfrs4dvw03yn3bvcs4zghz0a7ycfa53pz2k2fqhp6k843"))))))
+
 (define-public rust-salsa20
   (package
     (inherit (@ (gnu packages crates-io) rust-salsa20-0.9))
@@ -717,6 +746,32 @@
       (file-name (string-append name "-" version ".tar.gz"))
       (sha256
        (base32 "07pjna64v0ng30j8ss9w7rv7k7l7gsii37yxm011a1kzh6q128ly"))))))
+
+(define-public rust-aes ; 0.7.1 uses removed NewBlockCipher
+  (package
+    (inherit (@ (gnu packages crates-io) rust-aes-0.7))
+    (name "rust-aes")
+    (version "0.8.1")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (crate-uri "aes" version))
+      (file-name (string-append name "-" version ".tar.gz"))
+      (sha256
+       (base32 "1fj03mqa45nf2scxcd7mvg1xcbavrkqlmkfzwcgnx660g0si7q5z"))))))
+
+(define-public rust-des ; 0.7.0 uses removed NewBlockCipher
+  (package
+    (inherit (@ (gnu packages crates-io) rust-des-0.7))
+    (name "rust-des")
+    (version "0.8.1")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (crate-uri "des" version))
+      (file-name (string-append name "-" version ".tar.gz"))
+      (sha256
+       (base32 "07kshslxanmg0g6007scvglfhg6mli2a8qzhx4kxx4z9ik781pgz"))))))
 
 (define-public rust-ctr ; 0.8.1 uses private ciphererrors:LoopError
   (package
@@ -1121,6 +1176,8 @@ of operation.")
 				    ;; disabled.
 				    (@ (gnu packages crates-io) rust-bindgen-0.59))
 				   (("rust-typenum" _) rust-typenum)
+				   (("rust-aes" _) rust-aes)
+				   (("rust-des" _) rust-des)
 				   (("rust-sha-1" _) 
 				    (@ (gnu packages crates-io) rust-sha-1-0.10))
 				   (("rust-sha2" _) 
@@ -1130,13 +1187,14 @@ of operation.")
 				    (@ (gnu packages crates-io) rust-hex-0.4))
 				   (("rust-sha3" _) rust-sha3)
 				   (("rust-scrypt" _) rust-scrypt)
+				   (("rust-password-hash" _) rust-password-hash)
 				   (("rust-block-modes" _) rust-block-modes)
 				   (("rust-ctr" _) rust-ctr)
 				   (("rust-salsa20" _) rust-salsa20)
 				   (("rust-cipher" _) rust-cipher)
 				   (("rust-block-padding" _) rust-block-padding)
 				   (("rust-streebog" _) (@ (gnu packages crates-io) rust-streebog-0.10))
-				   (("rust-pbkdf2" _) (@ (gnu packages crates-io) rust-pbkdf2-0.10))
+				   (("rust-pbkdf2" _) rust-pbkdf2)
 				   (("rust-hmac" _) (@ (gnu packages crates-io) rust-hmac-0.12))
 				   (("rust-boxxy" _) rust-boxxy)
 				   (("rust-block-buffer" _) rust-block-buffer)
