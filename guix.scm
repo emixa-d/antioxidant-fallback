@@ -95,6 +95,21 @@
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
 							      (("^build =(.*)$") ""))))))
+					 ((string-prefix? "rust-chrono" name)
+					  #~((add-after 'unpack 'use-nondeprecated-names
+					       (lambda _
+						 ;; TODO: upstream
+						 (substitute* '("src/naive/date.rs" "src/naive/time.rs" "src/round.rs")
+						   (("num_days\\(\\)") "whole_days()")
+						   (("num_weeks\\(\\)") "whole_weeks()")
+						   (("num_seconds\\(\\)") "whole_seconds()")
+						   ;; XXX this is not exactly the same behaviour,
+						   ;; as a panic has been replaced by a truncation.
+						   (("rhs.num_nanoseconds\\(\\)\\.unwrap\\(\\)") "(rhs.whole_nanoseconds() as i64)")
+						   (("\\(rhs - OldDuration::seconds\\(rhssecs\\)\\)\\.num_nanoseconds\\(\\)\\.unwrap\\(\\)")
+						    "((rhs - OldDuration::seconds(rhssecs)).whole_nanoseconds() as i64)")
+						   (("duration\\.num_nanoseconds\\(\\)")
+						    "Some(duration.whole_nanoseconds() as i64)"))))))
 					 ((string-prefix? "rust-pkcs1" name)
 					  #~((add-after 'unpack 'fix-typing
 					       (lambda _
