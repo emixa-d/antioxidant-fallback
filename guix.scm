@@ -890,6 +890,19 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0q8n1zsa73130hxa2w88qw36g8nprz21j52abpva3khm59a26bkj"))))))
+;; Old rust-sha1 doesn't implement CoreProxy while required by rust-pkcs5
+(define-public rust-sha1
+  (package
+   (inherit (@ (gnu packages crates-io) rust-sha1-0.6))
+   (name "rust-sha1")
+   (version "0.10.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "sha1" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "0bw56hxajrgb3pjg0cr5xrvmx0jna39564iw2p14ama5cmzlwzy7"))))))
 
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
@@ -1337,8 +1350,7 @@ of operation.")
 				    (@ (gnu packages crates-io) rust-ron-0.6)) ; old versions don't build
 				   (("rust-serde" _)
 				    (@ (gnu packages crates-io) rust-serde-1)) ; old versions don't build
-				   (("rust-sha1" _)
-				    (@ (gnu packages crates-io) rust-sha1-0.6))
+				   (("rust-sha1" _) rust-sha1)
 				   (("rust-hashbrown" _)
 				    (@ (gnu packages crates-io) rust-hashbrown-0.11))
 				   (("rust-scopeguard" _)
@@ -1469,8 +1481,10 @@ of operation.")
 					   ("rust-pkcs1" `(("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
 					   ;; for "cbc" feature
 					   ("rust-pkcs5" `(("rust-cbc" ,rust-cbc)))
+					   ("rust-sha1" `(("rust-digest" ,rust-digest)
+							  ("rust-cpufeatures" ,(p rust-cpufeatures-0.2))))
 					   ;; for "sha1" and "sha2" features
-					   ("rust-spki" `(("rust-sha1" ,(@ (gnu packages crates-io) rust-sha1-0.6))
+					   ("rust-spki" `(("rust-sha1" ,rust-sha1)
 							  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
 					   ;; possibly only required by new version
 					   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
