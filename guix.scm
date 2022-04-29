@@ -614,6 +614,32 @@
         (sha256
          (base32 "1cbdffcfp1zivxw4hiqj681api2gqxcgcqf64rq2wbvrk10jffq9"))))))
 
+;; Required by rust-pkcs5' cbc feature
+(define-public rust-cbc
+  (package
+   (name "rust-cbc")
+   (version "0.1.2")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "cbc" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "19l9y9ccv1ffg6876hshd123f2f8v7zbkc4nkckqycxf8fajmd96"))))
+   (build-system (@ (guix build-system cargo) cargo-build-system))
+   (arguments
+    `(#:cargo-inputs
+      (("rust-cipher" ,rust-cipher))
+      #:cargo-development-inputs
+      (("rust-aes" ,rust-aes)
+       ("rust-cipher" ,rust-cipher)
+       ("rust-hex-literal" ,(p rust-hex-literal-0.3)))))
+   (home-page "https://github.com/RustCrypto/block-modes")
+   (synopsis "Cipher Block Chaining (CBC) block cipher mode of operation")
+   (description "Cipher Block Chaining (CBC) block cipher mode of operation")
+   (license '(list license:expat license:asl2.0))))
+
+
 ;; Old agate doesn't build
 (define-public agate
   (package
@@ -1425,6 +1451,8 @@ of operation.")
 					   ("rust-der" `(("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
 					   ;; for "pem" and "alloc" feature
 					   ("rust-pkcs1" `(("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
+					   ;; for "cbc" feature
+					   ("rust-pkcs5" `(("rust-cbc" ,rust-cbc)))
 					   ;; for "sha1" and "sha2" features
 					   ("rust-spki" `(("rust-sha1" ,(@ (gnu packages crates-io) rust-sha1-0.6))
 							  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
