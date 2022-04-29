@@ -999,7 +999,9 @@ of operation.")
     "rust-wasm-bindgen-test"))
 
 (define %features
-  `(;; For now avoid optional dependencies
+  ;; rust-rsa requires "prime"
+  `(("rust-num-bigint-dig" ,#~'("default" "prime"))
+    ;; For now avoid optional dependencies
     ("rust-typenum" ,#~'())
     ;; serde1 failure requires undeclared ‘Glob’ dependency
     ("rust-globset" ,#~'())
