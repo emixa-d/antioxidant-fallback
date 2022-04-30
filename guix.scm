@@ -248,6 +248,7 @@
    (arguments
     `(#:cargo-inputs
       (("rust-futures-core" ,rust-futures-core-0.3)
+       ("rust-futures-channel" ,rust-futures-channel-0.3)
        ("rust-futures-io" ,rust-futures-io-0.3)
        ("rust-futures-sink" ,rust-futures-sink-0.3)
        ("rust-futures-executor" ,rust-futures-executor-0.3)
