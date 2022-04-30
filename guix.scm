@@ -1666,6 +1666,7 @@ of operation.")
 				 ;; for "cbc" feature
 				 ("rust-pkcs5" `(("rust-cbc" ,rust-cbc)))
 				 ("rust-sha1" `(("rust-digest" ,rust-digest)
+						("rust-cfg-if" ,(p rust-cfg-if-1)) ;missing dep
 						("rust-cpufeatures" ,(p rust-cpufeatures-0.2))))
 				 ;; for "sha1" and "sha2" features
 				 ("rust-spki" `(("rust-sha1" ,rust-sha1)
@@ -1689,7 +1690,11 @@ of operation.")
 				 (append cargo-development-inputs
 					 ;; TODO: move zlib of rust-libz-sys-1 from
 					 ;; native-inputs to inputs.
-					 (package-native-inputs pack))))
+					 (package-native-inputs pack)
+					 (match (package-name pack)
+					   ("rust-backtrace"
+					    `(("rust-cc" ,(p rust-cc-1)))) ; missing dep
+					   (_ '())))))
 	 (define p-i (filter-map fix-input (package-propagated-inputs pack)))
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
