@@ -1101,6 +1101,9 @@ of operation.")
     "rust-rustc-std-workspace-std"
     "rust-rustc-std-workspace-core"
     "rust-rustc-std-workspace-alloc"
+    ;; rust-structopt-derive doesn't build and upstream recommends
+    ;; migrating to 'clap'
+    "rust-structopt" "rust-structopt-derive"
     "rust-compiler-builtins"
     "rust-compiletest-rs" ;; TODO: rustc-dev?
     "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
