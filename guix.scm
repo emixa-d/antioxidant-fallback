@@ -1003,7 +1003,10 @@
      (uri (crate-uri "instant" version))
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
-      (base32 "0b2bx5qdlwayriidhrag8vhy10kdfimfhmb3jnjmsz2h9j1bwnvs"))))))
+      (base32 "0b2bx5qdlwayriidhrag8vhy10kdfimfhmb3jnjmsz2h9j1bwnvs"))))
+   ;;TODO: add upstream Guix
+   (inputs (modify-inputs (package-inputs (p rust-instant-0.1))
+			  (append (p rust-cfg-if-1))))))
 (define-public rust-syscallz ; @0.15 doesn't build
   (package
    (inherit (p rust-syscallz-0.15))
