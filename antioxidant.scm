@@ -498,9 +498,11 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	;; mannually ‘propagate’ the -l and -L flags.
 	(match x
 	  ("rustc-link-lib"
+	   (format #f "Will link to ~a~%" y)
 	   (set! *c-libraries* (cons y *c-libraries*)))
 	  ("rustc-link-search"
-	   (unless (string-prefix? "/tmp" y) ;; TODO: don't include /tmp/guix-build things in propagated-environment?
+	   (unless (or (string-prefix? "native=/tmp" y)
+		       (string-prefix? "/tmp" y)) ;; TODO: don't include /tmp/guix-build things in propagated-environment?
 	     (set! *c-library-directories* (cons (drop-native=-prefix y) *c-library-directories*))))
 	  (_ #false))))
      (call-with-input-file stuff read #:encoding "UTF-8")))
