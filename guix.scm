@@ -1004,6 +1004,47 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0b2bx5qdlwayriidhrag8vhy10kdfimfhmb3jnjmsz2h9j1bwnvs"))))))
+(define-public rust-syscallz ; @0.15 doesn't build
+  (package
+   (inherit (p rust-syscallz-0.15))
+   (name "rust-syscallz")
+   (version "0.16.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "syscallz" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "05ws3w0lfbcazx2ay5nkfhgbs4kb6nvk230kbvql44ykjrjm0jnr"))))))
+(define-public rust-strum-macros ; needed by rust-syscallz
+  (package
+   (inherit (p rust-strum-macros-0.21))
+   (name "rust-strum-macros")
+   (version "0.24.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "strum-macros" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1vyh8m1skr8h4f2lnhnq1r7v3mah545bp4k1p8z4svj42ydhfy38"))))
+   (inputs
+    (modify-inputs (package-inputs (p rust-strum-macros-0.21))
+      (append (p rust-rustversion-1))))))
+
+(define-public rust-strum ; needed by rust-syscallz
+  (package
+   (inherit (p rust-strum-0.21))
+   (name "rust-strum")
+   (version "0.24.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "strum" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1y77vshrhm1grlgcfmnm0nxpsv0pb5zcb97zy6rbh106nz0wysp9"))))))
+
 
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
@@ -1073,7 +1114,7 @@ of operation.")
     "rust-tokio-io" ;; doesn't exist in recent tokios, I think?
     #;"rust-lazy-static"
     "rust-version-sync"
-    "rust-rustversion" "rust-trybuild"
+    "rust-trybuild"
     "rust-clippy"
     "rust-tokio-mock-task" ; doesn't build
     "rust-tokio-test"
@@ -1247,6 +1288,9 @@ of operation.")
 		   ;; Not a dependency anymore, resolve cycle.
 		   (not (and (string=? (package-name dependency) "rust-pkcs1")
 			     (string=? (package-name pack) "rust-pkcs8")))
+		   ;; Break cycle (test or something like that?)
+		   (not (and (string=? (package-name dependency) "rust-rustversion")
+			     (string=? (package-name pack) "rust-quote")))
 		   ;; rust-futures-cpupool isn't updated anymore and doesn't
 		   ;; build anymore?
 		   (not (string=? (package-name dependency) "rust-futures-cpupool"))
@@ -1344,8 +1388,6 @@ of operation.")
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-macros" "rust-tokio")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-strum-macros" "rust-strum")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-parking-lot-core" "rust-backtrace")))
 		   ;; TODO: can be removed by relaxing versions in rust-signal-hook@0.1
 		   (not (equal? (list (package-name pack) (package-name dependency))
@@ -1394,7 +1436,11 @@ of operation.")
 				    ;; In the old version 'runtime' cannot be
 				    ;; disabled.
 				    (@ (gnu packages crates-io) rust-bindgen-0.59))
+				   (("rust-heck" _) (p rust-heck-0.4)) ; 0.3 too old for rust-strum-macros@0.24
 				   (("rust-typenum" _) rust-typenum)
+				   (("rust-syscallz" _) rust-syscallz)
+				   (("rust-strum" _) rust-strum)
+				   (("rust-strum-macros" _) rust-strum-macros)
 				   (("rust-backtrace" _) rust-backtrace) ; old backtrace doesn't build with the new rust-object
 				   (("rust-gimli" _) rust-gimli)
 				   ;; rust-pkcs5@0.5.0-pre.1 requires new_unwrap
