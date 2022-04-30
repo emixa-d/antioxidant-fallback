@@ -968,7 +968,11 @@
      (uri (crate-uri "rsa" version))
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
-      (base32 "02viiiylxpk2hx5h5qrpm4lcd8ildvafbw0rn6rx44wnqia2gwjc"))))))
+      (base32 "02viiiylxpk2hx5h5qrpm4lcd8ildvafbw0rn6rx44wnqia2gwjc"))))
+   (inputs
+    (modify-inputs (package-inputs (p rust-rsa-0.5))
+      (prepend (p rust-rand-core-0.6))))))
+
 (define-public rust-backtrace ;; old rust-backtrace doesn't build against new rust-object
   (package
    (inherit (p rust-backtrace-0.3))
@@ -1664,12 +1668,14 @@ of operation.")
 				 ;; for "pem" and "alloc" feature
 				 ("rust-pkcs1" `(("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
 				 ;; for "cbc" feature
-				 ("rust-pkcs5" `(("rust-cbc" ,rust-cbc)))
+				 ("rust-pkcs5" `(("rust-cbc" ,rust-cbc)
+						 ("rust-sha1" ,rust-sha1))) ; missing dep (for pbes2)
 				 ("rust-sha1" `(("rust-digest" ,rust-digest)
 						("rust-cfg-if" ,(p rust-cfg-if-1)) ;missing dep
 						("rust-cpufeatures" ,(p rust-cpufeatures-0.2))))
 				 ;; for "sha1" and "sha2" features
 				 ("rust-spki" `(("rust-sha1" ,rust-sha1)
+						("rust-base64ct" ,(p rust-base64ct-1)) ; missing dep
 						("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
 				 ;; possibly only required by new version
 				 ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
