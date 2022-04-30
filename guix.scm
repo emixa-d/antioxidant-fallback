@@ -103,6 +103,16 @@
 						   (("use std::time::Duration;")
 						    "use std::time::Duration;use std::convert::TryInto;")
 						   (("\\.to_std\\(\\)") ".try_into()"))))))
+					 ;; TODO: Upstream/update
+					 ((string-prefix? "rust-structopt-derive" name)
+					  #~((add-after 'unpack 'use-existing
+					       (lambda _
+						 (substitute* "src/attrs.rs"
+						   (("CamelCase, KebabCase, MixedCase, ShoutySnakeCase, SnakeCase")
+						    ;; ?? CamelCase, MixedCase
+						    "ToUpperCamelCase, ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase")
+						   (("to_camel_case") "to_upper_camel_case")
+						   (("to_mixed_case") "to_lower_camel_case"))))))
 					 ((string-prefix? "rust-chrono" name)
 					  #~((add-after 'unpack 'use-nondeprecated-names
 					       (lambda _
@@ -1103,7 +1113,7 @@ of operation.")
     "rust-rustc-std-workspace-alloc"
     ;; rust-structopt-derive doesn't build and upstream recommends
     ;; migrating to 'clap'
-    "rust-structopt" "rust-structopt-derive"
+    #;"rust-structopt" #;"rust-structopt-derive"
     "rust-compiler-builtins"
     "rust-compiletest-rs" ;; TODO: rustc-dev?
     "rust-winapi" "rust-kernel32-sys" ; skip Windows support for now
