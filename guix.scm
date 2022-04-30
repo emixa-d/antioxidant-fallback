@@ -1085,6 +1085,9 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; rust-rcgen requires "time". While at it, enable other
+    ;; features as well.
+    ("rust-yasna" ,#~'("default" "time" "bit-vec" "bigint" "std"))
     ;; rust-num-bigint-dig's zeroize feature requires the "derive"
     ;; feature of rust-zeroize
     ("rust-zeroize" ,#~'("default" "derive"))
