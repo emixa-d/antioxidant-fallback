@@ -417,7 +417,6 @@ with open(there, \"w\") as out_file:
 	     (append-map crate->l-arguments used-dependencies))
      string=?)))
 
-;; self-crates TODO
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs outputs
 		       (configuration '())
@@ -460,7 +459,6 @@ with open(there, \"w\") as out_file:
   (apply compile-rust source destination
 	 (append (list "--crate-type=bin")
 		 extra-arguments)
-	 #:self-crates? #true ; required by hexyl
 	 arguments))
 
 
@@ -600,21 +598,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 		    x))
 		  "-"
 		  "_")
-		 y)
-	;; Currently, shared libraries are not supported, and static libraries
-	;; do not appear to have an equivalent to ELF's NEEDED, so we have to
-	;; mannually ‘propagate’ the -l and -L flags.
-	;;
-	;; TODO: this should be propagated now with <crate-information> ... (to be verified)
-	#;(match x ;; TODO: eliminate ...
-	  ("rustc-link-lib"
-	   (format #t "Will link to ~a~%" y)
-	   (set! *c-libraries* (cons y *c-libraries*)))
-	  ("rustc-link-search"
-	   (unless (or (string-prefix? "native=/tmp" y)
-		       (string-prefix? "/tmp" y)) ;; TODO: don't include /tmp/guix-build things in propagated-environment?
-	     (set! *c-library-directories* (cons (drop-native=-prefix y) *c-library-directories*))))
-	  (_ #false))))
+		 y)))
      (crate-information-environment crate-info)))
   (for-each do
 	    (find-directly-available-crates (delete-duplicates (append native-inputs inputs)))))
