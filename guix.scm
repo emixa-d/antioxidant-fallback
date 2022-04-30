@@ -223,6 +223,10 @@
      #t)
     (_ #false)))
 
+(define-syntax p
+  (syntax-rules ()
+    ((_ foo) (@ (gnu packages crates-io) foo))))
+
 (use-modules (guix download))
 (define crate-uri (@ (guix build-system cargo) crate-uri))
 
@@ -281,9 +285,10 @@
        ("rust-futures-sink" ,rust-futures-sink-0.3)
        ("rust-futures-io" ,rust-futures-io-0.3)
        ("rust-futures-channel" ,rust-futures-channel-0.3)
-       ("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))
-       ("rust-pin-utils" ,(@ (gnu packages crates-io) rust-pin-utils-0.1))
-       ("rust-slab" ,(@ (gnu packages crates-io) rust-slab-0.4)))))))
+       ("rust-memchr" ,(p rust-memchr-2))
+       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))
+       ("rust-pin-utils" ,(p rust-pin-utils-0.1))
+       ("rust-slab" ,(p rust-slab-0.4)))))))
 
 (define rust-futures-channel-0.3
   (package
@@ -505,9 +510,6 @@
           (base32 "038wcjiiay825wc8inmn62flklc1adxskg5fmjhmxqnhwmj1k5gn"))))))
 
 ;; old rust-test-case@1 is incompatible with new rust-syn
-(define-syntax p
-  (syntax-rules ()
-    ((_ foo) (@ (gnu packages crates-io) foo))))
 (define-public rust-test-case-2
   (package
    (inherit (@ (gnu packages crates-io) rust-test-case-1))
