@@ -1111,6 +1111,7 @@ of operation.")
     "rust-rustc-std-workspace-std"
     "rust-rustc-std-workspace-core"
     "rust-rustc-std-workspace-alloc"
+    "rust-runtime" ; deprecated and doesn't build
     ;; rust-structopt-derive doesn't build and upstream recommends
     ;; migrating to 'clap'
     #;"rust-structopt" #;"rust-structopt-derive"
@@ -1146,6 +1147,8 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; "paw" required by sniffglue
+    ("rust-structopt" ,#~'("default" "paw"))
     ;; rust-rcgen requires "time". While at it, enable other
     ;; features as well.
     ("rust-yasna" ,#~'("default" "time" "bit-vec" "bigint" "std"))
@@ -1317,6 +1320,11 @@ of operation.")
 		   (not (string-prefix? "rust-redox" (package-name dependency)))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-serde-derive" "rust-serde")))
+		   ;; Test cycle (rust-paw <-> rust-paw-structopt).
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-paw" "rust-paw-structopt")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-paw" "rust-structopt")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-anyhow" "rust-thiserror")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
@@ -1641,6 +1649,8 @@ of operation.")
 	 (define i
  	   (filter-map fix-input
 		       (append (match (package-name pack)
+				 ("rust-structopt" ; for paw feature
+				  `(("rust-paw" ,(p rust-paw-1))))
 				 ;; No need to avoid Rust dependencies.
 				 ("rust-flate2"
 				  (list (list "zlib" (@ (gnu packages compression) zlib))))
