@@ -296,7 +296,8 @@ with open(there, \"w\") as out_file:
 
 ;; TODO: support static libraries instead of only .so/dylib
 (define (l-arguments c-libraries)
-  (append-map (lambda (l) (list "-l" l)) c-libraries))
+  ;; l can be something like 'openssl' or 'static=ring-test'
+  (map (lambda (l) (string-append "-l" l)) c-libraries))
 
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs outputs
