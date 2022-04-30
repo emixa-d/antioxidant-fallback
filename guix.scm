@@ -831,7 +831,7 @@
       (file-name (string-append name "-" version ".tar.gz"))
       (sha256
        (base32 "17mmmqaalirdx7bpdhrgzp1sd392zm08mjrr24cjr57pz1q351yi"))))
-    (propagated-inputs ;; TODO
+    (inputs
      (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-cipher-0.3))
 		    (append rust-crypto-common rust-inout
 			    (@ (gnu packages crates-io) rust-zeroize-1))))))
@@ -847,7 +847,7 @@
       (file-name (string-append name "-" version ".tar.gz"))
       (sha256
        (base32 "0y5v92alqzn9ikmyqfl3a4j6va87j967ii2n3jh2h330z4nyr40a"))))
-    (propagated-inputs ;; TODO
+    (inputs
      (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-block-padding-0.2))
 		    (append (@ (gnu packages crates-io) rust-generic-array-0.14))))))
 
@@ -1585,42 +1585,38 @@ of operation.")
 				 ("rust-clang-sys"
 				  ;; TODO needs more work for
 				  (list (list "clang" (@ (gnu packages llvm) clang-13))))
+				 ;; for "pem" feature
+				 ("rust-der" `(("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
+				 ;; for "pem" and "alloc" feature
+				 ("rust-pkcs1" `(("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
+				 ;; for "cbc" feature
+				 ("rust-pkcs5" `(("rust-cbc" ,rust-cbc)))
+				 ("rust-sha1" `(("rust-digest" ,rust-digest)
+						("rust-cpufeatures" ,(p rust-cpufeatures-0.2))))
+				 ;; for "sha1" and "sha2" features
+				 ("rust-spki" `(("rust-sha1" ,rust-sha1)
+						("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
+				 ;; possibly only required by new version
+				 ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
+				 ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
+				 ("sniffglue" `(("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
+				 ;; TODO: is this sufficient?
+				 ("rust-futures-core-preview"
+				  `(("rust-futures-core" ,rust-futures-core-0.3)))
+				 ("rust-http-body" ; at least for 0.4
+				  `(("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
+				 ("rust-tokio-sync"
+				  `(("rust-futures-core" ,rust-futures-core-0.3)
+				    ("rust-futures-util" ,rust-futures-util-0.3)))
 				 (_ '()))
+			       cargo-inputs
 			       (package-inputs pack))))
 	 (define n-i (filter-map fix-input
 				 (append cargo-development-inputs
 					 ;; TODO: move zlib of rust-libz-sys-1 from
 					 ;; native-inputs to inputs.
 					 (package-native-inputs pack))))
-	 (define p-i (filter-map fix-input
-				 (append cargo-inputs
-					 (package-propagated-inputs pack)
-					 ;; Add missing dependencies (TODO upstream Guix)
-					 (match (package-name pack)
-					   ;; for "pem" feature
-					   ("rust-der" `(("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
-					   ;; for "pem" and "alloc" feature
-					   ("rust-pkcs1" `(("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
-					   ;; for "cbc" feature
-					   ("rust-pkcs5" `(("rust-cbc" ,rust-cbc)))
-					   ("rust-sha1" `(("rust-digest" ,rust-digest)
-							  ("rust-cpufeatures" ,(p rust-cpufeatures-0.2))))
-					   ;; for "sha1" and "sha2" features
-					   ("rust-spki" `(("rust-sha1" ,rust-sha1)
-							  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
-					   ;; possibly only required by new version
-					   ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
-					   ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
-					   ("sniffglue" `(("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
-					   ;; TODO: is this sufficient?
-					   ("rust-futures-core-preview"
-					    `(("rust-futures-core" ,rust-futures-core-0.3)))
-					   ("rust-http-body" ; at least for 0.4
-					    `(("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
-					   ("rust-tokio-sync"
-					    `(("rust-futures-core" ,rust-futures-core-0.3)
-					      ("rust-futures-util" ,rust-futures-util-0.3)))
-					   (_ '())))))
+	 (define p-i (filter-map fix-input (package-propagated-inputs pack)))
 	 (package
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (source

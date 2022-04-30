@@ -26,6 +26,7 @@
   #:use-module (rnrs records syntactic)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-71)
   #:use-module (ice-9 match)
   #:use-module (ice-9 string-fun)
   #:use-module (ice-9 textual-ports)
@@ -212,33 +213,101 @@ with open(there, \"w\") as out_file:
 ;;
 ;; Information on how to use a crate.
 ;;
-;; TODO: maybe add information like:
-;;
-;;  * Where is the crate located?
-;;  * Is it a direct depency of a transitive dependency?
-;;    (marking it transitive makes 'rustc' stricer in some aspects)
-;;  * non-crate libraries to link
-;;  * non-crate library directories to look at
-;;
-;; ... instead of the current ad-hoc *c-libraries*, *extra-arguments*
-;; system.
-;;
+
+;; <crate-information> loaded with 'load-crate-information' can be compared with eq?.
+;; By default, it is assumed <crate-information> is loaded with that.
+(define-json-mapping <crate-information> make-crate-information crate-information?
+  json->crate-information <=> crate-information->json <=>
+  scm->crate-information <=> crate-information->scm
+  (name crate-information-name) ; string, name of the crate (normalised)
+  (link crate-information-link) ; string
+  ;; Where is the crate (as .rlib or .so or such) located in the file system?
+  ;; (TODO: check that it's absolute)
+  (location crate-information-location) ; string
+  ;; Extra libraries to add (as -l arguments) to compile depending crates.
+  ;; static= prefixes are allowed.
+  (libraries crate-information-libraries "libraries" vector->list list->vector)
+  ;; List of directory names to search for the libraries -- without native=
+  ;; prefixes or such!
+  ;; TODO: check that they are absolute.
+  (library-directories crate-information-library-directories "library-directories" vector->list list->vector)
+  ;; List of file names of the (non-test, non-build, non-dev) dependencies of
+  ;; this crate -- the file names point to a <crate-information> JSON.
+  (dependencies crate-information-dependencies "dependencies" vector->list list->vector)
+  (environment crate-information-environment)) ;; TODO
+
+(define *known-crate-information* (make-hash-table)) ; file name -> <crate-information>
+(define *crate-information->file-name* (make-hash-table))
+(define (load-crate-information location)
+  (match (hash-ref *known-crate-information* location)
+    (#f (let ((parsed
+	       (scm->crate-information
+		(call-with-input-file location
+		  json->scm
+		  #:encoding "UTF-8"))))
+	  (hash-set! *known-crate-information* location parsed)
+	  (hashq-set! *crate-information->file-name* parsed location)
+	  parsed))
+    ((? crate-information? info) info)))
+(define (crate-information->file-name crate-info)
+  (or (hashq-ref *crate-information->file-name* crate-info)
+      (error (pk 'crate-info crate-info "unknown crate info"))))
+
 ;; Crate names are normalised by the constructor.
-;;
-(define-record-type (<crate> %make-crate crate?)
+(define-record-type (<crate-mapping> %make-crate-mapping crate-mapping?)
   ;; What does the crate name itself?
-  (fields (immutable true-name crate-true-name) ; string
+  (fields (immutable true-name crate-mapping-true-name) ; string
 	  ;; What does the crate that is using this crate
 	  ;; expect as name?  Usually the same as 'self-name'.
-	  (immutable local-name crate-local-name) ; string
+	  (immutable local-name crate-mapping-local-name) ; string
 	  ;; TODO more stuff ....
 	  ))
-(define (make-crate true-name local-name)
-  (%make-crate (normalise-crate-name true-name)
-	       (normalise-crate-name local-name)))
+
+(define (make-crate-mapping true-name local-name)
+  (%make-crate-mapping (normalise-crate-name true-name)
+		       (normalise-crate-name local-name)))
 
 (define (normalise-crate-name name)
   (string-replace-substring name "-" "_"))
+
+(define (partition-crates available-crates crate-mappings)
+  ;; First return value: direct dependencies
+  ;; Second return value: indirect dependencies (can contain things not in available-crates!)
+  ;; Third return value: all things in available-crates not in the previous.
+  ;;
+  ;; Direct and indirect dependencies can overlap (e.g.: rust-syn@1.0.82)
+  (define direct
+    (filter (lambda (crate-information)
+	      (any (cut match? crate-information <>) crate-mappings))
+	    available-crates))
+  (define (find-indirect from append-to)
+    (define (f crate-information)
+      (map load-crate-information
+	   (crate-information-dependencies crate-information)))
+    (delete-duplicates (append (append-map f from) append-to) eq?))
+  (let loop ((indirect (find-indirect direct '())))
+    (let ((next (find-indirect indirect indirect)))
+      (if (equal? indirect next) ; fixpoint reached
+	  (values (pk 'd direct) indirect
+		  (lset-difference eq? available-crates
+				   (lset-union eq? direct indirect)))
+	  (loop next)))))
+
+(define (filter-used-crates available-crates crate-mappings)
+  (let* ((direct indirect rest (partition-crates available-crates crate-mappings)))
+    (append direct indirect)))
+
+(define (find-directly-available-crates inputs)
+  (append-map (match-lambda
+		((_ . input)
+		 (let ((dir (string-append input "/lib/guixcrate")))
+		   (if (directory-exists? dir)
+		       (map load-crate-information
+			    (find-files dir "\\.crate-info"))
+		       '()))))
+	      inputs))
+
+
 
 (define (crate-directory store-item)
   (string-append store-item "/lib/guixcrate"))
@@ -271,47 +340,93 @@ with open(there, \"w\") as out_file:
 			     (format #t "Unrecognised: ~a~%" lib))))
    (string-length "lib")))
 
-(define (extern-arguments crate-file-names allowed-crates)
-  ;; allowed-crate: list of <crate> objects
-  (define (process-crate crate)
-    ;; "rustc" will sort out duplicates (by emitting an error)
-    (define (try-file-name file-name)
-      (and (string=? (crate-true-name crate) (extract-crate-name file-name))
-	   (string-append "--extern=" (crate-local-name crate)
-			  "=" file-name)))
-    (filter-map try-file-name crate-file-names))
-  (append-map process-crate allowed-crates))
+(define (match? crate-information crate-mapping)
+  (string=? (crate-mapping-true-name crate-mapping)
+	    (crate-information-name crate-information)))
 
-(define* (L-arguments crates #:optional (kind "all"))
-  (delete-duplicates
-   (map (lambda (crate)
-	  (string-append "-L" kind "=" (dirname crate)))
-	crates)
-   string=?))
+(define (extern-arguments available-crates crate-mappings)
+  (define (process-mapping crate-mapping)
+    (define (do crate)
+      (string-append "--extern=" (crate-mapping-local-name crate-mapping)
+		     "=" (crate-information-location crate)))
+    ;; Search for a matchin crate
+    (match (filter (cut match? <> crate-mapping) available-crates)
+      (()
+       (format (current-error-port)
+	       "warning: ~a not found in the available crates -- this might cause the build to fail!~%"
+	       crate-mapping)
+       #f)
+      ((x) (do x))
+      ((x y . rest)
+       (format (current-error-port)
+	       "warning: multiple candidates for ~a (~a, ~a) in the available crates -- this will probably cause the build to fail!~%"
+	       crate-mapping x y)
+       (do x))))
+  ;; "rustc" will sort out duplicates in crate-mappings (by emitting an error)(?)
+  (filter-map process-mapping crate-mappings))
+
+(define* (L-arguments available-crates crate-mappings #:optional
+		      (extra-library-directories '()))
+  (pk 'a available-crates crate-mappings)
+  (let* ((direct-dependencies indirect-dependencies rest
+			      (partition-crates available-crates crate-mappings))
+	 (indirect-crate->argument
+	  (lambda (crate-information)
+	    (string-append "-Ldependency="
+			   (dirname (crate-information-location crate-information)))))
+	 ;; No need for -Lcrate, as the full file name is passed to --extern=.
+	 (indirect-crate-arguments
+	  (map indirect-crate->argument indirect-dependencies))
+	 (make-Lnative-argument
+	  (lambda (directory)
+	    ;; native means something different in rustc than Guix.
+	    ;; In Rust, 'native' means non-Rust compiled libraries.
+	    (string-append "-Lnative=" directory)))
+	 (make-Lnative-arguments*
+	  (lambda (crate-information)
+	    (map make-Lnative-argument
+		 (crate-information-library-directories crate-information))))
+	 (Lnative-arguments
+	  (append (map make-Lnative-argument extra-library-directories)
+		  ;; Only use crates that are actually (indirectly) requested.
+		  (append-map make-Lnative-arguments*
+			      (append direct-dependencies (pk 'i indirect-dependencies))))))
+    ;; Delete duplicates to shrink the invocation of 'rustc' a bit.
+    (append (delete-duplicates Lnative-arguments string=?)
+	    indirect-crate-arguments))) ; shouldn't contain duplicates
 
 (define (configuration-arguments configuration)
   (append-map (lambda (cfg)
 		(list "--cfg" cfg))
 	      configuration))
 
-;; TODO: support static libraries instead of only .so/dylib
-(define (l-arguments c-libraries)
-  ;; l can be something like 'openssl' or 'static=ring-test'
-  (map (lambda (l) (string-append "-l" l)) c-libraries))
+(define* (l-arguments available-crates crate-mappings #:optional
+		      (extra-nonrust-libraries '()))
+  ;; Only involve crates that are actually requested.
+  ;; Result: a list of -lopenssl, -lstatic=ring-test, ..., arguments.
+  (let* ((used-dependencies (filter-used-crates available-crates crate-mappings))
+	 (library->argument
+	  (lambda (library)
+	    (string-append "-l" library)))
+	 (crate->l-arguments
+	  (lambda (crate-information)
+	    (map library->argument
+		 (crate-information-libraries crate-information)))))
+    (delete-duplicates ; shrink invocation of 'rustc'
+     (append (map library->argument extra-nonrust-libraries)
+	     (append-map crate->l-arguments used-dependencies))
+     string=?)))
 
+;; self-crates TODO
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs outputs
 		       (configuration '())
-		       (self-crates? #false)
-		       (c-libraries *c-libraries*)
+		       (available-crates '())
+		       (crate-mappings '())
+		       (extra-libraries *c-libraries*)
 		       ;; TODO: don't use 'extra-arguments' for this
-		       (c-library-directories *c-library-directories*)
-		       (extern-crates '())
+		       (extra-library-directories *c-library-directories*)
 		       #:allow-other-keys)
-  (define crates (find-crates (append (if self-crates?
-					  outputs
-					  '())
-				      inputs (or native-inputs '()))))
   (mkdir-p (dirname destination))
   (apply invoke
 	 "rustc" "--verbose"
@@ -322,16 +437,10 @@ with open(there, \"w\") as out_file:
 	 "--cap-lints" "warn" ;; ignore #[deny(warnings)], it's too noisy
 	 "-C" "prefer-dynamic" ;; for C dependencies & grafting and such?
 	 source "-o" destination
-	 (append (extern-arguments crates extern-crates)
-		 (L-arguments crates)
-		 (L-arguments (map (cut string-append <> "/remove-me")
-				   c-library-directories)
-			      ;; This does not mean the same in Rust as in
-			      ;; Guix -- here it means ‘regular libraries’,
-			      ;; not libraries for the current architecture.
-			      "native")
+	 (append (extern-arguments available-crates crate-mappings)
+		 (L-arguments available-crates crate-mappings extra-library-directories)
 		 (configuration-arguments configuration)
-		 (l-arguments c-libraries)
+		 (l-arguments available-crates crate-mappings extra-libraries)
 		 extra-arguments)))
 
 (define* (compile-rust-library source destination crate-name extra-arguments
@@ -454,9 +563,9 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	    (append-map the-target-specific-dependencies
 			(manifest-target-specific manifest))))
   (define (construct-crate dependency)
-    (make-crate (or (dependency-package dependency)
-		    (dependency-name dependency))
-		(dependency-name dependency)))
+    (make-crate-mapping (or (dependency-package dependency)
+			    (dependency-name dependency))
+			(dependency-name dependency)))
   (map construct-crate dependencies))
 
 ;; Some cargo:??? lines from build.rs are ‘propagated’ to dependencies
@@ -466,6 +575,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	  #:key (inputs '())
 	  (native-inputs '())
 	  #:allow-other-keys)
+  ;; TODO: also for indirect dependencies?
   (define (setenv* x y)
     (format #t "setting ~a to ~a~%" x y)
     (setenv x y))
@@ -476,76 +586,71 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	  ((string-prefix? "all=" directory)
 	   (string-drop directory (string-length "all=")))
 	  (#t directory)))
-  (define (do* stuff c-libraries?)
-    (format #t "reading extra environment variables from ~a~%" stuff)
+  (define (do crate-info)
+    (format #t "setting extra environment variables in ~a~%" crate-info)
     (for-each
      (match-lambda
-       ((x y) (setenv*
-	       (string-replace-substring
-		(string-upcase
-		 (string-append
-		  "DEP_"
-		  (string-drop-right
-		   (basename stuff) ; the 'link' name
-		   (string-length ".propagated-environment"))
-		  "_"
-		  x))
-		"-"
-		"_")
-	       y)
+       ((x . y) (setenv*
+		 (string-replace-substring
+		  (string-upcase
+		   (string-append
+		    "DEP_"
+		    (crate-information-link crate-info)
+		    "_"
+		    x))
+		  "-"
+		  "_")
+		 y)
 	;; Currently, shared libraries are not supported, and static libraries
 	;; do not appear to have an equivalent to ELF's NEEDED, so we have to
 	;; mannually ‘propagate’ the -l and -L flags.
-	(match x
+	;;
+	;; TODO: this should be propagated now with <crate-information> ... (to be verified)
+	#;(match x ;; TODO: eliminate ...
 	  ("rustc-link-lib"
-	   (format #f "Will link to ~a~%" y)
+	   (format #t "Will link to ~a~%" y)
 	   (set! *c-libraries* (cons y *c-libraries*)))
 	  ("rustc-link-search"
 	   (unless (or (string-prefix? "native=/tmp" y)
 		       (string-prefix? "/tmp" y)) ;; TODO: don't include /tmp/guix-build things in propagated-environment?
 	     (set! *c-library-directories* (cons (drop-native=-prefix y) *c-library-directories*))))
 	  (_ #false))))
-     (call-with-input-file stuff read #:encoding "UTF-8")))
-  (define* (do stuff #:optional (c-libraries? #false))
-    (match stuff
-      ((name . input)
-       (define where (string-append input "/lib/guixlinks"))
-       ;; Rustc knows how to find glibc anyway, and including
-       ;; these in -L cause ‘undefined reference to symbol '__tls_get_addr@@GLIBC_2.3'.
-       ;;
-       ;; Including libc:static causes Rust to try use the static library,
-       ;; which causes relocation errors.
-       (when (and (not (member name '("libc:static" "libc")))
-		  (directory-exists? (string-append input "/lib")))
-	 ;; TODO: only if there are .so or .a, to reduce command-line
-	 ;; length?  TODO: why does rustc not recognise LIBRARY_PATH?
-	 (set! *c-library-directories*
-	       (cons (string-append input "/lib") *c-library-directories*)))
-       (when (file-exists? where)
-	 (for-each (cut do* <> c-libraries?)
-		   (find-files where "\\.propagated-environment$"))))))
-  (define (do/with-libraries input) (do input #true))
-  (for-each do native-inputs) ;; TODO: make propagated c libraries available to build.rs, _if_ they are native-inputs
-  (set! *c-library-directories* (append *c-library-directories*))
-  (for-each do/with-libraries inputs)
-  (set! *c-library-directories* (delete-duplicates *c-library-directories*))
-  (set! *c-libraries* (delete-duplicates *c-libraries*)))
+     (crate-information-environment crate-info)))
+  (for-each do
+	    (find-directly-available-crates (delete-duplicates (append native-inputs inputs)))))
 
-(define* (save-environment-variables link-name saved-settings
-				     #:key outputs #:allow-other-keys)
+(define* (save-crate-info link-name saved-settings library-destination
+			  #:key inputs outputs #:allow-other-keys)
   (define where (string-append (or (assoc-ref outputs "env")
 				   (assoc-ref outputs "lib")
 				   (assoc-ref outputs "out")) ;; maybe switch the last two?
-			       "/lib/guixlinks/" link-name ".propagated-environment"))
-  (unless (null? saved-settings)
-    ;; TODO: maybe filter out uninteresting things like core-rerun-if-changed?
-    (format #t "Saving gathered environment variables to ~a~%" where)
-    (mkdir-p (dirname where))
-    (call-with-output-file where
-      (lambda (o) (write saved-settings o))
-      #:encoding "UTF-8")))
+			       "/lib/guixcrate/" link-name ".crate-info"))
+  (define available-crates (find-directly-available-crates inputs))
+  (define crate-mappings (manifest-all-dependencies *manifest* '(dependency)))
+  (format #t "Saving crate informtion in ~a~%" where)
+  (mkdir-p (dirname where))
+  (call-with-output-file where
+    (lambda (o)
+      (scm->json
+       (crate-information->scm
+	(make-crate-information (normalise-crate-name
+				 (package-name (manifest-package *manifest*)))
+				link-name
+				*library-destination*
+				*c-libraries*
+				*c-library-directories*
+				;; direct dependencies
+				(map crate-information->file-name
+				     (partition-crates available-crates crate-mappings))
+				;; TODO: maybe filter out uninteresting things like
+				;; core-rerun-if-changed?
+				saved-settings))
+       o))
+    #:encoding "UTF-8"))
 
-(define* (configure #:key target build optimisation-level #:allow-other-keys #:rest arguments)
+(define *save* #false) ;; TODO: less impure
+(define* (configure #:key inputs native-inputs target build optimisation-level
+		    #:allow-other-keys #:rest arguments)
   (define saved-settings '())
   (define extra-configuration '()) ; --cfg options, computed by build.rs
   (define (handle-line line)
@@ -555,7 +660,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	(if =-index
 	    (let ((this (substring rest 0 =-index))
 		  (that (substring rest (+ 1 =-index))))
-	      (set! saved-settings (cons (list this that) saved-settings)))
+	      (set! saved-settings (cons (cons this that) saved-settings)))
 	    (begin
 	      (pk 'l rest)
 	      (error "cargo: line doesn't look right, = missing?")))))
@@ -607,7 +712,8 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	     ;; in 'dependencies' or 'dev-dependencies', only 'build-dependencies',
 	     ;; see
 	     ;; <https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html>.
-	     (list #:extern-crates (manifest-all-dependencies *manifest* '(build))
+	     (list #:crate-mappings (manifest-all-dependencies *manifest* '(build))
+		   #:available-crates (find-directly-available-crates native-inputs)
 		   #:configuration (map feature->config *features*))))
     ;; Expected by rust-const-fn's build.rs
     (setenv "OUT_DIR" (getcwd))
@@ -634,16 +740,20 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	    ((? string? line) (handle-line line) (loop (get-line port)))
 	    ((? eof-object? line) (values)))))))
   (set! *configuration* (append extra-configuration (map feature->config *features*)))
-  (let ((link (package-links package)))
-    (when link
-      (apply save-environment-variables link saved-settings arguments)))
+  (set! *save*
+    (lambda (library-destination)
+      (apply save-crate-info (or (package-links package)
+				 (package-name package))
+	     saved-settings library-destination
+	     arguments)))
   (format #t "Building with configuration options: ~a~%" *configuration*))
 
-(define* (build . arguments)
+(define *library-destination* #f)
+(define* (build #:key inputs #:allow-other-keys #:rest arguments)
   "Build the Rust crates (library) described in Cargo.toml."
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
-	 (extern-crates (manifest-all-dependencies *manifest* '(dependency)))
+	 (crate-mappings (manifest-all-dependencies *manifest* '(dependency)))
 	 (crate-name (normalise-crate-name (package-name package)))
 	 (edition (package-edition package))
 	 (lib (manifest-lib *manifest*))
@@ -658,12 +768,14 @@ chosen, enabling all features like Cargo does (except nightly).~%")
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (when lib-path
-      (apply compile-rust-library lib-path
-	     (apply library-destination crate-name
-		    (if lib-procedural-macro?
-			"so"
-			"rlib")
-		    arguments)
+      (set! *library-destination*
+	(apply library-destination crate-name
+	       (if lib-procedural-macro?
+		   "so"
+		   "rlib")
+	       arguments)) ;; TODO: less impure
+      (*save* *library-destination*)
+      (apply compile-rust-library lib-path *library-destination*
 	     (normalise-crate-name (package-name package))
 	     ;; Version of the Rust language (cf. -std=c11)
 	     ;; -- required by rust-proc-macro2
@@ -675,11 +787,12 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	     #:crate-type (if lib-procedural-macro?
 			      "proc-macro"
 			      "rlib")
-	     #:extern-crates extern-crates
+	     #:available-crates (find-directly-available-crates inputs)
+	     #:crate-mappings crate-mappings
 	     ;; TODO: does the order matter?
 	     (append arguments (list #:configuration *configuration*))))))
 
-(define* (build-binaries #:key outputs #:allow-other-keys #:rest arguments)
+(define* (build-binaries #:key inputs outputs #:allow-other-keys #:rest arguments)
   "Compile the Rust binaries described in Cargo.toml"
   (define package (manifest-package *manifest*))
   (define files-visited '())
@@ -695,9 +808,10 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 		 (string-append "-Lnative=" (getcwd)))
 	   ;; A program can use its own crate without declaring it.
 	   ;; At least, hexyl tries to do so.
-	   #:extern-crates (let ((this-name (package-name package)))
-			     (cons (make-crate this-name this-name)
-				   extern-crates))
+	   #:crate-mappings (let ((this-name (package-name package)))
+			      (cons (make-crate-mapping this-name this-name)
+				    extern-crates))
+	   #:available-crates (find-directly-available-crates inputs)
 	   ;; TODO: figure out how to override things
 	   (append
 	    arguments
