@@ -1417,8 +1417,7 @@ of operation.")
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-spmc" "rust-loom")))
 		   (not (and (member (package-name pack)
-				     (list "rust-futures-util"
-					   #;"rust-hex-literal-impl" "rust-hex-literal"))
+				     (list "rust-futures-util"))
 			     (string=? (package-name dependency) "rust-proc-macro-hack")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tokio-test" "rust-tokio"))) ; TODO
