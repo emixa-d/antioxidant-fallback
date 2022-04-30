@@ -829,7 +829,9 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	   #:crate-mappings (let ((this-name (package-name package)))
 			      (cons (make-crate-mapping this-name this-name)
 				    extern-crates))
-	   #:available-crates (find-directly-available-crates inputs)
+	   ;; Binaries can use their own crates!
+	   #:available-crates
+	   (find-directly-available-crates (append outputs inputs))
 	   ;; TODO: figure out how to override things
 	   (append
 	    arguments
