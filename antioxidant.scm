@@ -613,6 +613,38 @@ chosen, enabling all features like Cargo does (except nightly).~%")
   (define crate-mappings (manifest-all-dependencies *manifest* '(dependency)))
   (format #t "Saving crate informtion in ~a~%" where)
   (mkdir-p (dirname where))
+  ;; /tmp/guix-build-... directories won't exist after the build is finished,
+  ;; so including them is pointless.
+  (define (directory-without-prefix dir)
+    (cond ((string-prefix? "native=" dir)
+	   (string-drop dir (string-length "native=")))
+	  ((string-prefix? "all=" dir)
+	   (string-drop dir (string-length "all=")))
+	  (#t dir)))
+  (define (local-directory? dir)
+    (string-prefix? (getcwd) (directory-without-prefix dir)))
+  ;; If the build.rs compiled a C library and linked it into the crate,
+  ;; then at least for cases known at writing, rustc will link the local
+  ;; C library into the rlib (rust-sha2-asm@0.6.1), so including them in
+  ;; -l later is pointless, especially given that they won't be found later.
+  (define (locally-compiled-c-library? foo)
+    (let* ((name (if (string-prefix? "static=" foo)
+		     (string-drop foo (string-length "static="))
+		     foo))
+	   (basename (format #f "lib~a.a" name)))
+      (define (match? c-library-directory)
+	(pk #:whats-there c-library-directory (find-files c-library-directory))
+	(and (pk 'l c-library-directory (local-directory? c-library-directory))
+	     (pk 'e (file-exists? (pk 'n (in-vicinity
+					  (directory-without-prefix c-library-directory)
+					  basename))))))
+      ;; rust-sha2-asm doesn't add the current directory to c-library-directories
+      ;; even though it adds a static library there.
+      (any match? (cons (getcwd) *c-library-directories*))))
+  (define filtered-c-libraries
+    (filter (negate locally-compiled-c-library?) *c-libraries*))
+  (define filtered-library-directories
+    (filter (negate local-directory?) *c-library-directories*))
   (call-with-output-file where
     (lambda (o)
       (scm->json
@@ -621,8 +653,8 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 				 (package-name (manifest-package *manifest*)))
 				link-name
 				*library-destination*
-				*c-libraries*
-				*c-library-directories*
+				filtered-c-libraries
+				filtered-library-directories
 				;; direct dependencies
 				(map crate-information->file-name
 				     (partition-crates available-crates crate-mappings))
@@ -767,6 +799,8 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 		   ;; Some build.rs put libraries in the current directory
 		   ;; (or, at least, in OUT_DIR or something like that).
 		   ;; TODO: can be done tidier.
+		   ;; TODO: is this still necessary, now we interpret
+		   ;; rustc-link-search and such?
 		   (string-append "-Lnative=" (getcwd)))
 	     #:crate-type (if lib-procedural-macro?
 			      "proc-macro"
@@ -878,15 +912,6 @@ CARGO_CFG_TARGET_ARCH."
   (for-each (match-lambda ((name . value) (setenv name value)))
 	    cargo-env-variables)) ; TODO: maybe move more things inside
 
-(define* (install-pwd-libraries #:key outputs #:allow-other-keys)
-  ;; TODO: necessary for rust-sct@0.7?
-  (define p (file-name-predicate "\\.(a|so)$"))
-  (for-each (cute install-file <>
-		 (string-append (or (assoc-ref outputs "lib")
-				    (assoc-ref outputs "out"))
-				"/lib"))
-	    ((@ (ice-9 ftw) scandir) "." (cut p <> 'unused))))
-
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
@@ -901,5 +926,4 @@ CARGO_CFG_TARGET_ARCH."
     (replace 'build build)
     (add-after 'build 'build-binaries build-binaries)
     (delete 'check) ; TODO
-    (delete 'install) ; TODO?
-    (add-after 'install 'install-pwd-libraries install-pwd-libraries))) ; TODO: necessary?
+    (delete 'install))) ; TODO?
