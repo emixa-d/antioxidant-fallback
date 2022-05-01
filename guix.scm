@@ -1730,6 +1730,8 @@ of operation.")
 				 ("rust-tokio-sync"
 				  `(("rust-futures-core" ,rust-futures-core-0.3)
 				    ("rust-futures-util" ,rust-futures-util-0.3)))
+				 ("rust-tokio-util"
+				  `(("rust-tracing" ,(p rust-tracing-0.1)))) ; missing dependency
 				 (_ '()))
 			       cargo-inputs
 			       (package-inputs pack))))
