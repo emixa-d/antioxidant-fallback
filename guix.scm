@@ -1065,6 +1065,19 @@
      (sha256
       (base32 "1y77vshrhm1grlgcfmnm0nxpsv0pb5zcb97zy6rbh106nz0wysp9"))))))
 
+(define-public rust-actix-derive ; old one doesn't build against new rust-syn
+  (package
+   (inherit (p rust-actix-derive-0.5))
+   (name "rust-actix-derive")
+   (version "0.6.0")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "actix-derive" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "19rp2xcwqf5p4q5h6xxzb44xsfgpvvnnsis3l0dngnffw7zbhi3d"))))))
+
 
 ;;Not yet inGuix,requiredby rust-cipher
 (define-public rust-inout
@@ -1477,6 +1490,9 @@ of operation.")
 				   ;; rust-actix-web-codegen can be used instead.
 				   (("rust-actix-web-codegen") (p rust-actix-web-codegen-0.3))
 				   (("rust-actix-web") (p rust-actix-web-0.3))
+				   ;; rust-atcix-derive@0.4.0,0.5.0 don't build against new
+				   ;; rust-syn@1.0.82 (Literal has been renamed to Lit)
+				   (("rust-actix-derive") rust-actix-derive)
 				   (("rust-typenum" _) rust-typenum)
 				   (("rust-syscallz" _) rust-syscallz)
 				   (("rust-strum" _) rust-strum)
