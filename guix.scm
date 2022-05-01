@@ -1324,6 +1324,11 @@ of operation.")
 		   (not (string-prefix? "rust-redox" (package-name dependency)))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-serde-derive" "rust-serde")))
+		   ;; (Test?) cycle
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-actix-web" "rust-actix-web-codegen")))
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-actix-macros" "rust-actix-rt")))
 		   ;; Test cycle (rust-paw <-> rust-paw-structopt).
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-paw" "rust-paw-structopt")))
