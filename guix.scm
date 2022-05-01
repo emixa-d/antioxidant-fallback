@@ -1472,6 +1472,11 @@ of operation.")
 				    ;; disabled.
 				    (@ (gnu packages crates-io) rust-bindgen-0.59))
 				   (("rust-heck" _) (p rust-heck-0.4)) ; 0.3 too old for rust-strum-macros@0.24
+				   ;; Avoid potential incompatibilities.
+				   ;; TODO: package rust-actix-web@0.4, then the new version of
+				   ;; rust-actix-web-codegen can be used instead.
+				   (("rust-actix-web-codegen") (p rust-actix-web-codegen-0.3))
+				   (("rust-actix-web") (p rust-actix-web-0.3))
 				   (("rust-typenum" _) rust-typenum)
 				   (("rust-syscallz" _) rust-syscallz)
 				   (("rust-strum" _) rust-strum)
