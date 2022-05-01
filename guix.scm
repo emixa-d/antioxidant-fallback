@@ -711,6 +711,20 @@
      (modify-inputs (package-inputs (@ (gnu packages rust-apps) agate))
        (append rust-rcgen rust-futures-util-0.3)))))
 
+(define-public rust-enum-as-inner ; old version doesn't build against new rust-heck
+  (package
+    (inherit (@ (gnu packages crates-io) rust-enum-as-inner-0.3))
+    (name "rust-enum-as-inner")
+    (version "0.4.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "enum-as-inner" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0wwvjmy2bvqqc3pyylsmlqpkswxrzsg40xva7z27szva8j0svk91"))))))
+
+
 ;; Old version doesn't have the block_buffer required by rust-sha3
 (define-public rust-block-buffer
   (package
@@ -1532,6 +1546,7 @@ of operation.")
 				   (("rust-hmac" _) (@ (gnu packages crates-io) rust-hmac-0.12))
 				   (("rust-boxxy" _) rust-boxxy)
 				   (("rust-block-buffer" _) rust-block-buffer)
+				   (("rust-enum-as-inner" _) rust-enum-as-inner)
 				   (("rust-md-5" _) rust-md-5)
 				   ;; TODO version conflict -- AUTOMATE?
 				   (("rust-syn" _) (p rust-syn-1))
