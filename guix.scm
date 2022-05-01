@@ -1534,6 +1534,7 @@ of operation.")
 				   (("rust-hex" _)
 				    (@ (gnu packages crates-io) rust-hex-0.4))
 				   (("rust-sha3" _) rust-sha3)
+				   (("rust-h2" _) (p rust-h2-0.3)) ; @0.2 doesn't build
 				   (("rust-scrypt" _) rust-scrypt)
 				   (("rust-password-hash" _) rust-password-hash)
 				   (("rust-block-modes" _) rust-block-modes)
