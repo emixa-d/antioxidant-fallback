@@ -606,6 +606,57 @@
     (description "ASN.1 library for Rust")
     (license '(list license:expat license:asl2.0))))
 
+;; rust-tokio-openssl@0.6.3 needs a recent rust-openssl
+(define-public rust-openssl-macros
+  (package
+    (name "rust-openssl-macros")
+    (version "0.1.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "openssl-macros" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0v3kgnzbadrf9c06q4cqmbjas53av73n5w7wwz3n0nb6257y80dm"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+      `(#:cargo-inputs
+        (("rust-proc-macro2" ,(p rust-proc-macro2-1))
+         ("rust-quote" ,(p rust-quote-1))
+         ("rust-syn" ,(p rust-syn-1)))))
+    (home-page "")
+    (synopsis "Internal macros used by the openssl crate.")
+    (description "Internal macros used by the openssl crate.")
+    (license '(list license:expat license:asl2.0))))
+(define-public rust-openssl-sys
+  (package
+   (inherit (p rust-openssl-sys-0.9))
+   (name "rust-openssl-sys")
+   (version "0.9.73")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "openssl-sys" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1h0bv7cwrbbwdnpj96mb2b0p0gkajwc5g4rl3qf1ka70nfgx2pwx"))))))
+(define-public rust-openssl
+  (package
+   (inherit (p rust-openssl-0.10))
+   (name "rust-openssl")
+   (version "0.10.39")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "openssl" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "0hi72bwh6ipfj3cj7dlzk6n8aixiswj2fzbv5nk17n6r8rnr3wr8"))))
+   (inputs ; TODO: or native-inputs?  Where to put macros?
+    (modify-inputs (package-inputs (p rust-openssl-0.10))
+      (prepend (p rust-once-cell-1)
+	       rust-openssl-macros)))))
+
 ;; not yet in Guix, but needed for updated agate
 (define-public rust-rcgen
   (package
@@ -1529,6 +1580,8 @@ of operation.")
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 (match (list (package-name dependency) (package-version dependency))
+				   (("rust-openssl" _) rust-openssl)
+				   (("rust-openssl-sys" _) rust-openssl-sys)
 				   (("rust-bindgen" _)
 				    ;; In the old version 'runtime' cannot be
 				    ;; disabled.
