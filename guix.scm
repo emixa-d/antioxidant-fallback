@@ -1589,6 +1589,8 @@ of operation.")
 				 (match (list (package-name dependency) (package-version dependency))
 				   (("rust-openssl" _) rust-openssl)
 				   (("rust-openssl-sys" _) rust-openssl-sys)
+				   ;; The old rust-tokio-openssl@0.4 doesn't build
+				   (("rust-tokio-openssl") (p rust-tokio-openssl-0.6))
 				   (("rust-bindgen" _)
 				    ;; In the old version 'runtime' cannot be
 				    ;; disabled.
