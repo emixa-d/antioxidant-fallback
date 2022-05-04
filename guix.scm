@@ -1424,6 +1424,13 @@ of operation.")
 	   (match-lambda
 	     ((label dependency . maybe-output)
 	      (and (not (member (package-name dependency) %removed-dependencies))
+		   ;; Maybe a test or example cycle?
+		   (not (and (string=? (package-name dependency) "rust-bytemuck")
+			     (string=? (package-name pack) "rust-bytemuck-derive")))
+		   (not (and (string=? (package-name dependency) "rust-diesel")
+			     (string=? (package-name pack) "rust-diesel-derives")))
+		   (not (and (string=? (package-name dependency) "rust-rspec")
+			     (string=? (package-name pack) "rust-colored")))
 		   ;; Not a dependency anymore, resolve cycle.
 		   (not (and (string=? (package-name dependency) "rust-pkcs1")
 			     (string=? (package-name pack) "rust-pkcs8")))
