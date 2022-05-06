@@ -52,6 +52,8 @@
 	  '())))
 
 (define* (antioxidant-build name inputs #:key
+			    modules ; what to do about 'modules'
+			    install-source? ; not used by antioxidant-build-system
 			    system target source search-paths outputs
 			    ;; TODO: consider optimisations (what does cargo-build-system
 			    ;; do?)
@@ -1416,6 +1418,8 @@ of operation.")
 		 (phases '%standard-phases)
 		 ;; TODO: cargo test flags
 		 skip-build? cargo-test-flags tests?
+		 modules ; TODO: handle #:modules
+		 install-source? ; not used by antioxidant-build-system
 		 (features #~'("default")))
 	 (unless (or (eq? phases '%standard-phases)
 		     (not (is-cargo-toml-phases? phases)))
