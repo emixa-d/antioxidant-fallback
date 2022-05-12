@@ -35,3 +35,7 @@ If there's already an entry for "rust-bar", modify the existing entry to add "ba
 ## Version incompatibilities
 
 ## Cycles
+
+# Changelog
+
+2022-05-12: source code location of binaries can now be inferred.  Previously, only src/main.rs was understood as default and crates had to set the 'target' field explicitely.  But not all crates do that, e.g. rust-alloc-no-stdlib@2.

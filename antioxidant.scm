@@ -810,6 +810,23 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	     ;; TODO: does the order matter?
 	     (append arguments (list #:configuration *configuration*))))))
 
+;; See <https://doc.rust-lang.org/cargo/guide/project-layout.html>
+;; for how source locations are inferred.
+(define (infer-binary-source target)
+  "Guess the Rust source code location of TARGET, a <target> record.  If not found,
+raise an error instead."
+  (define inferred-source0
+    (and (target-name target)
+	 (format #f "src/bin/~a.rs" (target-name target))
+	 ;; TODO: for 100% paranoia, check that inferred-source0
+	 ;; doesn't contain #\nul, slashes or .. components.
+	 ))
+  ;; default executable (TODO: is this code path actually ever used?)
+  (define inferred-source1 (and=> "src/main.rs" file-exists?))
+  (or (and (file-exists? inferred-source0) inferred-source0)
+      (and (file-exists? inferred-source1) inferred-source1)
+      (error "source code of ~a could not be found." target)))
+
 (define* (build-binaries #:key inputs outputs #:allow-other-keys #:rest arguments)
   "Compile the Rust binaries described in Cargo.toml"
   (define package (manifest-package *manifest*))
@@ -838,17 +855,17 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	    (list #:configuration *configuration*))))
   ;; TODO: respect required-features.
   (define (compile-bin-target target)
-    (define source (or (target-path target) "src/main.rs"))
-    (set! files-visited (cons source files-visited))
     (if (lset<= string=? (target-required-features target) *features*)
-	(begin
+	(let ((source (infer-binary-source target)))
+	  (set! files-visited (cons source files-visited))
 	  (format #t "Compiling ~a~%" source)
 	  (cb source (or (target-name target) (package-name package))
 	      (or (target-edition target) (package-edition package))))
 	(format #t "not compiling ~a, because the following features are missing: ~a~%"
-		source (lset-difference string=?
-					(target-required-features target)
-					*features*))))
+		target ; we don't care if the source exists when we are not compiling it.
+		(lset-difference string=?
+				 (target-required-features target)
+				 *features*))))
   (for-each compile-bin-target (manifest-bin *manifest*))
   (when (package-autobins package)
     (when (and (file-exists? "src/main.rs")
