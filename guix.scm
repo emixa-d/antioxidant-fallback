@@ -1307,6 +1307,19 @@ of operation.")
         (sha256
           (base32 "121k5yj3c8fr826pbh0gf0b3jly2ivzrfvz3lpxyabjvw2g89kxr"))))))
 
+(define-public rust-hkdf ; 0.11 doesn't build against new rust-digest
+  (package
+    (inherit (p rust-hkdf-0.11))
+    (name "rust-hkdf")
+    (version "0.12.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "hkdf" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0dyl16cf15hka32hv3l7dwgr3xj3brpfr27iyrbpdhlzdfgh46kr"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1531,6 +1544,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-hkdf" ,rust-hkdf)
     ("rust-as-slice" ,rust-as-slice)
     ("rust-jetscii" ,(p rust-jetscii-0.5)) ; use recent version of jetscii that actually builds
     ("rust-hash32-derive" ,rust-hash32-derive)
