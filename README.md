@@ -51,6 +51,11 @@ by making the list of features explicit instead of implicit.
 
   ("rust-bytecount" ,#~'())
 
+## Unstable Rust
+
+If the crate assumes unstable rust (e.g. by using #![feature ...]),
+updating the crate often fixes that.
+
 ## Version incompatibilities
 
 ## Cycles
