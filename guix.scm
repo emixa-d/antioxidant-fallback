@@ -1222,6 +1222,18 @@ of operation.")
    (inputs
     (modify-inputs (package-inputs (p rust-devise-core-0.2))
       (append rust-proc-macro2-diagnostics)))))
+(define-public rust-devise-codegen ;; 0.2 doesn't build against new rust-quote / rust-devise-core.
+  (package
+    (inherit (p rust-devise-codegen-0.2))
+    (name "rust-devise-codegen")
+    (version "0.3.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "devise-codegen" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1cp7nnfwvjp6wfq11n0ffjjrwfa1wbsb58g1bz3ha6z5lvkp6g0j"))))))
 
 (define-public rust-proc-macro2-diagnostics ; not yet in Guix but required by rust-devise-core
   (package
@@ -1457,6 +1469,7 @@ of operation.")
 
 (define %replacements
   `(("rust-devise-core" ,rust-devise-core)
+    ("rust-devise-codegen" ,rust-devise-codegen)
     ("rust-openssl" ,rust-openssl)
     ("rust-openssl-sys" ,rust-openssl-sys)
     ;; The old rust-tokio-openssl@0.4 doesn't build
