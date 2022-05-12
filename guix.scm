@@ -1335,6 +1335,7 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ("rust-lazycell" ,#~'()) ;; avoid nightly things
     ;; "pattern" and "benchmarks" require non-stable (rust-jetscii@0.5)
     ("rust-jetscii" ,#~'())
     ;; Avoid "use-intrisics", which requires unstable.
