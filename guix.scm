@@ -1544,6 +1544,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-unicase" ,(p rust-unicase-2)) ; @1 doesn't build because of removed features
     ("rust-hkdf" ,rust-hkdf)
     ("rust-as-slice" ,rust-as-slice)
     ("rust-jetscii" ,(p rust-jetscii-0.5)) ; use recent version of jetscii that actually builds
