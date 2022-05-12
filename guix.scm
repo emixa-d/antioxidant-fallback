@@ -1206,6 +1206,49 @@
 of operation.")
    (license '(list license:expat license:asl2.0))))
 
+;; devise-core@0.2 requires unstable
+(define-public rust-devise-core
+  (package
+   (inherit (p rust-devise-core-0.2))
+   (name "rust-devise-core")
+   (version "0.3.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "devise-core" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1l00qiih4z14ai0c3s16nlvw0kv4p07ygi6a0ms0knc78xpz87l4"))))
+   (inputs
+    (modify-inputs (package-inputs (p rust-devise-core-0.2))
+      (append rust-proc-macro2-diagnostics)))))
+
+(define-public rust-proc-macro2-diagnostics ; not yet in Guix but required by rust-devise-core
+  (package
+    (name "rust-proc-macro2-diagnostics")
+    (version "0.9.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "proc-macro2-diagnostics" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1nmazlb1dkznjds7qwms7yxhi33ajc3isji2lsgx8r3lsqk9gwjb"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+      `(#:cargo-inputs
+        (("rust-proc-macro2" ,(p rust-proc-macro2-1))
+         ("rust-quote" ,(p rust-quote-1))
+         ("rust-syn" ,(p rust-syn-1))
+         ("rust-version-check" ,(p rust-version-check-0.9))
+         ("rust-yansi" ,(p rust-yansi-0.5)))
+        #:cargo-development-inputs
+        (("rust-trybuild" ,(p rust-trybuild-1)))))
+    (home-page "")
+    (synopsis "Diagnostics for proc-macro2.")
+    (description "Diagnostics for proc-macro2.")
+    (license '(list license:expat license:asl2.0))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1413,7 +1456,8 @@ of operation.")
     ("rust-os-str-bytes" ,#~'("raw"))))
 
 (define %replacements
-  `(("rust-openssl" ,rust-openssl)
+  `(("rust-devise-core" ,rust-devise-core)
+    ("rust-openssl" ,rust-openssl)
     ("rust-openssl-sys" ,rust-openssl-sys)
     ;; The old rust-tokio-openssl@0.4 doesn't build
     ("rust-tokio-openssl" ,(p rust-tokio-openssl-0.6))
