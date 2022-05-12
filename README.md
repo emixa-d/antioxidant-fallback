@@ -32,6 +32,25 @@ Then go to %features in guix.scm and add an entry
 
 If there's already an entry for "rust-bar", modify the existing entry to add "baz".
 
+## Build failures due to non-building features
+
+If you see
+
+  warning: #<<crate-mapping> true-name: "packed_simd" local-name: "packed_simd"> not found in the available crates -- this might cause the build to fail!
+
+and
+
+error[E0463]: can't find crate for `packed_simd`
+ --> src/simd/generic.rs:1:1
+  |
+1 | extern crate packed_simd;
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^ can't find crate
+
+the solution is probably to remove "simd" or "generic-simd" feature or such,
+by making the list of features explicit instead of implicit.
+
+  ("rust-bytecount" ,#~'())
+
 ## Version incompatibilities
 
 ## Cycles
