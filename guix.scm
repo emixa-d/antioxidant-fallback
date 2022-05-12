@@ -1868,4 +1868,8 @@ of operation.")
 
 ;; todo: cycle between rust-demo-hack and rust-demo-hack-impl
 
-(map vitaminate/auto (list sniffglue agate (@ (gnu packages rust-apps) hexyl)))
+(map vitaminate/auto (list
+		      agate
+		      (@ (gnu packages rust-apps) diffr)
+		      (@ (gnu packages rust-apps) hexyl)
+		      sniffglue))
