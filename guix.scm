@@ -1266,6 +1266,9 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; the default "generic-simd" feature required rust-packed-simd
+    ;; which is currently uncompilable.
+    ("rust-bytecount" ,#~'())
     ;; "paw" required by sniffglue
     ("rust-structopt" ,#~'("default" "paw"))
     ;; rust-rcgen requires "time". While at it, enable other
