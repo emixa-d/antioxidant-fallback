@@ -887,6 +887,13 @@ raise an error instead."
   "Parse Cargo.toml and save it in @code{*manifest*}."
   (set! *manifest* (open-manifest "Cargo.toml" "Cargo.json")))
 
+;; rust-bzip2-sys has a 0.1.9+1.0.8 version string.
+;; Presumably CARGO_PKG_VERSION_MAJOR/MINOR/PATCH must be 0, 1, 9.
+;; TODO: what does PRE mean?
+(define (without-plus version)
+  (match (string-split version #\+)
+    ((first . rest) first)))
+
 ;; Set some variables that Cargo can set and that might
 ;; be expected by build.rs.  A (full?) list is avialable
 ;; at <https://doc.rust-lang.org/cargo/reference/environment-variables.html>.
@@ -905,8 +912,8 @@ raise an error instead."
 	   (setenv "CARGO_PKG_VERSION_MINOR" minor)
 	   (setenv "CARGO_PKG_VERSION_PATCH" patch)
 	   (setenv "CARGO_PKG_VERSION_PRE" pre))))
-    (match (string-split (package-version package) #\.)
-      ((major minor patch pre)
+    (match (string-split (without-plus (package-version package)) #\.)
+      ((major minor patch pre . rest) ; rest: unusual (non-existent?), but antioxidant doesn't care
        (set-version-environment-variables major minor patch pre))
       ((major minor patch)
        (set-version-environment-variables major minor patch ""))
