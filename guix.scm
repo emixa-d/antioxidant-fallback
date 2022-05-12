@@ -1261,6 +1261,19 @@ of operation.")
     (description "Diagnostics for proc-macro2.")
     (license '(list license:expat license:asl2.0))))
 
+(define-public rust-hash32-derive ; @0.1.0 doesn't build gainst new rust-quote and  friends
+  (package
+   (inherit (p rust-hash32-derive-0.1))
+   (name "rust-hash32-derive")
+   (version "0.1.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "hash32-derive" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "1zy60cdqrccd9kc8w4hvk1q584b4gjr4d48n3dff42xn6alapljr"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1474,7 +1487,8 @@ of operation.")
     ("rust-os-str-bytes" ,#~'("raw"))))
 
 (define %replacements
-  `(("rust-derive-more" ,(p rust-derive-more-0.99)) ; avoid non-building @0.15
+  `(("rust-hash32-derive" ,rust-hash32-derive)
+    ("rust-derive-more" ,(p rust-derive-more-0.99)) ; avoid non-building @0.15
     ("rust-devise-core" ,rust-devise-core)
     ("rust-devise-codegen" ,rust-devise-codegen)
     ("rust-openssl" ,rust-openssl)
