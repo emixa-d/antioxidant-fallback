@@ -1746,8 +1746,6 @@ of operation.")
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-tracing" "rust-tokio")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-hashbrown" "rust-ahash"))) ; todo: remove from #:cargo-inputs?, unused?
-		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-hashbrown" "rust-bumpalo"))) ; todo: remove from #:cargo-inputs?, unused?
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-fastrand" "rust-getrandom")))
