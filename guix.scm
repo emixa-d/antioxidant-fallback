@@ -1279,6 +1279,7 @@ of operation.")
 ;; TODO: write a "guix style" thing for doing this.
 (define %removed-dependencies
   '("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
+    "rust-heapsize-plugin" ; makes use of removed features
     "rust-rustc-test" ; doesn't build against recent rust-time
     "rust-speculate" ; @0.1.2 doesn't build against recent rust-syn
     "rust-skeptic" ; @0.13.4 doesn't build
@@ -1335,6 +1336,8 @@ of operation.")
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
     ;; Avoid "use-intrisics", which requires unstable.
     ("rust-half" ,#~'("alloc" "serialize" "std"))
+    ;; Avoid removed feature(custom_derive)
+    ("rust-language-tags" ,#~'())
     ("rust-tiny-keccak"
      ;; By default nothing is build, which seems rather useless.
      ;; Let's enable everything.
