@@ -1468,7 +1468,8 @@ of operation.")
     ("rust-os-str-bytes" ,#~'("raw"))))
 
 (define %replacements
-  `(("rust-devise-core" ,rust-devise-core)
+  `(("rust-derive-more" ,(p rust-derive-more-0.99)) ; avoid non-building @0.15
+    ("rust-devise-core" ,rust-devise-core)
     ("rust-devise-codegen" ,rust-devise-codegen)
     ("rust-openssl" ,rust-openssl)
     ("rust-openssl-sys" ,rust-openssl-sys)
