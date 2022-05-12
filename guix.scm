@@ -1311,7 +1311,9 @@ of operation.")
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
 (define %removed-dependencies
-  '("rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
+  '("rust-blakeout" ; doesn't build and no new version available, let's avoid for now.
+    "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
+    "rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
     "rust-heapsize-plugin" ; makes use of removed features
     "rust-rustc-test" ; doesn't build against recent rust-time
     "rust-speculate" ; @0.1.2 doesn't build against recent rust-syn
