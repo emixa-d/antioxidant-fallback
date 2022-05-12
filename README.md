@@ -9,3 +9,29 @@ $ [...]/bin/hexyl
 (input some lines)
 
 Warning: some packages have been updated without checking the source code diff!
+
+# How to help
+
+  1. Choose a Rust app or library to build.
+  2. guix.scm ends with (map vitaminate/auto (list ...)). Add the package to the list.
+  3. Run "guix build -L. -f guix.scm" to build it.
+  4. If it builds succesfully, go back to (1) and choose something else.
+  5. Fix build failures (see next section)
+  6. Send a patch to <https://notabug.org/maximed/cargoless-rust-experiments/pulls>
+     or guix-patches@gnu.org.
+  7. Repeat.
+
+# How to fix build failures
+
+## Build failures caused by missing features.
+
+Does "rust-foo" fail to build because it requires the feature "baz" of "rust-bar"?
+Then go to %features in guix.scm and add an entry
+
+  ("rust-bar" ,#~'("default" "baz")).
+
+If there's already an entry for "rust-bar", modify the existing entry to add "baz".
+
+## Version incompatibilities
+
+## Cycles
