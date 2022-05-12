@@ -1321,6 +1321,10 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ("rust-tiny-keccak"
+     ;; By default nothing is build, which seems rather useless.
+     ;; Let's enable everything.
+     ,#~'("cshake" "fips202" "k12" "keccak" "kmac" "parallel_hash" "sha3" "shake" "sp800" "tuple_hash"))
     ;; the default "generic-simd" feature required rust-packed-simd
     ;; which is currently uncompilable.
     ("rust-bytecount" ,#~'())
