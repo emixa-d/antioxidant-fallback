@@ -1274,6 +1274,27 @@ of operation.")
      (sha256
       (base32 "1zy60cdqrccd9kc8w4hvk1q584b4gjr4d48n3dff42xn6alapljr"))))))
 
+(define-public rust-as-slice ; 0.1 uses multiple generic-array version which antioxidant doesn't support (TODO?)
+  (package
+    (name "rust-as-slice")
+    (version "0.2.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "as-slice" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "05j52y1ws8kir5zjxnl48ann0if79sb56p9nm76hvma01r7nnssi"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+      `(#:cargo-inputs
+        (("rust-stable-deref-trait" ,(p rust-stable-deref-trait-1)))))
+    (home-page "https://github.com/japaric/as-slice")
+    (synopsis "`AsSlice` and `AsMutSlice` traits")
+    (description "`AsSlice` and `AsMutSlice` traits")
+    (license '(list license:expat license:asl2.0))))
+
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1495,7 +1516,8 @@ of operation.")
     ("rust-os-str-bytes" ,#~'("raw"))))
 
 (define %replacements
-  `(("rust-jetscii" ,(p rust-jetscii-0.5)) ; use recent version of jetscii that actually builds
+  `(("rust-as-slice" ,rust-as-slice)
+    ("rust-jetscii" ,(p rust-jetscii-0.5)) ; use recent version of jetscii that actually builds
     ("rust-hash32-derive" ,rust-hash32-derive)
     ("rust-hash32" ,(p rust-hash32-0.2)) ; @0.1 doesn't build
     ("rust-derive-more" ,(p rust-derive-more-0.99)) ; avoid non-building @0.15
