@@ -1615,6 +1615,25 @@ of operation.")
 		   ;; Break cycle (test or something like that?)
 		   (not (and (string=? (package-name dependency) "rust-rustversion")
 			     (string=? (package-name pack) "rust-quote")))
+		   ;; Break cycle.
+		   (not (and (string=? (package-name dependency) "rust-async-std")
+			     (string=? (package-name pack) "rust-async-attributes")))
+		   (not (and (string=? (package-name dependency) "rust-blocking")
+			     (string=? (package-name pack) "rust-async-channel")))
+		   (not (and (string=? (package-name dependency) "rust-async-net")
+			     (string=? (package-name pack) "rust-async-io")))
+		   ;; Optional dependency cycle
+		   (not (and (string=? (package-name dependency) "rust-surf")
+			     (string=? (package-name pack) "rust-async-std")))
+		   ;; Optional dependency cycle (also TODO rust-ravif = rav1e except for the name and version?) TODO upstream guix.
+		   ;; (TODO: unverified if broken correctly)
+		   (not (and (string=? (package-name dependency) "rust-image")
+			     (string=? (package-name pack) "rust-ravif")))
+		   (not (and (string=? (package-name dependency) "rav1e")
+			     (string=? (package-name pack) "rust-ravif")))
+		   (not (and (string=? (package-name dependency) "rust-image")
+			     (string=? (package-name pack) "rav1e")))
+		   ;; TODO: rust-rav1e and rav1e
 		   ;; rust-futures-cpupool isn't updated anymore and doesn't
 		   ;; build anymore?
 		   (not (string=? (package-name dependency) "rust-futures-cpupool"))
