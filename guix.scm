@@ -1341,7 +1341,9 @@ of operation.")
     ;; serde1 failure requires undeclared ‘Glob’ dependency
     ("rust-globset" ,#~'())
     ("rust-openssl-sys" ,#~'()) ;; avoid the 'vendored' feature
-    ;; The 'backtrace' dependency has been removed.
+    ;; The 'backtrace' and 'petgraph' dependency has been removed.
+    ;; (including petgraph causes a cycle between rust-ahash and rust-hashbrown,
+    ;; but it's ‘only’ required for deadlock detection).
     ("rust-parking-lot-core" ,#~'())
     ;; asm! syntax not supported anymore, and "capture"
     ;; requires non-existent io::set_panic
@@ -1804,6 +1806,9 @@ of operation.")
 				(list "rust-tokio-macros" "rust-tokio")))
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-parking-lot-core" "rust-backtrace")))
+		   ;; See %features
+		   (not (equal? (list (package-name pack) (package-name dependency))
+				(list "rust-parking-lot-core" "rust-petgraph")))
 		   ;; TODO: can be removed by relaxing versions in rust-signal-hook@0.1
 		   (not (equal? (list (package-name pack) (package-name dependency))
 				(list "rust-signal-hook-registry" "rust-signal-hook")))
