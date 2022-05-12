@@ -137,7 +137,7 @@
 					       (lambda* (#:key native-inputs #:allow-other-keys)
 						 (with-output-to-file "new-grammar.rs"
 						   (lambda ()
-						     (invoke "peg-macros"
+						     (invoke "rust-peg"
 							     (search-input-file native-inputs
 										"share/rust-peg-macros/grammar.rustpeg"))))
 						 ;; TODO: the fixpoint test fails!
