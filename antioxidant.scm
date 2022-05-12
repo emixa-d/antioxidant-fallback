@@ -823,7 +823,8 @@ raise an error instead."
 	 ))
   ;; default executable (TODO: is this code path actually ever used?)
   (define inferred-source1 "src/main.rs")
-  (or (and inferred-source0 (file-exists? inferred-source0) inferred-source0)
+  (or (target-path target) ; explicit
+      (and inferred-source0 (file-exists? inferred-source0) inferred-source0)
       (and (file-exists? inferred-source1) inferred-source1)
       (error "source code of ~a could not be found." target)))
 
