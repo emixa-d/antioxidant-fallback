@@ -1468,7 +1468,7 @@ of operation.")
      ;; <<https://github.com/google/cargo-raze/issues/159>.
      ,#~'("proc-macro"))
     ;; TODO: move into Guix proper?
-    ("rust-hashbrown" ,#~'("raw"))
+    ("rust-hashbrown" ,#~'("default" "raw")) ; default "ahash" is required by rust-lru@0.7
     ("rust-os-str-bytes" ,#~'("raw"))))
 
 (define %replacements
