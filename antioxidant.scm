@@ -822,8 +822,8 @@ raise an error instead."
 	 ;; doesn't contain #\nul, slashes or .. components.
 	 ))
   ;; default executable (TODO: is this code path actually ever used?)
-  (define inferred-source1 (and=> "src/main.rs" file-exists?))
-  (or (and (file-exists? inferred-source0) inferred-source0)
+  (define inferred-source1 "src/main.rs")
+  (or (and inferred-source0 (file-exists? inferred-source0) inferred-source0)
       (and (file-exists? inferred-source1) inferred-source1)
       (error "source code of ~a could not be found." target)))
 
