@@ -1488,6 +1488,7 @@ of operation.")
 
 (define %replacements
   `(("rust-hash32-derive" ,rust-hash32-derive)
+    ("rust-hash32" ,(p rust-hash32-0.2)) ; @0.1 doesn't build
     ("rust-derive-more" ,(p rust-derive-more-0.99)) ; avoid non-building @0.15
     ("rust-devise-core" ,rust-devise-core)
     ("rust-devise-codegen" ,rust-devise-codegen)
