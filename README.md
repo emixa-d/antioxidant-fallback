@@ -58,6 +58,8 @@ updating the crate often fixes that.
 
 ## Version incompatibilities
 
+No method named `foo` from `bar`?  Try updating the crate, maybe an updated crate uses the new API version.  Can be caused by over-eagerly replacing rust-syn by a newer version.  Could be avoided by implementing support for multiple versions of a crate as dependencies.
+
 ## Cycles
 
 # Changelog
