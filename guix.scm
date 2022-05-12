@@ -1333,6 +1333,8 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; Avoid "use-intrisics", which requires unstable.
+    ("rust-half" ,#~'("alloc" "serialize" "std"))
     ("rust-tiny-keccak"
      ;; By default nothing is build, which seems rather useless.
      ;; Let's enable everything.
