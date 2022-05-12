@@ -1409,6 +1409,177 @@ of operation.")
     ("rust-hashbrown" ,#~'("raw"))
     ("rust-os-str-bytes" ,#~'("raw"))))
 
+(define %replacements
+  `(("rust-openssl" ,rust-openssl)
+    ("rust-openssl-sys" ,rust-openssl-sys)
+    ;; The old rust-tokio-openssl@0.4 doesn't build
+    ("rust-tokio-openssl" ,(p rust-tokio-openssl-0.6))
+    ("rust-bindgen"
+     ;; In the old version 'runtime' cannot be
+     ;; disabled.
+     ,(p rust-bindgen-0.59))
+    ("rust-heck" ,(p rust-heck-0.4)) ; 0.3 too old for rust-strum-macros@0.24
+    ("rust-peg" ,(p rust-peg-0.6)) ; 0.5 misses dependency information
+    ;; Avoid potential incompatibilities.
+    ;; TODO: package rust-actix-web@0.4, then the new version of
+    ;; rust-actix-web-codegen can be used instead.
+    #;("rust-actix-web-codegen" ,(p rust-actix-web-codegen-0.3)) ; doesn't exist?
+    ("rust-actix-web" ,(p rust-actix-web-3)) ; TODO: why was this 0.3?
+    ;; rust-atcix-derive@0.4.0,0.5.0 don't build against new
+    ;; rust-syn@1.0.82 (Literal has been renamed to Lit)
+    ("rust-actix-derive" ,rust-actix-derive)
+    ("rust-typenum" ,rust-typenum)
+    ("rust-syscallz" ,rust-syscallz)
+    ("rust-strum" ,rust-strum)
+    ("rust-strum-macros" ,rust-strum-macros)
+    ("rust-actix" ,(p rust-actix-0.10))
+    ("rust-backtrace" ,rust-backtrace) ; old backtrace doesn't build with the new rust-object
+    ("rust-gimli" ,rust-gimli)
+    ;; rust-pkcs5@0.5.0-pre.1 requires new_unwrap
+    ("rust-const-oid" ,rust-const-oid)
+    ("rust-aes" ,rust-aes)
+    ("rust-des" ,rust-des)
+    ("rust-pkcs8" ,rust-pkcs8)
+    ("rust-pkcs5" ,rust-pkcs5)
+    ("rust-pkcs1" ,rust-pkcs1)
+    ("rust-spki" ,rust-spki)
+    ("rust-der" ,rust-der)
+    ("rust-sha-1" ,(p rust-sha-1-0.10))
+    ("rust-sha2" ,(p rust-sha2-0.10))
+    ("rust-time" ; resolve version conflict
+     ,(p rust-time-0.3))
+    ("rust-instant" ; 0.1.4 doesn't build against rust-time@0.3
+     ,rust-instant)
+    ;; 0.3 requires unstable
+    ("rust-hex" ,(p rust-hex-0.4))
+    ("rust-sha3" ,rust-sha3)
+    ("rust-h2" ,(p rust-h2-0.3)) ; @0.2 doesn't build
+    ("rust-scrypt" ,rust-scrypt)
+    ("rust-password-hash" ,rust-password-hash)
+    ("rust-block-modes" ,rust-block-modes)
+    ("rust-ctr" ,rust-ctr)
+    ("rust-salsa20" ,rust-salsa20)
+    ("rust-cipher" ,rust-cipher)
+    ("rust-block-padding" ,rust-block-padding)
+    ("rust-streebog" ,(p rust-streebog-0.10))
+    ("rust-pbkdf2" ,rust-pbkdf2)
+    ("rust-hmac" ,(p rust-hmac-0.12))
+    ("rust-boxxy" ,rust-boxxy)
+    ("rust-block-buffer" ,rust-block-buffer)
+    ("rust-enum-as-inner" ,rust-enum-as-inner)
+    ("rust-md-5" ,rust-md-5)
+					; TODO version conflict -- AUTOMATE?
+    ("rust-syn" ,(p rust-syn-1))
+    ("rust-object" ,(p rust-object-0.28))
+    ("rust-addr2line" ,rust-addr2line)
+    ("rust-generic-array" ,(p rust-generic-array-0.14))
+    ("rust-digest" ,rust-digest)
+    ("rust-crypto-common" ,rust-crypto-common)
+    ("rust-rustyline" ,(p rust-rustyline-9))
+    ("rust-base64" ,(p rust-base64-0.13))
+    ("rust-test-case" ,rust-test-case-2)
+    ("rust-slab" ,rust-slab)
+    ("rust-socket2" ,(p rust-socket2-0.4))
+    ("rust-insta" ,(p rust-insta-1))
+    ("rust-nom" ; avoid version conflicts
+     ,(p rust-nom-7))
+    ;; rust-pktparse@0.5 doesn't build against nom@7
+    ("rust-pktparse" ,rust-pktparse)
+    ("rust-rusticata-macros" ; old version doesn't build against nom@7
+     ,(p rust-rusticata-macros-4))
+    ("rust-pure-rust-locales" ; old version doesn't build against nom@7
+     ,rust-pure-rust-locales)
+    ("rust-itoa" ,(p rust-itoa-1))
+    ("rust-sct" ,(p rust-sct-0.7))
+    ("rust-quote" ,(p rust-quote-1))
+    ;; 0.3.0 fails to build against new rust-serde
+    ("rust-linked-hash-map"
+     ,(p rust-linked-hash-map-0.5))
+    ("rust-rustls-native-certs"
+     ;; Old versio incompatible with new rustls
+     ,(p rust-rustls-native-certs-0.6))
+    ("rust-ron"
+     ,(p rust-ron-0.6)) ; old versions don't build
+    ("rust-serde"
+     ,(p rust-serde-1)) ; old versions don't build
+    ("rust-sha1" ,rust-sha1)
+    ("rust-rsa" ,rust-rsa)
+    ("rust-hashbrown" ,(p rust-hashbrown-0.11))
+    ("rust-scopeguard" ,(p rust-scopeguard-1))
+    ("rust-webpki" ,(p rust-webpki-0.22))
+    ;; Old versions don't build (because rust-tokio-io disappeared)
+    ("rust-hyper-rustls" ,rust-hyper-rustls)
+    ("rust-rustls"
+     ;; Remove old (not-building) and potentially unsecure versions
+     ;; Also, rust-tokio-rustls requires a newer rust-rustls.
+     ,rust-rustls-0.20)
+    ("rust-tokio-rustls" ;0.10.3 doesn't build
+     ,rust-tokio-rustls-0.23)
+    ;; TODO: respect SSL_CERT_DIR instead of hardcoding trusting
+    ;; whoever Mozilla trusts.
+    ;; TODO: build from source
+    ;; TODO: remove certificates with restrictions
+    ("rust-webpki-roots"
+     ;; 0.17.0 doesn't build
+     ,(p rust-webpki-roots-0.22))
+    ("rust-nix" ,(p rust-nix-0.23))
+    ("rust-autocfg" ,(p rust-autocfg-1))
+    ("rust-bytes" ,(p rust-bytes-1))
+    ("rust-tokio-io" ,rust-tokio-io-0.2)
+    ("rust-tokio-codec" ,rust-tokio-io-0.2)
+    ("rust-tokio-util" ,rust-tokio-util-0.7)
+    ("rust-tokio" ,(p rust-tokio-1.8))
+    ("rust-futures" ,rust-futures-0.3)
+    ("rust-futures-channel" ,rust-futures-channel-0.3)
+    ("rust-futures-core" ,rust-futures-core-0.3)
+    ("rust-futures-executor" ,rust-futures-executor-0.3)
+    ("rust-futures-io" ,rust-futures-io-0.3)
+    ("rust-futures-sink" ,rust-futures-sink-0.3)
+    ("rust-futures-task" ,rust-futures-task-0.3)
+    ("rust-futures-util" ,rust-futures-util-0.3)
+    ("rust-http" ; 0.1 doesn't build
+     ,(p rust-http-0.2))
+    ;; rust-http-body@0.1.0's dependency rust-tokio-buf doesn't
+    ;; build anymore.  (TODO remove from Guix)
+    ("rust-http-body" ,(p rust-http-body-0.4))
+    ("rust-crossbeam-channel"
+     ;; avoid old version that don't build
+     ,(p rust-crossbeam-channel-0.5))
+    ;; Likewise.
+    ("rust-hyper"
+     ,(p rust-hyper-0.14))
+    ("rust-nb"
+     ;; Avoid E0519, caused by multiple versions of the same crate
+     ;; being used.  TODO: bump version in 'sniffglue'
+     ,(p rust-nb-1))
+    ("rust-num-traits" ,(p rust-num-traits-0.2))
+    ("rust-cfg-if" ,(p rust-cfg-if-1))
+    ("rust-env-logger" ; old versions don't build
+     ,(p rust-env-logger-0.9))
+    ("rust-lazy-static"
+     ,(p rust-lazy-static-1))
+    ("rust-rand"
+     ,(p rust-rand-0.8))
+    ("rust-lock-api" ; 0.3, 0.2, 0.1
+     ,(p rust-lock-api-0.4))
+    ("rust-sysctl" ; 0.1 does not compile (type errors)
+     ,(p rust-sysctl-0.4))
+    ;; The (now deprecated) rust-tempdir doesn't build
+    ;; against current rust-rand, use the new rust-tempfile
+    ;; instead as upstream recommends.
+    ("rust-tempdir"
+     ,(p rust-tempfile-3))
+    ("rust-bare-metal"
+     ,(p rust-bare-metal-1))
+    ;; The old parking-lot doesn't build against
+    ;; the new lock api.
+    ("rust-parking-lot"
+     ;; TODO: inherit?
+     ,(p rust-parking-lot-0.11))
+    ;; 0.4.30 fails to build.
+    ("rust-proc-macro2" ,(p rust-proc-macro2-1))
+    ("rust-log" ,(p rust-log-0.4))))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -1590,208 +1761,11 @@ of operation.")
 		   
 		   (pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
-				 (match (list (package-name dependency) (package-version dependency))
-				   (("rust-openssl" _) rust-openssl)
-				   (("rust-openssl-sys" _) rust-openssl-sys)
-				   ;; The old rust-tokio-openssl@0.4 doesn't build
-				   (("rust-tokio-openssl") (p rust-tokio-openssl-0.6))
-				   (("rust-bindgen" _)
-				    ;; In the old version 'runtime' cannot be
-				    ;; disabled.
-				    (@ (gnu packages crates-io) rust-bindgen-0.59))
-				   (("rust-heck" _) (p rust-heck-0.4)) ; 0.3 too old for rust-strum-macros@0.24
-				   (("rust-peg" _) (p rust-peg-0.6)) ; 0.5 misses dependency information
-				   ;; Avoid potential incompatibilities.
-				   ;; TODO: package rust-actix-web@0.4, then the new version of
-				   ;; rust-actix-web-codegen can be used instead.
-				   (("rust-actix-web-codegen") (p rust-actix-web-codegen-0.3))
-				   (("rust-actix-web") (p rust-actix-web-0.3))
-				   ;; rust-atcix-derive@0.4.0,0.5.0 don't build against new
-				   ;; rust-syn@1.0.82 (Literal has been renamed to Lit)
-				   (("rust-actix-derive") rust-actix-derive)
-				   (("rust-typenum" _) rust-typenum)
-				   (("rust-syscallz" _) rust-syscallz)
-				   (("rust-strum" _) rust-strum)
-				   (("rust-strum-macros" _) rust-strum-macros)
-				   (("rust-backtrace" _) rust-backtrace) ; old backtrace doesn't build with the new rust-object
-				   (("rust-gimli" _) rust-gimli)
-				   ;; rust-pkcs5@0.5.0-pre.1 requires new_unwrap
-				   (("rust-const-oid" _) rust-const-oid)
-				   (("rust-aes" _) rust-aes)
-				   (("rust-des" _) rust-des)
-				   (("rust-pkcs8" _) rust-pkcs8)
-				   (("rust-pkcs5" _) rust-pkcs5)
-				   (("rust-pkcs1" _) rust-pkcs1)
-				   (("rust-spki" _) rust-spki)
-				   (("rust-der" _) rust-der)
-				   (("rust-sha-1" _) 
-				    (@ (gnu packages crates-io) rust-sha-1-0.10))
-				   (("rust-sha2" _) 
-				    (@ (gnu packages crates-io) rust-sha2-0.10))
-				   (("rust-time" _) ; resolve version conflict
-				    (@ (gnu packages crates-io) rust-time-0.3))
-				   (("rust-instant" _) ; 0.1.4 doesn't build against rust-time@0.3
-				    rust-instant)
-				   ;; 0.3 requires unstable
-				   (("rust-hex" _)
-				    (@ (gnu packages crates-io) rust-hex-0.4))
-				   (("rust-sha3" _) rust-sha3)
-				   (("rust-h2" _) (p rust-h2-0.3)) ; @0.2 doesn't build
-				   (("rust-scrypt" _) rust-scrypt)
-				   (("rust-password-hash" _) rust-password-hash)
-				   (("rust-block-modes" _) rust-block-modes)
-				   (("rust-ctr" _) rust-ctr)
-				   (("rust-salsa20" _) rust-salsa20)
-				   (("rust-cipher" _) rust-cipher)
-				   (("rust-block-padding" _) rust-block-padding)
-				   (("rust-streebog" _) (@ (gnu packages crates-io) rust-streebog-0.10))
-				   (("rust-pbkdf2" _) rust-pbkdf2)
-				   (("rust-hmac" _) (@ (gnu packages crates-io) rust-hmac-0.12))
-				   (("rust-boxxy" _) rust-boxxy)
-				   (("rust-block-buffer" _) rust-block-buffer)
-				   (("rust-enum-as-inner" _) rust-enum-as-inner)
-				   (("rust-md-5" _) rust-md-5)
-				   ;; TODO version conflict -- AUTOMATE?
-				   (("rust-syn" _) (p rust-syn-1))
-				   (("rust-object" _) (p rust-object-0.28))
-				   (("rust-addr2line" _) rust-addr2line)
-				   (("rust-generic-array" _) (@ (gnu packages crates-io) rust-generic-array-0.14))
-				   (("rust-digest" _) rust-digest)
-				   (("rust-crypto-common" _) rust-crypto-common)
-				   (("rust-rustyline" _)
-				    (@ (gnu packages crates-io) rust-rustyline-9))
-				   (("rust-base64" _)
-				    (@ (gnu packages crates-io) rust-base64-0.13))
-				   (("rust-test-case" _) rust-test-case-2)
-				   (("rust-slab" _) rust-slab)
-				   (("rust-socket2" _) (@ (gnu packages crates-io) rust-socket2-0.4))
-				   (("rust-insta" _)
-				    (@ (gnu packages crates-io) rust-insta-1))
-				   (("rust-nom" _) ; avoid version conflicts
-				    (@ (gnu packages crates-io) rust-nom-7))
-				   ;; rust-pktparse@0.5 doesn't build against nom@7
-				   (("rust-pktparse" _) rust-pktparse)
-				   (("rust-rusticata-macros" _) ; old version doesn't build against nom@7 
-				    (@ (gnu packages crates-io) rust-rusticata-macros-4))
-				   (("rust-pure-rust-locales" _) ; old version doesn't build against nom@7
-				    rust-pure-rust-locales)
-				   (("rust-itoa" _)
-				    (@ (gnu packages crates-io) rust-itoa-1))
-				   (("rust-sct" _)
-				    (@ (gnu packages crates-io) rust-sct-0.7))
-				   (("rust-quote" _)
-				    (@ (gnu packages crates-io) rust-quote-1))
-				   ;; 0.3.0 fails to build against new rust-serde
-				   (("rust-linked-hash-map" _)
-				    (@ (gnu packages crates-io) rust-linked-hash-map-0.5))
-				   (("rust-rustls-native-certs" _)
-				    ;; Old versio incompatible with new rustls
-				    (@ (gnu packages crates-io) rust-rustls-native-certs-0.6))
-				   (("rust-ron" _)
-				    (@ (gnu packages crates-io) rust-ron-0.6)) ; old versions don't build
-				   (("rust-serde" _)
-				    (@ (gnu packages crates-io) rust-serde-1)) ; old versions don't build
-				   (("rust-sha1" _) rust-sha1)
-				   (("rust-rsa" _) rust-rsa)
-				   (("rust-hashbrown" _)
-				    (@ (gnu packages crates-io) rust-hashbrown-0.11))
-				   (("rust-scopeguard" _)
-				    (@ (gnu packages crates-io) rust-scopeguard-1))
-				   (("rust-webpki" _)
-				    (@ (gnu packages crates-io) rust-webpki-0.22))
-				   ;; Old versions don't build (because rust-tokio-io disappeared)
-				   (("rust-hyper-rustls" _) rust-hyper-rustls)
-				   (("rust-rustls" _)
-				    ;; Remove old (not-building) and potentially unsecure versions
-				    ;; Also, rust-tokio-rustls requires a newer rust-rustls.
-				    rust-rustls-0.20)
-				   (("rust-tokio-rustls" _) ;0.10.3 doesn't build
-				    rust-tokio-rustls-0.23)
-				   ;; TODO: respect SSL_CERT_DIR instead of hardcoding trusting
-				   ;; whoever Mozilla trusts.
-				   ;; TODO: build from source
-				   ;; TODO: remove certificates with restrictions
-				   (("rust-webpki-roots" _)
-				    ;; 0.17.0 doesn't build
-				    (@ (gnu packages crates-io) rust-webpki-roots-0.22))
-				   (("rust-nix" _)
-				    (@ (gnu packages crates-io) rust-nix-0.23))
-				   (("rust-autocfg" _)
-				    (@ (gnu packages crates-io) rust-autocfg-1))
-				   (("rust-bytes" _)
-				    (@ (gnu packages crates-io) rust-bytes-1))
-				   (("rust-tokio-io" _)
-				    rust-tokio-io-0.2)
-				   (("rust-tokio-codec" _)
-				    rust-tokio-io-0.2)
-				   (("rust-tokio-util" _)
-				    rust-tokio-util-0.7)
-				   (("rust-tokio" _)
-				    (@ (gnu packages crates-io) rust-tokio-1.8))
-				   (("rust-futures" _)
-				    rust-futures-0.3)
-				   (("rust-futures-channel" _)
-				    rust-futures-channel-0.3)
-				   (("rust-futures-core" _)
-				    rust-futures-core-0.3)
-				   (("rust-futures-executor" _)
-				    rust-futures-executor-0.3)
-				   (("rust-futures-io" _)
-				    rust-futures-io-0.3)
-				   (("rust-futures-sink" _)
-				    rust-futures-sink-0.3)
-				   (("rust-futures-task" _)
-				    rust-futures-task-0.3)
-				   (("rust-futures-util" _)
-				    rust-futures-util-0.3)
-				   (("rust-http" _) ; 0.1 doesn't build
-				    (@ (gnu packages crates-io) rust-http-0.2))
-				   ;; rust-http-body@0.1.0's dependency rust-tokio-buf doesn't
-				   ;; build anymore.  (TODO remove from Guix)
-				   (("rust-http-body" _)
-				    (@ (gnu packages crates-io) rust-http-body-0.4))
-				   (("rust-crossbeam-channel" _)
-				    ;; avoid old version that don't build
-				    (@ (gnu packages crates-io) rust-crossbeam-channel-0.5))
-				   ;; Likewise.
-				   (("rust-hyper" _)
-				    (@ (gnu packages crates-io) rust-hyper-0.14))
-				   (("rust-nb" "0.1.3")
-				    ;; Avoid E0519, caused by multiple versions of the same crate
-				    ;; being used.  TODO: bump version in 'sniffglue'
-				    (@ (gnu packages crates-io) rust-nb-1))
-				   (("rust-num-traits" "0.1.43")
-				    (@ (gnu packages crates-io) rust-num-traits-0.2))
-				   (("rust-cfg-if" "0.1.10")
-				    (@ (gnu packages crates-io) rust-cfg-if-1))
-				   (("rust-env-logger" _) ; old versions don't build
-				    (@ (gnu packages crates-io) rust-env-logger-0.9))
-				   (("rust-lazy-static" _)
-				    (@ (gnu packages crates-io) rust-lazy-static-1))
-				   (("rust-rand" _)
-				    (@ (gnu packages crates-io) rust-rand-0.8))
-				   (("rust-lock-api" _) ; 0.3, 0.2, 0.1
-				    (@ (gnu packages crates-io) rust-lock-api-0.4))
-				   (("rust-sysctl" _) ; 0.1 does not compile (type errors)
-				    (@ (gnu packages crates-io) rust-sysctl-0.4))
-				   ;; The (now deprecated) rust-tempdir doesn't build
-				   ;; against current rust-rand, use the new rust-tempfile
-				   ;; instead as upstream recommends.
-				   (("rust-tempdir" _)
-				    (@ (gnu packages crates-io) rust-tempfile-3))
-				   (("rust-bare-metal" _)
-				    (@ (gnu packages crates-io) rust-bare-metal-1))
-				   ;; The old parking-lot doesn't build against
-				   ;; the new lock api.
-				   (("rust-parking-lot" _)
-				    ;; TODO: inherit?
-				    (@ (gnu packages crates-io) rust-parking-lot-0.11))
-				   ;; 0.4.30 fails to build.
-				   (("rust-proc-macro2" "0.4.30")
-				    (@ (gnu packages crates-io) rust-proc-macro2-1))
-				   (("rust-log" "0.3.9")
-				    (@ (gnu packages crates-io) rust-log-0.4))
-				   (_ dependency)))
+				 ;; Resolve version conflicts, choose newer versions,
+				 ;; etc.
+				 (match (assoc (package-name dependency) %replacements)
+				   ((_ new) new)
+				   (#false dependency)))
 			  maybe-output)))))
 	 ;; Detect cycles early by unthunking
 	 (define i
