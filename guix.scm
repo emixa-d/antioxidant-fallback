@@ -1309,7 +1309,8 @@ of operation.")
     "rust-nodrop-union" ; required unstable, and deprecated
     "rust-sleef-sys" ; requires unstable
     "rust-packed-simd" ; requires unstable (TODO: rust-packed-simd-2?)
-    "rust-security-framework" "rust-cocoa" "rust-cocoa-foundation" "rust-core-foundation" "rust-core-foundation-sys" "rust-core-text" "rust-fsevent" "rust-fsevent-sys" "rust-objc-foundation" "rust-security-framework-sys" ; non-Linux, non-Hurd things
+    "rust-security-framework" "rust-cocoa" "rust-cocoa-foundation" "rust-core-foundation" "rust-core-foundation-sys" "rust-core-text" "rust-fsevent" "rust-fsevent-sys" "rust-objc-foundation" "rust-security-framework-sys" ; non-Linux, non-Hurd things,
+    "rust-mach" ; skip Mach (used by Hurd and others) support for now.
     "rust-ws2-32-sys"
     "rust-winapi-util" "rust-winapi-build"
     "rust-core-arch" ; doesn't build, nowadays part of Rust itself?
