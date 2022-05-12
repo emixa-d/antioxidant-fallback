@@ -1494,7 +1494,8 @@ of operation.")
     ("rust-os-str-bytes" ,#~'("raw"))))
 
 (define %replacements
-  `(("rust-hash32-derive" ,rust-hash32-derive)
+  `(("rust-jetscii" ,(p rust-jetscii-0.5)) ; use recent version of jetscii that actually builds
+    ("rust-hash32-derive" ,rust-hash32-derive)
     ("rust-hash32" ,(p rust-hash32-0.2)) ; @0.1 doesn't build
     ("rust-derive-more" ,(p rust-derive-more-0.99)) ; avoid non-building @0.15
     ("rust-devise-core" ,rust-devise-core)
