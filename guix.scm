@@ -1326,7 +1326,6 @@ of operation.")
     "rust-tokio-mock-task" ; doesn't build
     "rust-tokio-test"
     "rust-rand-xorshift"
-    "rust-walkdir"
     "rust-serde-test"
     "rust-wasm-bindgen" "rust-wasi"
     "rust-wasm-bindgen-test"))
