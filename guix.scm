@@ -1294,6 +1294,18 @@ of operation.")
     (description "`AsSlice` and `AsMutSlice` traits")
     (license '(list license:expat license:asl2.0))))
 
+(define-public rust-blake2 ; 0.9 doesn't build against new rust-digest. 
+  (package
+    (inherit (p rust-blake2-0.9))
+    (name "rust-blake2")
+    (version "0.10.4")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "blake2" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "121k5yj3c8fr826pbh0gf0b3jly2ivzrfvz3lpxyabjvw2g89kxr"))))))
 
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
@@ -1516,7 +1528,8 @@ of operation.")
     ("rust-os-str-bytes" ,#~'("raw"))))
 
 (define %replacements
-  `(("rust-as-slice" ,rust-as-slice)
+  `(("rust-blake2" ,rust-blake2)
+    ("rust-as-slice" ,rust-as-slice)
     ("rust-jetscii" ,(p rust-jetscii-0.5)) ; use recent version of jetscii that actually builds
     ("rust-hash32-derive" ,rust-hash32-derive)
     ("rust-hash32" ,(p rust-hash32-0.2)) ; @0.1 doesn't build
