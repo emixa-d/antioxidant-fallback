@@ -64,4 +64,8 @@ No method named `foo` from `bar`?  Try updating the crate, maybe an updated crat
 
 # Changelog
 
-2022-05-12: source code location of binaries can now be inferred.  Previously, only src/main.rs was understood as default and crates had to set the 'target' field explicitely.  But not all crates do that, e.g. rust-alloc-no-stdlib@2.
+2022-05-12:
+   source code location of binaries can now be inferred.  Previously, only src/main.rs was understood as default and crates had to set the 'target' field explicitely.  But not all crates do that, e.g. rust-alloc-no-stdlib@2.
+
+   'set-platform-independent-manifest-variables' doesn't barf anymore on versions like 1.2.3+4.5.6,
+   allowing rust-bzip2-sys to compile.
