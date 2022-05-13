@@ -1428,6 +1428,9 @@ of operation.")
     ("rust-lazycell" ,#~'()) ;; avoid nightly things
     ;; "pattern" and "benchmarks" require non-stable (rust-jetscii@0.5)
     ("rust-jetscii" ,#~'())
+    ;; rust-cookie requires the non-default "parsing" and "macros" feature. Might as well enable
+    ;; "formatting" as well.
+    ("rust-time" ,#~'("default" "macros" "formatting" "parsing"))
     ;; Avoid "use-intrisics", which requires unstable.
     ("rust-half" ,#~'("alloc" "serialize" "std"))
     ;; Avoid removed feature(custom_derive)
