@@ -1320,6 +1320,20 @@ of operation.")
         (sha256
           (base32 "0dyl16cf15hka32hv3l7dwgr3xj3brpfr27iyrbpdhlzdfgh46kr"))))))
 
+(define-public rust-chacha20 ; @0.8 doesn't build against old rust-cipher
+  (package
+    (inherit (p rust-chacha20-0.8))
+    (name "rust-chacha20")
+    (version "0.9.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "chacha20" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "021g1917r0jzpvgah76667nzk0p3p9kj7ka5zqns1rxrqp3qkz67"))))))
+
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1544,6 +1558,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-chacha20" ,rust-chacha20)
     ("rust-unicase" ,(p rust-unicase-2)) ; @1 doesn't build because of removed features
     ("rust-hkdf" ,rust-hkdf)
     ("rust-as-slice" ,rust-as-slice)
