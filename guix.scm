@@ -1502,7 +1502,7 @@ of operation.")
     ;; Don't just support libclang 3.5, also include
     ;; bindings for later versions which rust-bindgen might
     ;; need.
-    ("rust-clang-sys" ,#~'("default" "clang_10_0"))
+    ("rust-clang-sys" ,#~'("runtime" "clang_10_0")) ; Guix by default does dynamic linking, not static linking, which would use the "static" feature IIUC
     ;; Do _not_ include 'runtime', as dlopen isn't used,
     ;; linking happens at compile time (and at program
     ;; startup).
