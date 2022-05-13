@@ -1383,6 +1383,7 @@ of operation.")
   '("rust-blakeout" ; doesn't build and no new version available, let's avoid for now.
     "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
     "rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
+    "rust-pear" "rust-pear-codegen" ; current version in Guix requires non-stable
     "rust-heapsize-plugin" ; makes use of removed features
     "rust-rustc-test" ; doesn't build against recent rust-time
     "rust-speculate" ; @0.1.2 doesn't build against recent rust-syn
