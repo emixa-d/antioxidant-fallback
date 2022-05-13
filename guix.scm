@@ -781,6 +781,20 @@
    (description "Cipher Block Chaining (CBC) block cipher mode of operation")
    (license '(list license:expat license:asl2.0))))
 
+;; Old vesion incompatible with new rust-hmac
+(define-public rust-cookie
+  (package
+    (inherit (p rust-cookie-0.15))
+    (name "rust-cookie")
+    (version "0.16.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "cookie" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "01fa6z8sqqg19ya0l9ifh8vn05l5hpxdzkbh489mpymhw5np1m4l"))))))
+
 
 ;; Old agate doesn't build
 (define-public agate
@@ -1589,6 +1603,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-cookie" ,rust-cookie)
     ("rust-aead" ,rust-aead)
     ("rust-aes-gcm" ,rust-aes-gcm)
     ("rust-chacha20" ,rust-chacha20)
