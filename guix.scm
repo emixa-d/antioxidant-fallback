@@ -1606,6 +1606,7 @@ of operation.")
   `(("rust-blake2" ,rust-blake2)
     ("rust-cookie" ,rust-cookie)
     ("rust-aead" ,rust-aead)
+    ("rust-actix-threadpool" ,(p rust-actix-threadpool-0.3)) ; old rust-actix-threadpool requires old rust-futures
     ("rust-aes-gcm" ,rust-aes-gcm)
     ("rust-chacha20" ,rust-chacha20)
     ("rust-unicase" ,(p rust-unicase-2)) ; @1 doesn't build because of removed features
