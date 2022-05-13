@@ -2030,7 +2030,9 @@ of operation.")
 				 ("rust-http-body" ; at least for 0.4
 				  `(("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
 				 ("rust-tokio-sync"
+				  ;; TODO: remove 'preview' dependencies?
 				  `(("rust-futures-core" ,rust-futures-core-0.3)
+				    ("rust-futures-sink" ,rust-futures-sink-0.3)
 				    ("rust-futures-util" ,rust-futures-util-0.3)))
 				 ("rust-tokio-util"
 				  `(("rust-tracing" ,(p rust-tracing-0.1)))) ; missing dependency
