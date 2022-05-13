@@ -1333,6 +1333,34 @@ of operation.")
         (sha256
           (base32 "021g1917r0jzpvgah76667nzk0p3p9kj7ka5zqns1rxrqp3qkz67"))))))
 
+(define-public rust-aead ; rust-aes-gcm@0.10 needs new version
+  (package
+    (inherit (p rust-aead-0.3))
+    (name "rust-aead")
+    (version "0.4.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "aead" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "0xw8kp9j1whfdxhgmr2qf9xgslkg52zh6gzmhsh13y9w3s73nq8b"))))
+    (inputs (modify-inputs (package-inputs (p rust-aead-0.3))
+	      (append (p rust-rand-core-0.6)))))) ; new dependency
+
+(define-public rust-aes-gcm ; @0.8 doesn't build against old rust-cipher
+  (package
+    (inherit (p rust-aes-gcm-0.8))
+    (name "rust-aes-gcm")
+    (version "0.10.0-pre")
+    (source
+     (origin
+      (method url-fetch)
+      (uri (crate-uri "aes-gcm" version))
+      (file-name (string-append name "-" version ".tar.gz"))
+      (sha256
+       (base32 "0krsrhji8j5smi35rdg0r31adx1nrpnb1fkpzwl5xipj7yrfh140"))))))
+
 
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
@@ -1558,6 +1586,8 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-aead" ,rust-aead)
+    ("rust-aes-gcm" ,rust-aes-gcm)
     ("rust-chacha20" ,rust-chacha20)
     ("rust-unicase" ,(p rust-unicase-2)) ; @1 doesn't build because of removed features
     ("rust-hkdf" ,rust-hkdf)
