@@ -1441,6 +1441,8 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; The default "benchmarks" feature requires unstable.
+    ("rust-galil-seiferas" ,#~'())
     ;; Don't accidentally enable multiple encoding features, even
     ;; though rust-fmt only supports one at the time.  An encoding
     ;; will automatically be chosen.
