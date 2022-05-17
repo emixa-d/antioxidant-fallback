@@ -506,6 +506,7 @@ default features implied by the \"default\" feature."
   (define maybe-car
     (match-lambda
       (("nightly" . _) #false) ; unlikely to work in Guix, e.g. rust-lock-api@0.4
+      (("unstable" . _) #false) ; likewise, e.g. rust-fallible-collections@0.4.2
       ((x . y) x)))
   (match (list (->bool (member "default" features))
 	       (->bool (assoc "default" (manifest-features *manifest*))))

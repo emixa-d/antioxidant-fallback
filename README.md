@@ -30,7 +30,7 @@ If the package has no such argument and Cargo.toml has a "default" feature, then
 crate is built with the default feature and all its implied features.
 
 If the package has no such argument and Cargo.toml has no "default" feature, then
-the crate is built with all features except "nightly".
+the crate is built with all features except "nightly" and "unstable".
 
 (for technnical detiails, see 'make-feature-closure' and 'choose-features' in
 antioxidant.scm)
