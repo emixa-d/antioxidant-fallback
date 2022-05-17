@@ -21,6 +21,20 @@ Warning: some packages have been updated without checking the source code diff!
      or guix-patches@gnu.org.
   7. Repeat.
 
+# Which features are built?
+
+If the package as a #:features #~'("this" "that" ...) argument, then the crate is
+build with features this and that and their implied features.
+
+If the package has no such argument and Cargo.toml has a "default" feature, then the
+crate is built with the default feature and all its implied features.
+
+If the package has no such argument and Cargo.toml has no "default" feature, then
+the crate is built with all features except "nightly".
+
+(for technnical detiails, see 'make-feature-closure' and 'choose-features' in
+antioxidant.scm)
+
 # How to fix build failures
 
 ## Build failures caused by missing features.
