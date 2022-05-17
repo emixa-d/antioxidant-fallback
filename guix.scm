@@ -1381,6 +1381,7 @@ of operation.")
 ;; TODO: write a "guix style" thing for doing this.
 (define %removed-dependencies
   '("rust-blakeout" ; doesn't build and no new version available, let's avoid for now.
+    "rust-derive-error-chain" ; doesn't build (even when updated) and unmaintained, avoid it for now
     "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
     "rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
     "rust-pear" "rust-pear-codegen" ; current version in Guix requires non-stable
