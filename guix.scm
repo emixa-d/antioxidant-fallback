@@ -1449,6 +1449,7 @@ of operation.")
     "rust-ws2-32-sys"
     "rust-winapi-util" "rust-winapi-build"
     "rust-fuchsia-zircon" "rust-fuchsia-zircon-sys" "rust-fuchsia-cprng" ; fuchsia not supported by Guix
+    "rust-dwrote" ; Windows-only, skip for now, cross-compilation can be implemented later
     "rust-core-arch" ; doesn't build, nowadays part of Rust itself?
     "rust-doc-comment"
     "rust-hermit-abi"
