@@ -1443,6 +1443,7 @@ of operation.")
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
     ;; The default "benchmarks" feature requires unstable.
     ("rust-galil-seiferas" ,#~'())
+    ("rust-plotters-svg" ,#~'()) ; "debug" feature causes a build failure
     ;; Don't accidentally enable multiple encoding features, even
     ;; though rust-fmt only supports one at the time.  An encoding
     ;; will automatically be chosen.
