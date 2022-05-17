@@ -10,6 +10,16 @@ $ [...]/bin/hexyl
 
 Warning: some packages have been updated without checking the source code diff!
 
+# Using as a channel (for now)
+
+After a "git pull", do:
+
+```
+$ guix git authenticate 020851ad649480ee4769b77a947642e993ea5956 "C1F3 3EE2 0C52 8FDB 7DD7  011F 49E3 EE22 1917 25EE"
+```
+
+(TODO: make some vitaminated packages available, test "guix pull")
+
 # How to help
 
   1. Choose a Rust app or library to build.
