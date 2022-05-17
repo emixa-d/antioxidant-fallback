@@ -1585,6 +1585,7 @@ of operation.")
     ;; ("rust-rand-core" #~'("std" "getrandom"))
     ;; Required by rust-rand-core.
     ("rust-getrandom" ,#~'("std"))
+    ("rust-ena" ,#~'())  ;; disable "bench", which fails for stable build
     ;; Required by rust-env-logger
     ("rust-log" ,#~'("std"))
     ;; The feature "alloc" is not set by default, causing the
