@@ -1813,6 +1813,8 @@ of operation.")
 (define %extra-inputs
   `(("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
+    ("rust-freetype-sys"
+     (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
     ("rust-flate2"
      ,(list (list "zlib" (@ (gnu packages compression) zlib))))
