@@ -1454,6 +1454,8 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
+    ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
     ;; The default "benchmarks" feature requires unstable.
     ("rust-galil-seiferas" ,#~'())
     ("rust-plotters-svg" ,#~'()) ; "debug" feature causes a build failure

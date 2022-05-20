@@ -75,6 +75,27 @@ by making the list of features explicit instead of implicit.
 
   ("rust-bytecount" ,#~'())
 
+## Build failures related to rust-digest
+
+E.g.:
+
+```
+error[E0432]: unresolved imports `digest::BlockInput`, `digest::FixedOutputDirty`
+   --> lib/lib.rs:133:14
+    |
+133 | use digest::{BlockInput, FixedOutputDirty, Reset, Update};
+    |              ^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+    |              |           |
+    |              |           no `FixedOutputDirty` in the root
+    |              |           help: a similar name exists in the module: `FixedOutput`
+    |              no `BlockInput` in the root
+```
+
+The fixed-length API has been removed in <https://github.com/RustCrypto/traits/pull/380>.
+To solve the build failure, maybe update the crate that depends on rust-digest@0.9.0
+to a version that supports rust-digest@0.10.0.  Alternatively, look if it rust-digest
+is only used when a certain feature is enabled, and if so, disable that feature.
+
 ## Unstable Rust
 
 If the crate assumes unstable rust (e.g. by using #![feature ...]),
