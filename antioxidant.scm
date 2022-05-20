@@ -208,6 +208,21 @@ with open(there, \"w\") as out_file:
 ;; Initialised by the 'load-manifest' phase.
 (define *manifest* #false)
 
+;; Packages to test when modifying these two procedures:
+;;  * rust-clang-sys
+;;  * rust-seccomp-sys
+;;  * rust-bindgen
+;;  * mayb other -sys crates
+(define* (add-c-library! library)
+  "Link the crate to be compiled against C-LIBRARY -- i.e., do the rust
+equivalent of adding \"-lLIBRARY ...\" to the invocation of \"gcc\"."
+  (set! *c-libraries* (cons library *c-libraries*)))
+
+(define* (add-c-library-directory! library-directory)
+  "Search for non-Rust libraries in LIBRARY-DIRECTORY -- i.e., do the rust
+equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
+  (set! *c-library-directories* (cons library-directory *c-library-directories*)))
+
 
 
 ;;
@@ -454,7 +469,6 @@ with open(there, \"w\") as out_file:
 		       (available-crates '())
 		       (crate-mappings '())
 		       (extra-libraries *c-libraries*)
-		       ;; TODO: don't use 'extra-arguments' for this
 		       (extra-library-directories *c-library-directories*)
 		       #:allow-other-keys)
   (mkdir-p (dirname destination))
@@ -723,27 +737,23 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	  ((string-prefix? "cargo:rustc-link-lib=" line)
 	   (let ((c-library (string-drop line (string-length "cargo:rustc-link-lib="))))
 	     (format #t "Building with C library ~a~%" c-library)
-	     (set! *c-libraries* (cons c-library *c-libraries*))))
+	     (add-c-library! c-library)))
 	  ((string-prefix? "cargo:rustc-link-search=" line)
 	   (let ((KIND=PATH (string-drop line (string-length "cargo:rustc-link-search="))))
 	     (cond ((string-prefix? "framework=" KIND=PATH)
 		    (error "framework not yet supported"))
 		   ((string-prefix? "native=" KIND=PATH)
-		    (set! *c-library-directories*
-			  (cons (string-drop KIND=PATH (string-length "native="))
-				*c-library-directories*)))
+		    (add-c-library-directory! (string-drop KIND=PATH (string-length "native="))))
 		   ((string-prefix? "all=" KIND=PATH)
 		    ;; Note (Cargo incompatibility?): technically the build.rs could ask us
 		    ;; here to search for crates in some arbitrary directories (instead of
 		    ;; only C-style libraries), but no crate(™) does that (so far ...)
-		    (set! *c-library-directories*
-			  (string-drop KIND=PATH (string-length "=all"))))
+		    (add-c-library-directory! (string-drop KIND=PATH (string-length "=all"))))
 		   ((or (string-prefix? "crate=" KIND=PATH)
 			(string-prefix? "dependency=" KIND=PATH))
 		    (error "The build script is not supposed to ask to look into arbitrary locations for crates."))
 		   (#true
-		    (set! *c-library-directories*
-			  (cons KIND=PATH *c-library-directories*))))))
+		    (add-c-library-directory! KIND=PATH)))))
 	  ((string-prefix? "cargo:rustc-env=" line)
 	   (putenv (string-drop line (string-length "cargo:rustc-env="))))
 	  ((string-prefix? "cargo:warning=" line)
