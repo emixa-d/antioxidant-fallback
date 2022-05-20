@@ -219,7 +219,11 @@ with open(there, \"w\") as out_file:
 (define-json-mapping <crate-information> make-crate-information crate-information?
   json->crate-information <=> crate-information->json <=>
   scm->crate-information <=> crate-information->scm
+  ;; The following two fields are usually but not always the same:
+  ;; for rust-debug-unreachable, the first in "debug_unreachable"
+  ;; and the second is "new_debug_unreachable".
   (name crate-information-name) ; string, name of the crate (normalised)
+  (dependency-name crate-information-dependency-name) ; string, name of the crate put as listed in the dependency information
   (link crate-information-link) ; string
   ;; Where is the crate (as .rlib or .so or such) located in the file system?
   ;; (TODO: check that it's absolute)
@@ -255,20 +259,47 @@ with open(there, \"w\") as out_file:
 
 ;; Crate names are normalised by the constructor.
 (define-record-type (<crate-mapping> %make-crate-mapping crate-mapping?)
-  ;; What does the crate name itself?
-  (fields (immutable true-name crate-mapping-true-name) ; string
+  ;; From which crate package does the crate come?  This is usually, but
+  ;; not always, the same as the name of the crate.
+  ;; For 'rust-debug-unreachable', this is "new_debug_unreachable".
+  (fields (immutable dependency-name crate-mapping-dependency-name) ; string
 	  ;; What does the crate that is using this crate
-	  ;; expect as name?  Usually the same as 'self-name'.
-	  (immutable local-name crate-mapping-local-name) ; string
-	  ;; TODO more stuff ....
+	  ;; expect as name (for 'extern ...')?  If #false,
+	  ;; default to the crate name (for rust-debug-unreachable,
+	  ;; that is "debug_unreachable").
+	  (immutable local-name %crate-mapping-local-name) ; string | #false
 	  ))
 
-(define (make-crate-mapping true-name local-name)
-  (%make-crate-mapping (normalise-crate-name true-name)
-		       (normalise-crate-name local-name)))
+(define crate-mapping-local-name
+  (case-lambda
+    ((crate-mapping)
+     (or (%crate-mapping-local-name crate-mapping)
+	 (error "desired name of crate unknown, pass a <crate-information> to elaborate")))
+    ((crate-mapping crate)
+     (unless (crate-mapping? crate-mapping)
+       (error "argument not a <crate-mapping>"))
+     (unless (crate-information? crate)
+       (error "argument not a <crate-information>"))
+     (or (%crate-mapping-local-name crate-mapping)
+	 (crate-information-name crate)))))
+
+(define (make-crate-mapping dependency-name local-name)
+  (%make-crate-mapping (normalise-crate-name dependency-name)
+		       (and=> local-name normalise-crate-name)))
 
 (define (normalise-crate-name name)
   (string-replace-substring name "-" "_"))
+
+(define (crate-name-of-manifest manifest)
+  "Return the crate name of the crate specified in MANIFEST."
+  ;; The 'rust-new-debug-unreachable' crate uses the name
+  ;; 'debug_unreachable' and not 'new_debug_unreachable'.
+  ;; So when available, use (target-name lib), otherwise
+  ;; the build of rust-string-cache@0.8.0 fails.
+  (let ((package (manifest-package *manifest*))
+	(lib (manifest-lib *manifest*)))
+    (or (and=> lib target-name)
+	(normalise-crate-name (package-name package)))))
 
 (define (partition-crates available-crates crate-mappings)
   ;; First return value: direct dependencies
@@ -341,13 +372,13 @@ with open(there, \"w\") as out_file:
    (string-length "lib")))
 
 (define (match? crate-information crate-mapping)
-  (string=? (crate-mapping-true-name crate-mapping)
-	    (crate-information-name crate-information)))
+  (string=? (crate-mapping-dependency-name crate-mapping)
+	    (crate-information-dependency-name crate-information)))
 
 (define (extern-arguments available-crates crate-mappings)
   (define (process-mapping crate-mapping)
     (define (do crate)
-      (string-append "--extern=" (crate-mapping-local-name crate-mapping)
+      (string-append "--extern=" (crate-mapping-local-name crate-mapping crate)
 		     "=" (crate-information-location crate)))
     ;; Search for a matchin crate
     (match (filter (cut match? <> crate-mapping) available-crates)
@@ -564,7 +595,8 @@ chosen, enabling all features like Cargo does (except nightly).~%")
   (define (construct-crate dependency)
     (make-crate-mapping (or (dependency-package dependency)
 			    (dependency-name dependency))
-			(dependency-name dependency)))
+			(and (dependency-package dependency) ; <-- first clause required for rust-new-debug-unreachable / rust-string-cache@0.8.0
+			     (dependency-name dependency))))
   (map construct-crate dependencies))
 
 ;; Some cargo:??? lines from build.rs are ‘propagated’ to dependencies
@@ -650,8 +682,9 @@ chosen, enabling all features like Cargo does (except nightly).~%")
     (lambda (o)
       (scm->json
        (crate-information->scm
-	(make-crate-information (normalise-crate-name
-				 (package-name (manifest-package *manifest*)))
+	(make-crate-information (crate-name-of-manifest *manifest*)
+				;; TODO: should the dependency name be normalised?
+				(normalise-crate-name (package-name (manifest-package *manifest*)))
 				link-name
 				*library-destination*
 				filtered-c-libraries
@@ -771,9 +804,9 @@ chosen, enabling all features like Cargo does (except nightly).~%")
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
 	 (crate-mappings (manifest-all-dependencies *manifest* '(dependency)))
-	 (crate-name (normalise-crate-name (package-name package)))
-	 (edition (package-edition package))
 	 (lib (manifest-lib *manifest*))
+	 (crate-name (crate-name-of-manifest *manifest*))
+	 (edition (package-edition package))
 	 ;; Location of the crate source code to compile.
 	 ;; The default location is src/lib.rs, some packages put
 	 ;; the code elsewhere.
@@ -793,7 +826,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	       arguments)) ;; TODO: less impure
       (*save* *library-destination*)
       (apply compile-rust-library lib-path *library-destination*
-	     (normalise-crate-name (package-name package))
+	     crate-name
 	     ;; Version of the Rust language (cf. -std=c11)
 	     ;; -- required by rust-proc-macro2
 	     (list (string-append "--edition=" (package-edition package))
