@@ -2099,7 +2099,22 @@ of operation.")
 					#~'#$l))))))
 	  (inputs i)
 	  (native-inputs n-i)
-	  (propagated-inputs p-i)))
+	  (propagated-inputs p-i)
+	  (search-paths
+	   (append
+	    (match (package-name pack)
+	      ;; Make sure that PKG_CONFIG_PATH is available to build.rs.
+	      ;; TODO: upstream Guix
+	      ("rust-pkg-config" (package-search-paths (@ (gnu packages pkg-config) pkg-config)))
+	      (_ '()))
+	    (package-search-paths pack)))
+	  (native-search-paths
+	   (append
+	    (match (package-name pack)
+	      ;; Make sure that PKG_CONFIG_PATH is available to build.rs.
+	      ("rust-pkg-config" (package-native-search-paths (@ (gnu packages pkg-config) pkg-config)))
+	      (_ '()))
+	    (package-native-search-paths pack)))))
        (package-arguments pack))
       pack))
 
