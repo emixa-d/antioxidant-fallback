@@ -2150,6 +2150,7 @@ of operation.")
 ;; todo: cycle between rust-demo-hack and rust-demo-hack-impl
 
 (map vitaminate/auto (list
+		      (p rust-bindgen-0.59) ; fragile w.r.t. changes to code for linking to C libraries, avoid breaking it
 		      agate
 		      (@ (gnu packages rust-apps) diffr)
 		      (@ (gnu packages rust-apps) hexyl)
