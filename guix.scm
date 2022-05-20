@@ -1905,11 +1905,8 @@ of operation.")
 		   ;; Optional dependency cycle
 		   (not (and (string=? (package-name dependency) "rust-surf")
 			     (string=? (package-name pack) "rust-async-std")))
-		   ;; Optional dependency cycle (also TODO rust-ravif = rav1e except for the name and version?) TODO upstream guix.
-		   ;; (TODO: unverified if broken correctly)
+		   ;; Optional dependency cycle
 		   (not (and (string=? (package-name dependency) "rust-image")
-			     (string=? (package-name pack) "rust-ravif")))
-		   (not (and (string=? (package-name dependency) "rav1e")
 			     (string=? (package-name pack) "rust-ravif")))
 		   (not (and (string=? (package-name dependency) "rust-image")
 			     (string=? (package-name pack) "rav1e")))
