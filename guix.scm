@@ -1797,6 +1797,52 @@ of operation.")
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
 
+;; TODO: add these (upstream) or teach "guix style" to add them
+(define %extra-inputs
+  `(("rust-structopt" ; for paw feature
+     (("rust-paw" ,(p rust-paw-1))))
+    ;; No need to avoid Rust dependencies.
+    ("rust-flate2"
+     ,(list (list "zlib" (@ (gnu packages compression) zlib))))
+    ("rust-cmake"
+     ,(list (list "cmake" (@ (gnu packages cmake) cmake-minimal))))
+    ("rust-clang-sys"
+     ;; TODO needs more work for
+     ,(list (list "clang" (@ (gnu packages llvm) clang-13))))
+    ;; for "pem" feature
+    ("rust-der"
+     (("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
+    ;; for "pem" and "alloc" feature
+    ("rust-pkcs1"
+     (("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
+    ;; for "cbc" feature
+    ("rust-pkcs5"
+     (("rust-cbc" ,rust-cbc)
+      ("rust-sha1" ,rust-sha1))) ; missing dep (for pbes2)
+    ("rust-sha1" (("rust-digest" ,rust-digest)
+		  ("rust-cfg-if" ,(p rust-cfg-if-1)) ;missing dep
+		  ("rust-cpufeatures" ,(p rust-cpufeatures-0.2))))
+    ;; for "sha1" and "sha2" features
+    ("rust-spki" (("rust-sha1" ,rust-sha1)
+		  ("rust-base64ct" ,(p rust-base64ct-1)) ; missing dep
+		  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
+    ;; possibly only required by new version
+    ("rust-boxxy" (("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
+    ("rust-petgraph" (("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
+    ("sniffglue" (("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
+    ;; TODO: is this sufficient?
+    ("rust-futures-core-preview"
+     (("rust-futures-core" ,rust-futures-core-0.3)))
+    ("rust-http-body" ; at least for 0.4
+     (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
+    ("rust-tokio-sync"
+     ;; TODO: remove 'preview' dependencies?
+     (("rust-futures-core" ,rust-futures-core-0.3)
+      ("rust-futures-sink" ,rust-futures-sink-0.3)
+      ("rust-futures-util" ,rust-futures-util-0.3)))
+    ("rust-tokio-util"
+     (("rust-tracing" ,(p rust-tracing-0.1)))))) ; missing dependency
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -2000,53 +2046,16 @@ of operation.")
 				 ;; etc.
 				 (match (assoc (package-name dependency) %replacements)
 				   ((_ new) new)
-				   (#false dependency)))
+				   (#false dependency)
+				   (stuff (pk 'oops stuff)
+					  (error "bogus entry in %extra-inputs"))))
 			  maybe-output)))))
 	 ;; Detect cycles early by unthunking
 	 (define i
  	   (filter-map fix-input
-		       (append (match (package-name pack)
-				 ("rust-structopt" ; for paw feature
-				  `(("rust-paw" ,(p rust-paw-1))))
-				 ;; No need to avoid Rust dependencies.
-				 ("rust-flate2"
-				  (list (list "zlib" (@ (gnu packages compression) zlib))))
-				 ("rust-cmake"
-				  (list (list "cmake" (@ (gnu packages cmake) cmake-minimal))))
-				 ("rust-clang-sys"
-				  ;; TODO needs more work for
-				  (list (list "clang" (@ (gnu packages llvm) clang-13))))
-				 ;; for "pem" feature
-				 ("rust-der" `(("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
-				 ;; for "pem" and "alloc" feature
-				 ("rust-pkcs1" `(("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
-				 ;; for "cbc" feature
-				 ("rust-pkcs5" `(("rust-cbc" ,rust-cbc)
-						 ("rust-sha1" ,rust-sha1))) ; missing dep (for pbes2)
-				 ("rust-sha1" `(("rust-digest" ,rust-digest)
-						("rust-cfg-if" ,(p rust-cfg-if-1)) ;missing dep
-						("rust-cpufeatures" ,(p rust-cpufeatures-0.2))))
-				 ;; for "sha1" and "sha2" features
-				 ("rust-spki" `(("rust-sha1" ,rust-sha1)
-						("rust-base64ct" ,(p rust-base64ct-1)) ; missing dep
-						("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
-				 ;; possibly only required by new version
-				 ("rust-boxxy" `(("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
-				 ("rust-petgraph" `(("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
-				 ("sniffglue" `(("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
-				 ;; TODO: is this sufficient?
-				 ("rust-futures-core-preview"
-				  `(("rust-futures-core" ,rust-futures-core-0.3)))
-				 ("rust-http-body" ; at least for 0.4
-				  `(("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
-				 ("rust-tokio-sync"
-				  ;; TODO: remove 'preview' dependencies?
-				  `(("rust-futures-core" ,rust-futures-core-0.3)
-				    ("rust-futures-sink" ,rust-futures-sink-0.3)
-				    ("rust-futures-util" ,rust-futures-util-0.3)))
-				 ("rust-tokio-util"
-				  `(("rust-tracing" ,(p rust-tracing-0.1)))) ; missing dependency
-				 (_ '()))
+		       (append (match (assoc-ref %extra-inputs (package-name pack))
+				 ((association-list) association-list)
+				 (#false '())) ; no extra inputs
 			       cargo-inputs
 			       (package-inputs pack))))
 	 (define n-i (filter-map fix-input
