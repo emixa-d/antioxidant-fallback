@@ -1524,8 +1524,11 @@ of operation.")
     ("rust-flate2" ,#~'("zlib"))
     ;; Don't just support libclang 3.5, also include
     ;; bindings for later versions which rust-bindgen might
-    ;; need.
-    ("rust-clang-sys" ,#~'("runtime" "clang_10_0")) ; Guix by default does dynamic linking, not static linking, which would use the "static" feature IIUC
+    ;; need.  Don't include the "runtime" feature, because
+    ;; then libclang.so needs to be in LD_LIBRARY_PATH or such
+    ;; to be found.  Don't include the "static" feature for
+    ;; the standard reasons against static linking in Guix.
+    ("rust-clang-sys" ,#~'("clang_10_0")) ; Guix by default does dynamic linking, not static linking, which would use the "static" feature IIUC
     ;; Do _not_ include 'runtime', as dlopen isn't used,
     ;; linking happens at compile time (and at program
     ;; startup).
