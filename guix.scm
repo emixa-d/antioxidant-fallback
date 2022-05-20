@@ -105,6 +105,14 @@
 						   (("use std::time::Duration;")
 						    "use std::time::Duration;use std::convert::TryInto;")
 						   (("\\.to_std\\(\\)") ".try_into()"))))))
+					 ;; Preserve this phase from (gnu packages crates-io)
+					 ((string-prefix? "rust-pkg-config-" name)
+					  #~((add-after 'unpack 'hardcode-pkg-config-loation
+					       (lambda* (#:key inputs #:allow-other-keys)
+						 (substitute* "src/lib.rs"
+							      (("\"pkg-config\"")
+							       (string-append "\"" (assoc-ref inputs "pkg-config")
+									      "/bin/pkg-config\"")))))))
 					 ;; TODO: Upstream/update
 					 ((string-prefix? "rust-structopt-derive" name)
 					  #~((add-after 'unpack 'use-existing
