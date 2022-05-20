@@ -1417,6 +1417,32 @@ of operation.")
         (sha256
           (base32 "044qxqdkcq6mv07bsvm35hl7hy3rmf87lrxjyz8zaq57i0xngvmc"))))))
 
+(define-public rust-system-deps ; @3 doesn't build against new rust-heck
+  (package
+    (inherit (p rust-system-deps-3))
+    (name "rust-system-deps")
+    (version "6.0.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "system-deps" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "02g750rlhh7ynqa3p4a3qm7jrkjp3d0jlzrl29z225ch9hf5m951"))))))
+
+(define-public rust-version-compare ; rust-system-deps needs new version
+  (package
+    (inherit (p rust-version-compare-0.0.11))
+    (name "rust-version-compare")
+    (version "0.1.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "version-compare" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0wyasmnqqngvm54x0gsxbwpxznvn747jkp0dx1nnppy1j9xj927y"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1663,6 +1689,8 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-system-deps" ,rust-system-deps)
+    ("rust-version-compare" ,rust-version-compare)
     ("rust-input-buffer" ,rust-input-buffer)
     ("rust-enum-to-u8-slice-derive" ,rust-enum-to-u8-slice-derive)
     ("rust-cookie" ,rust-cookie)
