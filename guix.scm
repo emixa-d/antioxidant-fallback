@@ -1387,6 +1387,22 @@ of operation.")
       (sha256
        (base32 "0krsrhji8j5smi35rdg0r31adx1nrpnb1fkpzwl5xipj7yrfh140"))))))
 
+(define-public rust-enum-to-u8-slice-derive ; 0.1.0 doesn't build against new rust-syn
+  (package
+    (inherit (p rust-enum-to-u8-slice-derive-0.1))
+    (name "rust-enum-to-u8-slice-derive")
+    (version "0.2.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "enum-to-u8-slice-derive" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "1ab19saqm5vdhz15gshpj5xj2p6j9i3708mya25vdgyrmb7y1kpc"))))
+    (inputs
+     ;; TODO: do macro inputs go in native-inputs or inputs?
+     (modify-inputs (package-inputs (p rust-enum-to-u8-slice-derive-0.1))
+       (prepend (p rust-proc-macro2-1))))))
 
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
@@ -1632,6 +1648,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-enum-to-u8-slice-derive" ,rust-enum-to-u8-slice-derive)
     ("rust-cookie" ,rust-cookie)
     ("rust-aead" ,rust-aead)
     ("rust-actix-threadpool" ,(p rust-actix-threadpool-0.3)) ; old rust-actix-threadpool requires old rust-futures
