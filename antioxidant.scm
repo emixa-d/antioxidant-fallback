@@ -719,15 +719,31 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	   (set! extra-configuration
 		 (cons (string-drop line (string-length "cargo:rustc-cfg="))
 		       extra-configuration)))
+	  ;; The rustc-link-lib and rustc-link-search will be added to the <crate-information>.
 	  ((string-prefix? "cargo:rustc-link-lib=" line)
 	   (let ((c-library (string-drop line (string-length "cargo:rustc-link-lib="))))
 	     (format #t "Building with C library ~a~%" c-library)
 	     (set! *c-libraries* (cons c-library *c-libraries*))))
 	  ((string-prefix? "cargo:rustc-link-search=" line)
-	   (set! *extra-arguments*
-		 ;; native == non-crate libraries, in Cargo terminology
-		 `("-Lnative" ,(string-drop line (string-length "cargo:rustc-link-search="))
-		   ,@*extra-arguments*)))
+	   (let ((KIND=PATH (string-drop line (string-length "cargo:rustc-link-search="))))
+	     (cond ((string-prefix? "framework=" KIND=PATH)
+		    (error "framework not yet supported"))
+		   ((string-prefix? "native=" KIND=PATH)
+		    (set! *c-library-directories*
+			  (cons (string-drop KIND=PATH (string-length "native="))
+				*c-library-directories*)))
+		   ((string-prefix? "all=" KIND=PATH)
+		    ;; Note (Cargo incompatibility?): technically the build.rs could ask us
+		    ;; here to search for crates in some arbitrary directories (instead of
+		    ;; only C-style libraries), but no crate(™) does that (so far ...)
+		    (set! *c-library-directories*
+			  (string-drop KIND=PATH (string-length "=all"))))
+		   ((or (string-prefix? "crate=" KIND=PATH)
+			(string-prefix? "dependency=" KIND=PATH))
+		    (error "The build script is not supposed to ask to look into arbitrary locations for crates."))
+		   (#true
+		    (set! *c-library-directories*
+			  (cons KIND=PATH *c-library-directories*))))))
 	  ((string-prefix? "cargo:rustc-env=" line)
 	   (putenv (string-drop line (string-length "cargo:rustc-env="))))
 	  ((string-prefix? "cargo:warning=" line)
