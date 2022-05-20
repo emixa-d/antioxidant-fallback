@@ -1432,6 +1432,7 @@ of operation.")
     "rust-mach" ; skip Mach (used by Hurd and others) support for now.
     "rust-ws2-32-sys"
     "rust-winapi-util" "rust-winapi-build"
+    "rust-fuchsia-zircon" "rust-fuchsia-zircon-sys" "rust-fuchsia-cprng" ; fuchsia not supported by Guix
     "rust-core-arch" ; doesn't build, nowadays part of Rust itself?
     "rust-doc-comment"
     "rust-hermit-abi"
