@@ -97,6 +97,10 @@
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
 							      (("^build =(.*)$") ""))))))
+					 ((string-prefix? "rust-freetype-sys-" name)
+					  #~((add-after 'unpack 'unbundle
+					       (lambda _ ; TODO: move to origin snippet (& upstream Guix?)
+						 (delete-file-recursively "freetype2")))))
 					 ;; TODO: upstream / update
 					 ((string-prefix? "rust-x509-parser" name)
 					  #~((add-after 'unpack 'use-nondeprecated
