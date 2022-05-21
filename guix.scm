@@ -1536,6 +1536,9 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; TODO: investigate build_dictionaries, and maybe not embedding libraries.
+    ;; TODO: cannot choose multiple normalization forms, is this important?
+    ("rust-hyphenation" ,#~'("embed_all"))
     ;; The "dox" feature requires non-stable.
     ("rust-glib-sys" ,#~'("v2_68"))
     ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise
