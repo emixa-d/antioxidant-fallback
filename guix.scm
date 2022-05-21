@@ -1514,6 +1514,13 @@ of operation.")
     ;; The "dox" feature requires non-stable and the version
     ;; of glib in Guix at time of writing is 2.70, not 2.74.
     ("rust-glib-sys" ,#~'("v2_70"))
+    ("rust-gobject-sys" ,#~'("v2_70")) ; likewise
+    ("rust-gio-sys" ,#~'("v2_70")) ; likewise
+    ("rust-atk-sys" ,#~'("v2_34")) ; likewise (for dox)
+    ("rust-pango-sys" ,#~'("v1_46")) ; likewise (for dox)
+    ("rust-gdk-pixbuf-sys" ,#~'("v2_40")) ; likewise (for dox)
+    ("rust-gdk-sys" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
+    ("rust-gtk-sys" ,#~'("v3_24_11")) ; likewise (for dox)
     ("rust-lzma-sys" ,#~'()) ; don't enable "static" (TODO: add it to the list in antioxidant?)
     ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
     ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
