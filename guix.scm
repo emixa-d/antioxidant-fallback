@@ -1730,6 +1730,7 @@ of operation.")
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
     ("rust-semver" ,(p rust-semver-1))
+    ("rust-rustc-version" ,(p rust-rustc-version-0.4)) ; @0.2.3 doesn't build against rust-semver@1
     ("rust-dotenv" ,(p rust-dotenv-0.15)) ; @0.10 doesn't build
     ("rust-quickcheck-macros" ,(p rust-quickcheck-macros-1)) ; 0.9 doesn't build against rust-syn@1
     ("rust-glib-sys" ,(@ (gnu packages crates-gtk) rust-glib-sys-0.14)) ; @0.10 doesn't build
