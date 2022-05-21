@@ -128,6 +128,13 @@
 						    "ToUpperCamelCase, ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase")
 						   (("to_camel_case") "to_upper_camel_case")
 						   (("to_mixed_case") "to_lower_camel_case"))))))
+					 ;; TODO: update
+					 ((string-prefix? "rust-glib-macros" name)
+					  #~((add-after 'unpack 'use-existing
+					       (lambda _
+						 (substitute* '("src/genum_derive.rs" "src/gflags_attribute.rs")
+						   (("CamelCase, KebabCase") "ToUpperCamelCase, ToKebabCase")
+						   (("to_camel_case") "to_upper_camel_case"))))))
 					 ;; TODO: add rust-peg-macros to native-inputs for
 					 ;; cross-compilation reasons.
 
