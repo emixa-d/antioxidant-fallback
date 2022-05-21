@@ -1937,6 +1937,20 @@ of operation.")
 (define %extra-inputs
   `(("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
+    ("castor" ;; TODO: add them in upstream Guix
+     (("rust-gio" ,(@ (gnu packages crates-gtk) rust-gio-0.14))
+      ("rust-glib" ,(@ (gnu packages crates-gtk) rust-glib-0.14))
+      ("rust-gdk-pixbuf" ,(@ (gnu packages crates-gtk) rust-gdk-pixbuf-0.14))
+      ("rust-pango-sys" ,(@ (gnu packages crates-gtk) rust-pango-sys-0.14))
+      ("rust-pango" ,(@ (gnu packages crates-gtk) rust-pango-0.14))
+      ("rust-lazy-static" ,(p rust-lazy-static-1))
+      ("rust-serde" ,(p rust-serde-1))
+      ("rust-serde-derive" ,(p rust-serde-derive-1))
+      ("rust-toml" ,(p rust-toml-0.5))
+      ("rust-tempfile" ,(p rust-tempfile-3))
+      ("rust-openssl" ,(p rust-openssl-0.10))
+      ("rust-regex" ,(p rust-regex-1))
+      ("rust-textwrap" ,(p rust-textwrap-0.12))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
