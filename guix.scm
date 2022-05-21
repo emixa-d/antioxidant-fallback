@@ -1549,6 +1549,7 @@ of operation.")
     ("rust-gdk-sys" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
     ("rust-gdk" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
     ("rust-gtk-sys" ,#~'("v3_24_11")) ; likewise (for dox)
+    ("rust-gtk" ,#~'("v3_24_9")) ; likewise (for dox)
     ("rust-atk" ,#~'("v2_34")) ; likewise
     ("rust-pango" ,#~'("v1_46")) ; likewise
     ("rust-lzma-sys" ,#~'()) ; don't enable "static" (TODO: add it to the list in antioxidant?)
