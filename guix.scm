@@ -1511,6 +1511,9 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; The "dox" feature requires non-stable and the version
+    ;; of glib in Guix at time of writing is 2.70, not 2.74.
+    ("rust-glib-sys" ,#~'("v2_70"))
     ("rust-lzma-sys" ,#~'()) ; don't enable "static" (TODO: add it to the list in antioxidant?)
     ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
     ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
