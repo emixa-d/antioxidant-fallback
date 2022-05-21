@@ -2178,15 +2178,21 @@ of operation.")
 	   (append
 	    (match (package-name pack)
 	      ;; Make sure that PKG_CONFIG_PATH is available to build.rs.
+	      ;; rust-system-deps uses rust-pkg-config, so it needs the
+	      ;; search paths too -- needed for compiling rust-glib-sys@0.14.0.
 	      ;; TODO: upstream Guix
-	      ("rust-pkg-config" (package-search-paths (@ (gnu packages pkg-config) pkg-config)))
+	      ((or "rust-pkg-config"
+		   "rust-system-deps")
+	       (package-search-paths (@ (gnu packages pkg-config) pkg-config)))
 	      (_ '()))
 	    (package-search-paths pack)))
 	  (native-search-paths
 	   (append
 	    (match (package-name pack)
 	      ;; Make sure that PKG_CONFIG_PATH is available to build.rs.
-	      ("rust-pkg-config" (package-native-search-paths (@ (gnu packages pkg-config) pkg-config)))
+	      ((or "rust-pkg-config"
+		   "rust-system-deps")
+	       (package-native-search-paths (@ (gnu packages pkg-config) pkg-config)))
 	      (_ '()))
 	    (package-native-search-paths pack)))))
        (package-arguments pack))
