@@ -1540,11 +1540,14 @@ of operation.")
     ("rust-glib-sys" ,#~'("v2_68"))
     ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise
     ("rust-gobject-sys" ,#~'("v2_68")) ; likewise
-    ("rust-gio-sys" ,#~'("v2_70")) ; likewise
+    ("rust-gio-sys" ,#~'("v2_66")) ; likewise
+    ("rust-gio" ,#~'("v2_66")) ; likewise
     ("rust-atk-sys" ,#~'("v2_34")) ; likewise (for dox)
     ("rust-pango-sys" ,#~'("v1_46")) ; likewise (for dox)
     ("rust-gdk-pixbuf-sys" ,#~'("v2_40")) ; likewise (for dox)
+    ("rust-gdk-pixbuf" ,#~'("v2_40")) ; likewise (for dox)
     ("rust-gdk-sys" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
+    ("rust-gdk" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
     ("rust-gtk-sys" ,#~'("v3_24_11")) ; likewise (for dox)
     ("rust-atk" ,#~'("v2_34")) ; likewise
     ("rust-pango" ,#~'("v1_46")) ; likewise
