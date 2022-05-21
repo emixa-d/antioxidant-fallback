@@ -1536,11 +1536,10 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
-    ;; The "dox" feature requires non-stable and the version
-    ;; of glib in Guix at time of writing is 2.70, not 2.74.
-    ("rust-glib-sys" ,#~'("v2_70"))
-    ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise, except that rust-glib only supports APIs up to v2_68 (TODO: not sufficiet, doesn't build)
-    ("rust-gobject-sys" ,#~'("v2_70")) ; likewise
+    ;; The "dox" feature requires non-stable.
+    ("rust-glib-sys" ,#~'("v2_68"))
+    ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise
+    ("rust-gobject-sys" ,#~'("v2_68")) ; likewise
     ("rust-gio-sys" ,#~'("v2_70")) ; likewise
     ("rust-atk-sys" ,#~'("v2_34")) ; likewise (for dox)
     ("rust-pango-sys" ,#~'("v1_46")) ; likewise (for dox)
