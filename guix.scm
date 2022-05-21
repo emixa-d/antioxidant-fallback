@@ -1717,6 +1717,16 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-glib-sys" ,(@ (gnu packages crates-gtk) rust-glib-sys-0.14)) ; @0.10 doesn't build
+    ("rust-glib" ,(@ (gnu packages crates-gtk) rust-glib-0.14)) ; @0.9 doesn't build
+    ("rust-gobject-sys" ,(@ (gnu packages crates-gtk) rust-gobject-sys-0.14)) ; @0.10 doesn't build
+    ("rust-gio-sys" ,(@ (gnu packages crates-gtk) rust-gio-sys-0.14)) ; @0.10 doesn't build
+    ("rust-gdk-pixbuf-sys" ,(@ (gnu packages crates-gtk) rust-gdk-pixbuf-sys-0.14)) ; @0.10 doesn't build
+    ("rust-gdk-sys" ,(@ (gnu packages crates-gtk) rust-gdk-sys-0.14)) ; no need for old versions
+    ("rust-gdk" ,(@ (gnu packages crates-gtk) rust-gdk-0.14)) ; no need for old versions
+    ("rust-cairo-sys-rs" ,(@ (gnu packages crates-gtk) rust-cairo-sys-rs-0.14)) ; avoid version conflicts
+    ("rust-pango-sys" ,(@ (gnu packages crates-gtk) rust-pango-sys-0.14)) ; likewise
+    ("rust-gtk" ,(@ (gnu packages crates-gtk) rust-gtk-0.14)) ; avoid potential problems
     ("rust-ansi-parser" ,rust-ansi-parser)
     ("rust-system-deps" ,rust-system-deps)
     ("rust-version-compare" ,rust-version-compare)
