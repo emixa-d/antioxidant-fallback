@@ -18,6 +18,7 @@
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
+	     (guix git-download)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define (target-environment-variables target)
@@ -1443,6 +1444,23 @@ of operation.")
         (sha256
           (base32 "0wyasmnqqngvm54x0gsxbwpxznvn747jkp0dx1nnppy1j9xj927y"))))))
 
+(define-public rust-ansi-parser ; old version doesn't build against new rust-nom
+  (package
+    (inherit (p rust-ansi-parser-0.6))
+    (name "rust-ansi-parser")
+    (version "0.6.0") ; TODO: 0.6.0/0.7.0/0.8.0?
+    (source
+     ;; For nom 0.7 compatibility, submitted upstream at
+     ;; <https://gitlab.com/davidbittner/ansi-parser/-/merge_requests/11>
+     (origin
+       (method git-fetch)
+       (uri (git-reference
+	     (url "https://gitlab.com/emixa-d/ansi-parser")
+	     (commit "bcf3d534e38d6afaca9e898cef1af7fa3e0ecdb3")))
+       (sha256
+	(base32 "0jhsd8vhz0z0x8p3k5gaf8wwyn253n5fjvf27sdvv4nkh4b1cp2d"))
+       (file-name (git-file-name name version))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1699,6 +1717,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-ansi-parser" ,rust-ansi-parser)
     ("rust-system-deps" ,rust-system-deps)
     ("rust-version-compare" ,rust-version-compare)
     ("rust-input-buffer" ,rust-input-buffer)
