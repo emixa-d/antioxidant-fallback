@@ -1532,6 +1532,7 @@ of operation.")
     ;; The "dox" feature requires non-stable and the version
     ;; of glib in Guix at time of writing is 2.70, not 2.74.
     ("rust-glib-sys" ,#~'("v2_70"))
+    ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise, except that rust-glib only supports APIs up to v2_68 (TODO: not sufficiet, doesn't build)
     ("rust-gobject-sys" ,#~'("v2_70")) ; likewise
     ("rust-gio-sys" ,#~'("v2_70")) ; likewise
     ("rust-atk-sys" ,#~'("v2_34")) ; likewise (for dox)
