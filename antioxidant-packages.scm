@@ -15,10 +15,12 @@
 ;;;
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
+(define-module (antioxidant-packages))
+
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
-	     (guix git-download)
+	     (guix git-download) (ice-9 optargs)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define (target-environment-variables target)
@@ -266,7 +268,7 @@
     (build (if target antioxidant-cross-build antioxidant-build))
     (arguments (strip-keyword-arguments private-keywords arguments))))
 
-(define antioxidant-build-system
+(define-public antioxidant-build-system
   (build-system
    (name 'antioxidant)
    (description "Build software written in Rust, without cargo")
@@ -274,8 +276,8 @@
 
 ;; Convert from cargo-build-system to antioxidant-build-system,
 ;; for now leaving inputs intact.
-(define* (vitaminate-library/no-inputs crate-package
-				       #:key (features #~'("default")))
+(define*-public (vitaminate-library/no-inputs crate-package
+					      #:key (features #~'("default")))
   (package
     (inherit crate-package)
     (build-system antioxidant-build-system)
@@ -300,7 +302,7 @@
 ;; Use an updated set of rust-futures-... crates to avoid build failures
 ;; caused by uses of unstable rust things.  (and because they will need to
 ;; be updated anyway eventually).  TODO: verify for malware?
-(define-public rust-futures-0.3
+(define rust-futures-0.3
   (package
    (inherit (@ (gnu packages crates-io) rust-futures-0.3))
    (name "rust-futures")
@@ -468,7 +470,7 @@
       (base32 "0r0p83nisf732qydg23qvmdd6gbrvyr1qvfs8hhbl7a1cyqdxpqf"))))))
 
 ;; Old combinations of rust-rustls & rust-tokio-rustls fail to build
-(define-public rust-rustls-0.20
+(define rust-rustls-0.20
   (package
    (inherit (@ (gnu packages crates-io) rust-rustls-0.20))
    (name "rust-rustls")
@@ -481,7 +483,7 @@
      (sha256
       (base32 "08b941jj4kk1bfg82zrr5b2ifa4ip155g9cpqmmp116v1n6ypgsg"))))))
 
-(define-public rust-tokio-rustls-0.23
+(define rust-tokio-rustls-0.23
   (package
    (inherit (@ (gnu packages crates-io) rust-tokio-rustls-0.22))
    (name "rust-tokio-rustls")
@@ -495,7 +497,7 @@
       (base32 "17iqy9a8x0d8ydl5r28w8z9akhnwp74wyjxks055b617ryhgsla1"))))))
 
 ;; rust-tokio-util needs a slab with 'compact'
-(define-public rust-slab
+(define rust-slab
   (package
    (inherit (@ (gnu packages crates-io) rust-slab-0.4))
    (name "rust-slab")
@@ -508,7 +510,7 @@
      (sha256
       (base32 "0cmvcy9ppsh3dz8mi6jljx7bxyknvgpas4aid2ayxk1vjpz3qw7b"))))))
 
-(define-public rust-hyper-rustls
+(define rust-hyper-rustls
   (package
    (inherit (@ (gnu packages crates-io) rust-hyper-rustls-0.22))
    (name "rust-hyper-rustls")
@@ -522,7 +524,7 @@
       (base32 "1b2wi75qrmwfpw3pqwcg1xjndl4z0aris15296wf7i8d5v04hz6q"))))))
 
 ;; Old versions don't support the new rustls
-(define-public rust-boxxy
+(define rust-boxxy
   (package
    (inherit (@ (gnu packages crates-io) rust-boxxy-0.11))
    (name "rust-boxxy")
@@ -536,7 +538,7 @@
       (base32 "1q0wpz955y3iwd35bqk3pbx2vx904fhyj75j7d6mrb7ib5fs5kxg"))))))
 
 ;; Old versions don't support the new nom
-(define-public rust-pktparse
+(define rust-pktparse
   (package
    (inherit (@ (gnu packages crates-io) rust-pktparse-0.5))
    (name "rust-pktparse")
@@ -550,7 +552,7 @@
       (base32 "06sy7lwnhwmkyqfdbi4cs11z55rihipxafbdspnd5zg76pnbgbm8"))))))
 
 ;; Old versions don't support the new nom
-(define-public rust-pure-rust-locales
+(define rust-pure-rust-locales
   (package
    (inherit (@ (gnu packages crates-io) rust-pure-rust-locales-0.5))
    (name "rust-pure-rust-locales")
@@ -564,7 +566,7 @@
       (base32 "1n1jqy8g7ph9lvzncc8vy5jaqq2dljryp1agcnp5pwwi9zy4jp5l"))))))
 
 ;; Old version doesn't build
-(define-public sniffglue
+(define sniffglue
   (package
     (inherit (@ (gnu packages rust-apps) sniffglue))
     (name "sniffglue")
@@ -578,7 +580,7 @@
           (base32 "038wcjiiay825wc8inmn62flklc1adxskg5fmjhmxqnhwmj1k5gn"))))))
 
 ;; old rust-test-case@1 is incompatible with new rust-syn
-(define-public rust-test-case-2
+(define rust-test-case-2
   (package
    (inherit (@ (gnu packages crates-io) rust-test-case-1))
    (name "rust-test-case")
@@ -604,7 +606,7 @@
        ("rust-lazy-static" ,(p rust-lazy-static-1)))))))
 
 ;; needed for rcgen
-(define-public rust-yasna
+(define rust-yasna
   (package
     (name "rust-yasna")
     (version "0.5.0")
@@ -629,7 +631,7 @@
     (license '(list license:expat license:asl2.0))))
 
 ;; rust-tokio-openssl@0.6.3 needs a recent rust-openssl
-(define-public rust-openssl-macros
+(define rust-openssl-macros
   (package
     (name "rust-openssl-macros")
     (version "0.1.0")
@@ -680,7 +682,7 @@
 	       rust-openssl-macros)))))
 
 ;; not yet in Guix, but needed for updated agate
-(define-public rust-rcgen
+(define rust-rcgen
   (package
     (name "rust-rcgen")
     (version "0.9.2")
@@ -715,7 +717,7 @@
     (license '(list license:expat license:asl2.0))))
 
 ;; Old pkcs5 doesn't build
-(define-public rust-pkcs5
+(define rust-pkcs5
   (package
     (inherit (@ (gnu packages crates-io) rust-pkcs5-0.3))
     (name "rust-pkcs5")
@@ -727,7 +729,7 @@
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
          (base32 "1n605kk594vif1rzrc09739nw6fky41mz6jpz9czs7lagq75jkvs"))))))
-(define-public rust-pkcs8 ;; old pkcs8 doesn't build against new rust-der
+(define rust-pkcs8 ;; old pkcs8 doesn't build against new rust-der
   (package
     (inherit (p rust-pkcs8-0.7))
     (name "rust-pkcs8")
@@ -777,7 +779,7 @@
          (base32 "1cbdffcfp1zivxw4hiqj681api2gqxcgcqf64rq2wbvrk10jffq9"))))))
 
 ;; Required by rust-pkcs5' cbc feature
-(define-public rust-cbc
+(define rust-cbc
   (package
    (name "rust-cbc")
    (version "0.1.2")
@@ -802,7 +804,7 @@
    (license '(list license:expat license:asl2.0))))
 
 ;; Old vesion incompatible with new rust-hmac
-(define-public rust-cookie
+(define rust-cookie
   (package
     (inherit (p rust-cookie-0.15))
     (name "rust-cookie")
@@ -817,7 +819,7 @@
 
 
 ;; Old agate doesn't build
-(define-public agate
+(define agate
   (package
     (inherit (@ (gnu packages rust-apps) agate))
     (name "agate")
@@ -834,7 +836,7 @@
        (append rust-rcgen rust-futures-util-0.3)))))
 
 ;; Old castor doesn't build against new rust-gtk
-(define-public castor
+(define castor
   (package
     (inherit (@ (gnu packages web) castor))
     (name "castor")
@@ -853,7 +855,7 @@
        ;; Submitted upstream at <https://lists.sr.ht/~julienxx/castor/patches/32444>
        (patches (list (local-file "0001-Update-to-new-GTK-version-and-new-version-of-depende.patch")))))))
 
-(define-public rust-enum-as-inner ; old version doesn't build against new rust-heck
+(define rust-enum-as-inner ; old version doesn't build against new rust-heck
   (package
     (inherit (@ (gnu packages crates-io) rust-enum-as-inner-0.3))
     (name "rust-enum-as-inner")
@@ -868,7 +870,7 @@
 
 
 ;; Old version doesn't have the block_buffer required by rust-sha3
-(define-public rust-block-buffer
+(define rust-block-buffer
   (package
     (inherit (@ (gnu packages crates-io) rust-block-buffer-0.10))
     (name "rust-block-buffer")
@@ -882,7 +884,7 @@
           (base32 "097k9xkd8gqrl03qg4fwhjvanp3ac0pq4drg8pynk9cyhi8zxxqb"))))))
 
 ;; Doesn't build against new block-buffer
-(define-public rust-md-5
+(define rust-md-5
   (package
     (inherit (@ (gnu packages crates-io) rust-md-5-0.9))
     (name "rust-md-5")
@@ -895,7 +897,7 @@
         (sha256
           (base32 "10h5kna43cpggp9hy1hz4zb1qpixdl4anf3hdj3gfwhb3sr4d1k5"))))))
 
-(define-public rust-digest
+(define rust-digest
   (package
     (inherit (@ (gnu packages crates-io) rust-digest-0.10))
     (name "rust-digest")
@@ -908,7 +910,7 @@
         (sha256
          (base32 "01nmj9cci5qdm4q4wlmz104rzr68d5m823kdzd95bypslq68dyzj"))))))
 
-(define-public rust-crypto-common
+(define rust-crypto-common
   (package
     (inherit (@ (gnu packages crates-io) rust-crypto-common-0.1))
     (name "rust-crypto-common")
@@ -921,7 +923,7 @@
         (sha256
           (base32 "1s1wpm88qlrp079mzh3dlxm9vbqs4ch016yp9pzhcdjygfi2r5ap"))))))
 
-(define-public rust-sha3
+(define rust-sha3
   (package
     (inherit (@ (gnu packages crates-io) rust-sha3-0.9))
     (name "rust-sha3")
@@ -935,7 +937,7 @@
           (base32 "11hclx8ijnlx82dyd0bh9hi629zb3vqjfsyaqlgk1dl7dhazh6w8"))))))
 
 ;; Old things don't build?
-(define-public rust-scrypt
+(define rust-scrypt
   (package
     (inherit (@ (gnu packages crates-io) rust-scrypt-0.8))
     (name "rust-scrypt")
@@ -949,7 +951,7 @@
          (base32 "0pglmppcl8mdzfxdv2x9dsjrwxhc1bm9zvxjibnlv59jnv9297lz"))))))
 
 ;; rust-scrypt@0.8 doesn't build against rust-password-hash@0.3
-(define-public rust-password-hash
+(define rust-password-hash
   (package
    (inherit (@ (gnu packages crates-io) rust-password-hash-0.3))
    (name "rust-password-hash")
@@ -963,7 +965,7 @@
       (base32 "1552dd98v6yd4l5myz4g1r2hzln8dfng22638590dc4gpi5fjag0"))))))
 
 ;; rust-pbkkdf2@0.10 doesn't build
-(define-public rust-pbkdf2
+(define rust-pbkdf2
   (package
    (inherit (@ (gnu packages crates-io) rust-pbkdf2-0.10))
    (name "rust-pbkdf2")
@@ -976,7 +978,7 @@
      (sha256
       (base32 "05q9wqjvfrs4dvw03yn3bvcs4zghz0a7ycfa53pz2k2fqhp6k843"))))))
 
-(define-public rust-salsa20
+(define rust-salsa20
   (package
     (inherit (@ (gnu packages crates-io) rust-salsa20-0.9))
     (name "rust-salsa20")
@@ -988,7 +990,7 @@
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
          (base32 "04w211x17xzny53f83p8f7cj7k2hi8zck282q5aajwqzydd2z8lp"))))))
-(define-public rust-cipher;; TODO WIP
+(define rust-cipher;; TODO WIP
   (package
     (inherit (@ (gnu packages crates-io) rust-cipher-0.3))
     (name "rust-cipher")
@@ -1020,7 +1022,7 @@
      (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-block-padding-0.2))
 		    (append (@ (gnu packages crates-io) rust-generic-array-0.14))))))
 
-(define-public rust-block-modes ; 0.8.1 uses removed NewBlockCipher
+(define rust-block-modes ; 0.8.1 uses removed NewBlockCipher
   (package
     (inherit (@ (gnu packages crates-io) rust-block-modes-0.8))
     (name "rust-block-modes")
@@ -1033,7 +1035,7 @@
       (sha256
        (base32 "07pjna64v0ng30j8ss9w7rv7k7l7gsii37yxm011a1kzh6q128ly"))))))
 
-(define-public rust-aes ; 0.7.1 uses removed NewBlockCipher
+(define rust-aes ; 0.7.1 uses removed NewBlockCipher
   (package
     (inherit (@ (gnu packages crates-io) rust-aes-0.7))
     (name "rust-aes")
@@ -1046,7 +1048,7 @@
       (sha256
        (base32 "1fj03mqa45nf2scxcd7mvg1xcbavrkqlmkfzwcgnx660g0si7q5z"))))))
 
-(define-public rust-des ; 0.7.0 uses removed NewBlockCipher
+(define rust-des ; 0.7.0 uses removed NewBlockCipher
   (package
     (inherit (@ (gnu packages crates-io) rust-des-0.7))
     (name "rust-des")
@@ -1059,7 +1061,7 @@
       (sha256
        (base32 "07kshslxanmg0g6007scvglfhg6mli2a8qzhx4kxx4z9ik781pgz"))))))
 
-(define-public rust-ctr ; 0.8.1 uses private ciphererrors:LoopError
+(define rust-ctr ; 0.8.1 uses private ciphererrors:LoopError
   (package
     (inherit (@ (gnu packages crates-io) rust-ctr-0.8))
     (name "rust-ctr")
@@ -1074,7 +1076,7 @@
 
 ;; rust-cipher expects a rust-typenum that has 'static' lifetimes in some places,
 ;; see <https://github.com/RustCrypto/traits/pull/937>.
-(define-public rust-typenum
+(define rust-typenum
   (package
    (inherit (@ (gnu packages crates-io) rust-typenum-1))
    (name "rust-typenum")
@@ -1088,7 +1090,7 @@
       (base32 "11yrvz1vd43gqv738yw1v75rzngjbs7iwcgzjy3cq5ywkv2imy6w"))))))
 
 ;; Some packages require new_unwrap, which is not present in old versions
-(define-public rust-const-oid
+(define rust-const-oid
   (package
    (inherit (@ (gnu packages crates-io) rust-const-oid-0.6))
    (name "rust-const-oid")
@@ -1101,7 +1103,7 @@
      (sha256
       (base32 "0q8n1zsa73130hxa2w88qw36g8nprz21j52abpva3khm59a26bkj"))))))
 ;; Old rust-sha1 doesn't implement CoreProxy while required by rust-pkcs5
-(define-public rust-sha1
+(define rust-sha1
   (package
    (inherit (@ (gnu packages crates-io) rust-sha1-0.6))
    (name "rust-sha1")
@@ -1113,7 +1115,7 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0bw56hxajrgb3pjg0cr5xrvmx0jna39564iw2p14ama5cmzlwzy7"))))))
-(define-public rust-rsa ;; rust-rsa@0.5 doesn't build against new rust-pkcs1
+(define rust-rsa ;; rust-rsa@0.5 doesn't build against new rust-pkcs1
   (package
    (inherit (@ (gnu packages crates-io) rust-rsa-0.5))
    (name "rust-rsa")
@@ -1129,7 +1131,7 @@
     (modify-inputs (package-inputs (p rust-rsa-0.5))
       (prepend (p rust-rand-core-0.6))))))
 
-(define-public rust-backtrace ;; old rust-backtrace doesn't build against new rust-object
+(define rust-backtrace ;; old rust-backtrace doesn't build against new rust-object
   (package
    (inherit (p rust-backtrace-0.3))
    (name "rust-backtrace")
@@ -1141,7 +1143,7 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0qggp0d8pbw5vfnpm0r7lrn6wmh5yjiz4yc4bzynb8l26i2pv88i"))))))
-(define-public rust-gimli ;; new rust-backtrace doesn't build against old rust-gimli
+(define rust-gimli ;; new rust-backtrace doesn't build against old rust-gimli
   (package
    (inherit (p rust-gimli-0.23))
    (name "rust-giml")
@@ -1153,7 +1155,7 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "1m0vi36ypv4gx9gzcw6y456yqnlypizhwlcqrmg6vkwd0lnkgk3q"))))))
-(define-public rust-addr2line ;; new rust-addr2line doesn't build against old rust-gimli
+(define rust-addr2line ;; new rust-addr2line doesn't build against old rust-gimli
   (package
    (inherit (p rust-addr2line-0.14))
    (name "rust-addr2line")
@@ -1165,7 +1167,7 @@
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0sw16zqy6w0ar633z69m7lw6gb0k1y7xj3387a8wly43ij5div5r"))))))
-(define-public rust-instant
+(define rust-instant
   (package
    (inherit (p rust-instant-0.1))
    (name "rust-instant")
@@ -1208,7 +1210,7 @@
     (modify-inputs (package-inputs (p rust-strum-macros-0.21))
       (append (p rust-rustversion-1))))))
 
-(define-public rust-strum ; needed by rust-syscallz
+(define rust-strum ; needed by rust-syscallz
   (package
    (inherit (p rust-strum-0.21))
    (name "rust-strum")
@@ -1221,7 +1223,7 @@
      (sha256
       (base32 "1y77vshrhm1grlgcfmnm0nxpsv0pb5zcb97zy6rbh106nz0wysp9"))))))
 
-(define-public rust-actix-derive ; old one doesn't build against new rust-syn
+(define rust-actix-derive ; old one doesn't build against new rust-syn
   (package
    (inherit (p rust-actix-derive-0.5))
    (name "rust-actix-derive")
@@ -1236,7 +1238,7 @@
 
 
 ;;Not yet inGuix,requiredby rust-cipher
-(define-public rust-inout
+(define rust-inout
   (package
    (name "rust-inout")
    (version "0.1.3")
@@ -1261,7 +1263,7 @@ of operation.")
    (license '(list license:expat license:asl2.0))))
 
 ;; devise-core@0.2 requires unstable
-(define-public rust-devise-core
+(define rust-devise-core
   (package
    (inherit (p rust-devise-core-0.2))
    (name "rust-devise-core")
@@ -1276,7 +1278,7 @@ of operation.")
    (inputs
     (modify-inputs (package-inputs (p rust-devise-core-0.2))
       (append rust-proc-macro2-diagnostics)))))
-(define-public rust-devise-codegen ;; 0.2 doesn't build against new rust-quote / rust-devise-core.
+(define rust-devise-codegen ;; 0.2 doesn't build against new rust-quote / rust-devise-core.
   (package
     (inherit (p rust-devise-codegen-0.2))
     (name "rust-devise-codegen")
@@ -1289,7 +1291,7 @@ of operation.")
         (sha256
           (base32 "1cp7nnfwvjp6wfq11n0ffjjrwfa1wbsb58g1bz3ha6z5lvkp6g0j"))))))
 
-(define-public rust-proc-macro2-diagnostics ; not yet in Guix but required by rust-devise-core
+(define rust-proc-macro2-diagnostics ; not yet in Guix but required by rust-devise-core
   (package
     (name "rust-proc-macro2-diagnostics")
     (version "0.9.1")
@@ -1315,7 +1317,7 @@ of operation.")
     (description "Diagnostics for proc-macro2.")
     (license '(list license:expat license:asl2.0))))
 
-(define-public rust-hash32-derive ; @0.1.0 doesn't build gainst new rust-quote and  friends
+(define rust-hash32-derive ; @0.1.0 doesn't build gainst new rust-quote and  friends
   (package
    (inherit (p rust-hash32-derive-0.1))
    (name "rust-hash32-derive")
@@ -1328,7 +1330,7 @@ of operation.")
      (sha256
       (base32 "1zy60cdqrccd9kc8w4hvk1q584b4gjr4d48n3dff42xn6alapljr"))))))
 
-(define-public rust-as-slice ; 0.1 uses multiple generic-array version which antioxidant doesn't support (TODO?)
+(define rust-as-slice ; 0.1 uses multiple generic-array version which antioxidant doesn't support (TODO?)
   (package
     (name "rust-as-slice")
     (version "0.2.1")
@@ -1348,7 +1350,7 @@ of operation.")
     (description "`AsSlice` and `AsMutSlice` traits")
     (license '(list license:expat license:asl2.0))))
 
-(define-public rust-blake2 ; 0.9 doesn't build against new rust-digest. 
+(define rust-blake2 ; 0.9 doesn't build against new rust-digest.
   (package
     (inherit (p rust-blake2-0.9))
     (name "rust-blake2")
@@ -1361,7 +1363,7 @@ of operation.")
         (sha256
           (base32 "121k5yj3c8fr826pbh0gf0b3jly2ivzrfvz3lpxyabjvw2g89kxr"))))))
 
-(define-public rust-hkdf ; 0.11 doesn't build against new rust-digest
+(define rust-hkdf ; 0.11 doesn't build against new rust-digest
   (package
     (inherit (p rust-hkdf-0.11))
     (name "rust-hkdf")
@@ -1374,7 +1376,7 @@ of operation.")
         (sha256
           (base32 "0dyl16cf15hka32hv3l7dwgr3xj3brpfr27iyrbpdhlzdfgh46kr"))))))
 
-(define-public rust-chacha20 ; @0.8 doesn't build against old rust-cipher
+(define rust-chacha20 ; @0.8 doesn't build against old rust-cipher
   (package
     (inherit (p rust-chacha20-0.8))
     (name "rust-chacha20")
@@ -1387,7 +1389,7 @@ of operation.")
         (sha256
           (base32 "021g1917r0jzpvgah76667nzk0p3p9kj7ka5zqns1rxrqp3qkz67"))))))
 
-(define-public rust-aead ; rust-aes-gcm@0.10 needs new version
+(define rust-aead ; rust-aes-gcm@0.10 needs new version
   (package
     (inherit (p rust-aead-0.3))
     (name "rust-aead")
@@ -1402,7 +1404,7 @@ of operation.")
     (inputs (modify-inputs (package-inputs (p rust-aead-0.3))
 	      (append (p rust-rand-core-0.6)))))) ; new dependency
 
-(define-public rust-aes-gcm ; @0.8 doesn't build against old rust-cipher
+(define rust-aes-gcm ; @0.8 doesn't build against old rust-cipher
   (package
     (inherit (p rust-aes-gcm-0.8))
     (name "rust-aes-gcm")
@@ -1415,7 +1417,7 @@ of operation.")
       (sha256
        (base32 "0krsrhji8j5smi35rdg0r31adx1nrpnb1fkpzwl5xipj7yrfh140"))))))
 
-(define-public rust-enum-to-u8-slice-derive ; 0.1.0 doesn't build against new rust-syn
+(define rust-enum-to-u8-slice-derive ; 0.1.0 doesn't build against new rust-syn
   (package
     (inherit (p rust-enum-to-u8-slice-derive-0.1))
     (name "rust-enum-to-u8-slice-derive")
@@ -1432,7 +1434,7 @@ of operation.")
      (modify-inputs (package-inputs (p rust-enum-to-u8-slice-derive-0.1))
        (prepend (p rust-proc-macro2-1))))))
 
-(define-public rust-input-buffer
+(define rust-input-buffer
   (package
     (inherit (p rust-input-buffer-0.3)) ; @0.3 doesn't build against rust-bytes@1
     (name "rust-input-buffer")
@@ -1445,7 +1447,7 @@ of operation.")
         (sha256
           (base32 "044qxqdkcq6mv07bsvm35hl7hy3rmf87lrxjyz8zaq57i0xngvmc"))))))
 
-(define-public rust-system-deps ; @3 doesn't build against new rust-heck
+(define rust-system-deps ; @3 doesn't build against new rust-heck
   (package
     (inherit (p rust-system-deps-3))
     (name "rust-system-deps")
@@ -1458,7 +1460,7 @@ of operation.")
         (sha256
           (base32 "02g750rlhh7ynqa3p4a3qm7jrkjp3d0jlzrl29z225ch9hf5m951"))))))
 
-(define-public rust-version-compare ; rust-system-deps needs new version
+(define rust-version-compare ; rust-system-deps needs new version
   (package
     (inherit (p rust-version-compare-0.0.11))
     (name "rust-version-compare")
@@ -1471,7 +1473,7 @@ of operation.")
         (sha256
           (base32 "0wyasmnqqngvm54x0gsxbwpxznvn747jkp0dx1nnppy1j9xj927y"))))))
 
-(define-public rust-ansi-parser ; old version doesn't build against new rust-nom
+(define rust-ansi-parser ; old version doesn't build against new rust-nom
   (package
     (inherit (p rust-ansi-parser-0.6))
     (name "rust-ansi-parser")
@@ -2307,10 +2309,30 @@ of operation.")
 
 ;; todo: cycle between rust-demo-hack and rust-demo-hack-impl
 
-(map vitaminate/auto (list
-		      (p rust-bindgen-0.59) ; fragile w.r.t. changes to code for linking to C libraries, avoid breaking it
-		      agate
-		      castor
-		      (@ (gnu packages rust-apps) diffr)
-		      (@ (gnu packages rust-apps) hexyl)
-		      sniffglue))
+;; Make some functioning packages available to "guix install ANTIOXIDATED-FOO"
+;; when using channels.
+
+(define (public-test-package base)
+  (package
+   (inherit base)
+   (name (string-append "antioxidated-" (package-name base))))) ; don't shadow the cargo package to avoid ambiguity
+(define-public antioxidated-rust-bindgen
+  (public-test-package (vitaminate/auto (p rust-bindgen-0.59)))) ; fragile w.r.t. changes to code for linking to C libraries, avoid breaking it
+(define-public antioxidated-agate
+  (public-test-package (vitaminate/auto agate)))
+(define-public antioxidated-castor
+  (public-test-package (vitaminate/auto castor)))
+(define-public antioxidated-diffr
+  (public-test-package (vitaminate/auto (@ (gnu packages rust-apps) diffr))))
+(define-public antioxidated-hexyl
+  (public-test-package (vitaminate/auto (@ (gnu packages rust-apps) hexyl))))
+(define-public antioxidated-sniffglue
+  (public-test-package (vitaminate/auto sniffglue)))
+
+;; For local development
+(list antioxidated-rust-bindgen
+      antioxidated-agate
+      antioxidated-castor
+      antioxidated-diffr
+      antioxidated-hexyl
+      antioxidated-sniffglue)
