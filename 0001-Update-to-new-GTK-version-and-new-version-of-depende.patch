@@ -1,0 +1,499 @@
+From f1543fa847bb40a8b26457a98925f7707c19d9f9 Mon Sep 17 00:00:00 2001
+From: Maxime Devos <maximedevos@telenet.be>
+Date: Sun, 22 May 2022 10:12:11 +0000
+Subject: [PATCH] Update to new GTK version (and new version of dependencies)
+
+I don't use Cargo myself, so you may need to double-check Cargo.toml.
+---
+ Cargo.toml    | 16 +++++++--------
+ src/colors.rs |  4 ++--
+ src/dialog.rs | 20 +++++++++----------
+ src/draw.rs   | 54 +++++++++++++++++++++++++--------------------------
+ src/gui.rs    | 23 +++++++++++-----------
+ src/main.rs   | 30 +++++++++++++---------------
+ 6 files changed, 72 insertions(+), 75 deletions(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 3c8fd77..5f60017 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -7,13 +7,13 @@ edition = "2018"
+ # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+ 
+ [dependencies]
+-gdk = "~0.12"
+-gdk-pixbuf = "~0.8"
+-gio = "~0.8"
+-glib = "~0.9"
+-glib-sys = "~0.9"
+-pango = "~0.8"
+-pango-sys = "~0.9"
++gdk = "~0.14"
++gdk-pixbuf = "~0.14"
++gio = "~0.14"
++glib = "~0.14"
++glib-sys = "~0.14"
++pango = "~0.14"
++pango-sys = "~0.14"
+ open = "~2.0"
+ regex = "~1.5"
+ linkify = "~0.7"
+@@ -31,5 +31,5 @@ serde_derive="~1.0"
+ textwrap="~0.14"
+ 
+ [dependencies.gtk]
+-version = "0.8.0"
++version = "0.14.3"
+ features = ["v3_18"]
+\ No newline at end of file
+diff --git a/src/colors.rs b/src/colors.rs
+index 1535214..684e727 100644
+--- a/src/colors.rs
++++ b/src/colors.rs
+@@ -34,14 +34,14 @@ pub mod colors {
+                         span_opened += 1;
+                         s.push_str(&format!(
+                             "<span foreground={:?}>",
+-                            ansi_color_to_hex(*color)
++                            ansi_color_to_hex((*color).into())
+                         ))
+                     } else {
+                         let color = colors.last().unwrap();
+                         span_opened += 1;
+                         s.push_str(&format!(
+                             "<span background={:?}>",
+-                            ansi_color_to_hex(*color)
++                            ansi_color_to_hex((*color).into())
+                         ))
+                     }
+                 }
+diff --git a/src/dialog.rs b/src/dialog.rs
+index 485a5ec..3188c42 100644
+--- a/src/dialog.rs
++++ b/src/dialog.rs
+@@ -8,16 +8,16 @@ use crate::gui::Gui;
+ use crate::protocols::Gemini;
+ 
+ pub fn info(gui: &Arc<Gui>, message: &str) {
+-    let dialog = gtk::Dialog::new_with_buttons(
++    let dialog = gtk::Dialog::with_buttons(
+         Some("Info"),
+         Some(gui.window()),
+         gtk::DialogFlags::MODAL,
+         &[("Close", ResponseType::Close)],
+     );
+     dialog.set_default_response(ResponseType::Close);
+-    dialog.connect_response(|dialog, _| dialog.destroy());
++    dialog.connect_response(|dialog, _| unsafe { dialog.destroy() });
+ 
+-    let content_area = dialog.get_content_area();
++    let content_area = dialog.content_area();
+     let message = gtk::Label::new(Some(message));
+     content_area.add(&message);
+ 
+@@ -25,16 +25,16 @@ pub fn info(gui: &Arc<Gui>, message: &str) {
+ }
+ 
+ pub fn error(gui: &Arc<Gui>, message: &str) {
+-    let dialog = gtk::Dialog::new_with_buttons(
++    let dialog = gtk::Dialog::with_buttons(
+         Some("Error"),
+         Some(gui.window()),
+         gtk::DialogFlags::MODAL,
+         &[("Close", ResponseType::Close)],
+     );
+     dialog.set_default_response(ResponseType::Close);
+-    dialog.connect_response(|dialog, _| dialog.destroy());
++    dialog.connect_response(|dialog, _| unsafe { dialog.destroy() });
+ 
+-    let content_area = dialog.get_content_area();
++    let content_area = dialog.content_area();
+     let message = gtk::Label::new(Some(message));
+     content_area.add(&message);
+ 
+@@ -42,7 +42,7 @@ pub fn error(gui: &Arc<Gui>, message: &str) {
+ }
+ 
+ pub fn input(gui: &Arc<Gui>, url: Url, message: &str) {
+-    let dialog = gtk::Dialog::new_with_buttons(
++    let dialog = gtk::Dialog::with_buttons(
+         Some(message),
+         Some(gui.window()),
+         gtk::DialogFlags::MODAL,
+@@ -52,19 +52,19 @@ pub fn input(gui: &Arc<Gui>, url: Url, message: &str) {
+         ],
+     );
+ 
+-    let content_area = dialog.get_content_area();
++    let content_area = dialog.content_area();
+     let entry = gtk::Entry::new();
+     content_area.add(&entry);
+ 
+     dialog.show_all();
+ 
+     if dialog.run() == gtk::ResponseType::Accept {
+-        let response = entry.get_text().expect("get_text failed").to_string();
++        let response = entry.text().to_string();
+         let cleaned: &str = &url[..Position::AfterPath];
+         let full_url = format!("{}?{}", cleaned.to_string(), response);
+ 
+         crate::visit_url(&gui, Gemini { source: full_url });
+     }
+ 
+-    dialog.destroy();
++    unsafe { dialog.destroy() };
+ }
+diff --git a/src/draw.rs b/src/draw.rs
+index b435910..fd62406 100644
+--- a/src/draw.rs
++++ b/src/draw.rs
+@@ -22,7 +22,7 @@ pub fn gemini_content(
+     content: Vec<Result<crate::gemini::parser::TextElement, crate::gemini::parser::ParseError>>,
+ ) -> TextBuffer {
+     let content_view = gui.content_view();
+-    let buffer = content_view.get_buffer().unwrap();
++    let buffer = content_view.buffer().unwrap();
+ 
+     let mut mono_toggle = false;
+     let font_family = crate::settings::get_gemini_text_font_family();
+@@ -33,7 +33,7 @@ pub fn gemini_content(
+                 mono_toggle = !mono_toggle;
+             }
+             Ok(crate::gemini::parser::TextElement::H1(header)) => {
+-                let mut end_iter = buffer.get_end_iter();
++                let mut end_iter = buffer.end_iter();
+                 if mono_toggle {
+                     buffer.insert_markup(&mut end_iter, &mono_span(escape_text(&header)));
+                 } else {
+@@ -52,7 +52,7 @@ pub fn gemini_content(
+                 }
+             }
+             Ok(crate::gemini::parser::TextElement::H2(header)) => {
+-                let mut end_iter = buffer.get_end_iter();
++                let mut end_iter = buffer.end_iter();
+                 if mono_toggle {
+                     buffer.insert_markup(&mut end_iter, &mono_span(escape_text(&header)));
+                } else {
+@@ -71,7 +71,7 @@ pub fn gemini_content(
+                 }
+             }
+             Ok(crate::gemini::parser::TextElement::H3(header)) => {
+-                let mut end_iter = buffer.get_end_iter();
++                let mut end_iter = buffer.end_iter();
+                 if mono_toggle {
+                     buffer.insert_markup(&mut end_iter, &mono_span(escape_text(&header)));
+                 } else {
+@@ -90,7 +90,7 @@ pub fn gemini_content(
+                 }
+             }
+             Ok(crate::gemini::parser::TextElement::ListItem(item)) => {
+-                let mut end_iter = buffer.get_end_iter();
++                let mut end_iter = buffer.end_iter();
+                 if mono_toggle {
+                     buffer.insert_markup(&mut end_iter, &mono_span(item));
+                 } else {
+@@ -109,7 +109,7 @@ pub fn gemini_content(
+                 }
+             }
+             Ok(crate::gemini::parser::TextElement::Quote(text)) => {
+-                let mut end_iter = buffer.get_end_iter();
++                let mut end_iter = buffer.end_iter();
+                 if mono_toggle {
+                     buffer.insert_markup(&mut end_iter, &mono_span(text));
+                 } else {
+@@ -128,7 +128,7 @@ pub fn gemini_content(
+                 }
+             }
+             Ok(crate::gemini::parser::TextElement::Text(text)) => {
+-                let mut end_iter = buffer.get_end_iter();
++                let mut end_iter = buffer.end_iter();
+                 if mono_toggle {
+                     buffer.insert_markup(&mut end_iter, &mono_span(colors::colorize(&text)));
+                 } else {
+@@ -146,7 +146,7 @@ pub fn gemini_content(
+             }
+             Ok(crate::gemini::parser::TextElement::LinkItem(link_item)) => {
+                 if mono_toggle {
+-                    let mut end_iter = buffer.get_end_iter();
++                    let mut end_iter = buffer.end_iter();
+                     buffer.insert_markup(&mut end_iter, &mono_span(escape_text(&link_item)));
+                 } else {
+                     gemini_link(&gui, link_item);
+@@ -160,10 +160,10 @@ pub fn gemini_content(
+ 
+ pub fn gemini_text_content(gui: &Arc<Gui>, content: std::str::Lines) -> TextBuffer {
+     let content_view = gui.content_view();
+-    let buffer = content_view.get_buffer().unwrap();
++    let buffer = content_view.buffer().unwrap();
+ 
+     for line in content {
+-        let mut end_iter = buffer.get_end_iter();
++        let mut end_iter = buffer.end_iter();
+         buffer.insert_markup(
+             &mut end_iter,
+             &format!(
+@@ -181,12 +181,12 @@ pub fn gopher_content(
+     content: Vec<Result<crate::gopher::parser::TextElement, crate::gopher::parser::ParseError>>,
+ ) -> TextBuffer {
+     let content_view = gui.content_view();
+-    let buffer = content_view.get_buffer().unwrap();
++    let buffer = content_view.buffer().unwrap();
+ 
+     for el in content {
+         match el {
+             Ok(crate::gopher::parser::TextElement::Text(text)) => {
+-                let mut end_iter = buffer.get_end_iter();
++                let mut end_iter = buffer.end_iter();
+                 let text = colors::colorize(&text);
+ 
+                 buffer.insert_markup(
+@@ -223,12 +223,12 @@ pub fn finger_content(
+     content: Vec<Result<crate::finger::parser::TextElement, crate::finger::parser::ParseError>>,
+ ) -> TextBuffer {
+     let content_view = gui.content_view();
+-    let buffer = content_view.get_buffer().unwrap();
++    let buffer = content_view.buffer().unwrap();
+ 
+     for el in content {
+         match el {
+             Ok(crate::finger::parser::TextElement::Text(text)) => {
+-                let mut end_iter = buffer.get_end_iter();
++                let mut end_iter = buffer.end_iter();
+ 
+                 buffer.insert_markup(
+                     &mut end_iter,
+@@ -392,7 +392,7 @@ pub fn gopher_link(gui: &Arc<Gui>, link_item: String) {
+ 
+ pub fn insert_button(gui: &Arc<Gui>, url: Url, label: String) {
+     let content_view = gui.content_view();
+-    let buffer = content_view.get_buffer().unwrap();
++    let buffer = content_view.buffer().unwrap();
+ 
+     let button_label = if label.is_empty() {
+         url.to_string()
+@@ -400,7 +400,7 @@ pub fn insert_button(gui: &Arc<Gui>, url: Url, label: String) {
+         label
+     };
+ 
+-    let button = gtk::Button::new_with_label(&button_label);
++    let button = gtk::Button::with_label(&button_label);
+     button.set_tooltip_text(Some(&url.to_string()));
+ 
+     button.connect_clicked(clone!(@weak gui => move |_| {
+@@ -412,16 +412,16 @@ pub fn insert_button(gui: &Arc<Gui>, url: Url, label: String) {
+         }
+     }));
+ 
+-    let mut start_iter = buffer.get_end_iter();
++    let mut start_iter = buffer.end_iter();
+     let anchor = buffer.create_child_anchor(&mut start_iter).unwrap();
+     content_view.add_child_at_anchor(&button, &anchor);
+-    let mut end_iter = buffer.get_end_iter();
++    let mut end_iter = buffer.end_iter();
+     buffer.insert(&mut end_iter, "\n");
+ }
+ 
+ pub fn insert_gopher_file_button(gui: &Arc<Gui>, url: Url, label: String) {
+     let content_view = gui.content_view();
+-    let buffer = content_view.get_buffer().unwrap();
++    let buffer = content_view.buffer().unwrap();
+ 
+     let button_label = if label.is_empty() {
+         url.to_string()
+@@ -429,7 +429,7 @@ pub fn insert_gopher_file_button(gui: &Arc<Gui>, url: Url, label: String) {
+         label
+     };
+ 
+-    let button = gtk::Button::new_with_label(&button_label);
++    let button = gtk::Button::with_label(&button_label);
+     button.set_tooltip_text(Some(&url.to_string()));
+ 
+     button.connect_clicked(move |_| {
+@@ -440,28 +440,28 @@ pub fn insert_gopher_file_button(gui: &Arc<Gui>, url: Url, label: String) {
+         crate::client::download(content);
+     });
+ 
+-    let mut start_iter = buffer.get_end_iter();
++    let mut start_iter = buffer.end_iter();
+     let anchor = buffer.create_child_anchor(&mut start_iter).unwrap();
+     content_view.add_child_at_anchor(&button, &anchor);
+-    let mut end_iter = buffer.get_end_iter();
++    let mut end_iter = buffer.end_iter();
+     buffer.insert(&mut end_iter, "\n");
+ }
+ 
+ pub fn insert_external_button(gui: &Arc<Gui>, url: Url, label: &str) {
+     let content_view = gui.content_view();
+-    let buffer = content_view.get_buffer().unwrap();
++    let buffer = content_view.buffer().unwrap();
+ 
+-    let button = gtk::Button::new_with_label(&label);
++    let button = gtk::Button::with_label(&label);
+     button.set_tooltip_text(Some(&url.to_string()));
+ 
+     button.connect_clicked(move |_| {
+         open::that(url.to_string()).unwrap();
+     });
+ 
+-    let mut start_iter = buffer.get_end_iter();
++    let mut start_iter = buffer.end_iter();
+     let anchor = buffer.create_child_anchor(&mut start_iter).unwrap();
+     content_view.add_child_at_anchor(&button, &anchor);
+-    let mut end_iter = buffer.get_end_iter();
++    let mut end_iter = buffer.end_iter();
+     buffer.insert(&mut end_iter, "\n");
+ }
+ 
+@@ -483,7 +483,7 @@ fn mono_span(text: String) -> String {
+ }
+ 
+ fn width(gui: &Arc<Gui>) -> usize {
+-    let (win_width, _) = gtk::ApplicationWindow::get_size(gui.window());
++    let (win_width, _) = gtk::ApplicationWindow::size(gui.window());
+     let calculated_width = (win_width / 10).try_into().unwrap();
+     std::cmp::min(calculated_width, crate::settings::max_width().unwrap_or(std::usize::MAX))
+ }
+diff --git a/src/gui.rs b/src/gui.rs
+index 5b896c9..da7074b 100644
+--- a/src/gui.rs
++++ b/src/gui.rs
+@@ -1,7 +1,6 @@
+ use gtk::prelude::*;
+ use gtk::{ApplicationWindow, Button, Entry, TextView};
+ 
+-use gdk::WindowExt;
+ 
+ pub struct Gui {
+     window: ApplicationWindow,
+@@ -24,28 +23,28 @@ impl Gui {
+     pub fn new() -> Gui {
+         // Initialize the UI from the Glade XML.
+         let glade_src = include_str!("castor.glade");
+-        let builder = gtk::Builder::new_from_string(glade_src);
++        let builder = gtk::Builder::from_string(glade_src);
+ 
+         // Get handles for the various controls we need to use.
+-        let window: ApplicationWindow = builder.get_object("window").expect("Couldn't get window");
+-        let url_bar: Entry = builder.get_object("url_bar").expect("Couldn't get url_bar");
++        let window: ApplicationWindow = builder.object("window").expect("Couldn't get window");
++        let url_bar: Entry = builder.object("url_bar").expect("Couldn't get url_bar");
+         let content_view: TextView = builder
+-            .get_object("content_view")
++            .object("content_view")
+             .expect("Couldn't get content_view");
+         let back_button: Button = builder
+-            .get_object("back_button")
++            .object("back_button")
+             .expect("Couldn't get back_button");
+         let forward_button: Button = builder
+-            .get_object("forward_button")
++            .object("forward_button")
+             .expect("Couldn't get forward_button");
+         let refresh_button: Button = builder
+-            .get_object("refresh_button")
++            .object("refresh_button")
+             .expect("Couldn't get refresh_button");
+         let add_bookmark_button: Button = builder
+-            .get_object("add_bookmark_button")
++            .object("add_bookmark_button")
+             .expect("Couldn't get add_bookmark_button");
+         let show_bookmarks_button: Button = builder
+-            .get_object("show_bookmarks_button")
++            .object("show_bookmarks_button")
+             .expect("Couldn't get show_bookmarks_button");
+ 
+         Gui {
+@@ -68,8 +67,8 @@ impl Gui {
+             Inhibit(false)
+         });
+         self.content_view.connect_motion_notify_event(|win, _| {
+-            let w = gtk::TextViewExt::get_window(win, gtk::TextWindowType::Text).unwrap();
+-            w.set_cursor(gdk::Cursor::new_from_name(&w.get_display(), "default").as_ref());
++            let w = gtk::traits::TextViewExt::window(win, gtk::TextWindowType::Text).unwrap();
++            w.set_cursor(gdk::Cursor::from_name(&w.display(), "default").as_ref());
+             Inhibit(false)
+         });
+         self.window.show_all();
+diff --git a/src/main.rs b/src/main.rs
+index 6557411..bb35339 100644
+--- a/src/main.rs
++++ b/src/main.rs
+@@ -46,7 +46,7 @@ fn main() {
+         .expect("Failed to load CSS");
+ 
+     gtk::StyleContext::add_provider_for_screen(
+-        &gdk::Screen::get_default().expect("Error initializing gtk css provider."),
++        &gdk::Screen::default().expect("Error initializing gtk css provider."),
+         &provider,
+         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+     );
+@@ -101,7 +101,7 @@ fn main() {
+         let gui_clone = gui.clone();
+         let url_bar = gui.url_bar();
+         url_bar.connect_activate(move |b| {
+-            let url = b.get_text().expect("get_text failed").to_string();
++            let url = b.text().to_string();
+             route_url(&gui_clone, url)
+         });
+     }
+@@ -111,7 +111,7 @@ fn main() {
+         let gui_clone = gui.clone();
+         let content_view = gui.content_view();
+         content_view.connect_button_press_event(move |_, event| {
+-            if event.get_button() == 8 {
++            if event.button() == 8 {
+                 go_back(&gui_clone);
+             }
+             Inhibit(false)
+@@ -190,26 +190,24 @@ fn visit(gui: &Arc<Gui>, url: &Url) {
+ 
+ fn refresh(gui: &Arc<Gui>) {
+     let url_bar = gui.url_bar();
+-    let url = url_bar.get_text().expect("get_text failed").to_string();
++    let url = url_bar.text().to_string();
+     route_url(&gui, url)
+ }
+ 
+ fn update_url_field(gui: &Arc<Gui>, url: &str) {
+     let url_bar = gui.url_bar();
+-    url_bar.get_buffer().set_text(url);
++    url_bar.buffer().set_text(url);
+ }
+ 
+ fn add_bookmark(gui: &Arc<Gui>) {
+     let url_bar = gui.url_bar();
+-    let current_url = url_bar.get_text();
+-
+-    if let Some(url) = current_url {
+-        if bookmarks::is_valid(&url) {
+-            bookmarks::add(&url);
+-            dialog::info(&gui, "Bookmark added.");
+-        } else {
+-            dialog::error(&gui, "Invalid bookmark URL.");
+-        }
++    let current_url = url_bar.text();
++
++    if bookmarks::is_valid(&current_url) {
++        bookmarks::add(&current_url);
++        dialog::info(&gui, "Bookmark added.");
++    } else {
++        dialog::error(&gui, "Invalid bookmark URL.");
+     }
+ }
+ 
+@@ -354,8 +352,8 @@ pub fn visit_url<T: AbsoluteUrl + Protocol>(gui: &Arc<Gui>, url: T) {
+ }
+ 
+ fn clear_buffer(view: &gtk::TextView) {
+-    if let Some(buffer) = view.get_buffer() {
+-        let (mut start, mut end) = buffer.get_bounds();
++    if let Some(buffer) = view.buffer() {
++        let (mut start, mut end) = buffer.bounds();
+         buffer.delete(&mut start, &mut end);
+     }
+ }
+
+base-commit: ec77c753e86074f9b540b0f41cfbec527b17ef0a
+-- 
+2.30.2
+

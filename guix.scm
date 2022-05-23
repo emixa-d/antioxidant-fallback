@@ -833,6 +833,26 @@
      (modify-inputs (package-inputs (@ (gnu packages rust-apps) agate))
        (append rust-rcgen rust-futures-util-0.3)))))
 
+;; Old castor doesn't build against new rust-gtk
+(define-public castor
+  (package
+    (inherit (@ (gnu packages web) castor))
+    (name "castor")
+    (version "0.9.0")
+    (source
+      (origin
+       (inherit (package-source (@ (gnu packages web) castor)))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.sr.ht/~julienxx/castor")
+             (commit version)))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32 "1gda77ya2qbmjxfbw3yfr64inm8xw8243iwnfsgwwiwl35pw70n9"))
+       (modules '((guix build utils)))
+       ;; Submitted upstream at <https://lists.sr.ht/~julienxx/castor/patches/32444>
+       (patches (list (local-file "0001-Update-to-new-GTK-version-and-new-version-of-depende.patch")))))))
+
 (define-public rust-enum-as-inner ; old version doesn't build against new rust-heck
   (package
     (inherit (@ (gnu packages crates-io) rust-enum-as-inner-0.3))
