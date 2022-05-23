@@ -2310,6 +2310,7 @@ of operation.")
 (map vitaminate/auto (list
 		      (p rust-bindgen-0.59) ; fragile w.r.t. changes to code for linking to C libraries, avoid breaking it
 		      agate
+		      castor
 		      (@ (gnu packages rust-apps) diffr)
 		      (@ (gnu packages rust-apps) hexyl)
 		      sniffglue))
