@@ -2,9 +2,9 @@
 
 Rust without cargo, with the idea of eventually stopping wasting energy.  Some WIP experiments into making rust work with Guix properly.
 
-Currently, the Rust apps 'agate', 'diffr', 'hexyl and 'sniffglue' can be built, see guix.scm:
+Currently, the Rust apps 'agate', 'castor', 'diffr', 'hexyl and 'sniffglue' can be built, see guix.scm:
 
-$ guix build -L . -f guix.scm
+$ guix build -L . -f antioxidant-packages.scm
 $ [...]/bin/hexyl
 (input some lines)
 
@@ -15,7 +15,25 @@ Warning: some packages have been updated without checking the source code diff!
 After a "git pull", do:
 
 ```
-$ guix git authenticate 020851ad649480ee4769b77a947642e993ea5956 "C1F3 3EE2 0C52 8FDB 7DD7  011F 49E3 EE22 1917 25EE"
+$ guix git authenticate 020851ad649480ee4769b77a947642e993ea5956 "C1F3 3EE2 0C52 8FDB 7DD7  011F 49E3 EE22 1917 25EE" --keyring=keys
+```
+
+You can also use it as a channel, e.g. with the following configuration
+```
+(use-modules (guix ci))
+
+(cons
+ (channel
+  (name 'antioxidated-packages)
+  (url "https://notabug.org/maximed/cargoless-rust-experiments")
+  (introduction
+   (make-channel-introduction
+    "020851ad649480ee4769b77a947642e993ea5956"
+    (openpgp-fingerprint
+     "C1F3 3EE2 0C52 8FDB 7DD7  011F 49E3 EE22 1917 25EE"))))
+ (list (channel-with-substitutes-available
+            %default-guix-channel
+            "https://ci.guix.gnu.org")))
 ```
 
 (TODO: make some vitaminated packages available, test "guix pull")
