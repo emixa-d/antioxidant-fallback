@@ -2213,8 +2213,7 @@ of operation.")
 		   ;; These are actually test inputs! (TODO guix)
 		   ;; (TODO: this isn't build from source)
 		   ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
-		   
-		   (pk 'p pack dependency)
+		   #;(pk 'p pack dependency)
 		   (cons* label (vitaminate/auto
 				 ;; Resolve version conflicts, choose newer versions,
 				 ;; etc.
