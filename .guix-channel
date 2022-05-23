@@ -1,3 +1,4 @@
 (channel
  (version 0)
- (keyring-reference "🗝"))
+ ;; TODO: notabug doesn't support 🗝
+ (keyring-reference "keys"))
