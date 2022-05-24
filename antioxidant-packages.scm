@@ -2269,6 +2269,7 @@ of operation.")
      ;; TODO: inherit?
      ,(p rust-parking-lot-0.11))
     ("rust-proptest-derive" ,rust-proptest-derive)
+    ("rust-arc-swap" ,(p rust-arc-swap-1))
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
