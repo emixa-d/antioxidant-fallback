@@ -1990,6 +1990,19 @@ of operation.")
        (sha256
         (base32 "04hjf319s6hswfmy0llv3c0bfc6yidic0nij5r8f4sr5pkbxkv98"))))))
 
+(define rust-lalrpop-util ; for new rust-lalrpop?
+  (package
+    (inherit (p rust-lalrpop-util-0.19))
+    (name "rust-lalrpop-util")
+    (version "0.19.8")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "lalrpop-util" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32 "1i1dbp489pjzsmxqhnsc47p37akkjbfawk2g861xkd79g34rdxxw"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2644,6 +2657,7 @@ of operation.")
     ("rust-image" ,rust-image)
     ("rust-lebe" ,rust-lebe)
     ("rust-exr" ,rust-exr)
+    ("rust-lalrpop-util" ,rust-lalrpop-util)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
