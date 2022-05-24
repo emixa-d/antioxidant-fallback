@@ -1725,6 +1725,22 @@ of operation.")
         (sha256
           (base32 "0g53w6qkqcc122bqh51jzfg51147il643idvq1czxkr2x5306ci5"))))))
 
+(define rust-proptest-derive
+  (package
+    (inherit (p rust-proptest-derive-0.1))
+    (name "rust-proptest-derive")
+    (version "0.3.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "proptest-derive" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32
+         "1p4x6k1zxq9lrpk46npdnzj6894mjx5bpwkwrdk63ird72an5d4h"))
+       (modules '((guix build utils)))
+       (patches (list (local-file "rust-proptest-derive-upgrade-to-stable-proc-macro-ecosyst.patch")))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2252,6 +2268,7 @@ of operation.")
     ("rust-parking-lot"
      ;; TODO: inherit?
      ,(p rust-parking-lot-0.11))
+    ("rust-proptest-derive" ,rust-proptest-derive)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))

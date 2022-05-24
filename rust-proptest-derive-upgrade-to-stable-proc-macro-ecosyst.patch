@@ -1,0 +1,396 @@
+From 7bb86b288150850657052a9f08ebe52e999c4369 Mon Sep 17 00:00:00 2001
+Message-Id: <7bb86b288150850657052a9f08ebe52e999c4369.1653424146.git.h.goebel@crazy-compilers.com>
+From: Nikhil Benesch <nikhil.benesch@gmail.com>
+Date: Wed, 6 Apr 2022 09:54:56 -0400
+Subject: [PATCH] proptest-derive: upgrade to stable proc macro ecosystem
+
+Upgrade proptest-derive to the stable versions of proc-macro2, syn, and
+quote.
+
+Taken from https://github.com/AltSysrq/proptest/pull/264
+which is based on proptest-derive 0.3.0,
+adjusted for guix by Hartmut Goebel.
+
+---
+ Cargo.toml    |   6 +-
+ src/ast.rs    |   2 +-
+ src/attr.rs   |  58 ++++++++--------
+ src/error.rs  |  24 +++----
+ src/interp.rs | 125 +---------------------------------
+ 5 files changed, 47 insertions(+), 168 deletions(-)
+
+diff --git a/src/ast.rs b/src/ast.rs
+index 971eb65..3786fbb 100644
+--- a/src/ast.rs
++++ b/src/ast.rs
+@@ -805,6 +805,6 @@ struct Tuple<I>(I);
+ impl<T: ToTokens, I: Clone + IntoIterator<Item = T>> ToTokens for Tuple<I> {
+     fn to_tokens(&self, tokens: &mut TokenStream) {
+         let iter = self.0.clone();
+-        quote_append!(tokens, ( #(#iter),* ) );
++        tokens.append_all(iter);
+     }
+ }
+diff --git a/src/attr.rs b/src/attr.rs
+index 97c3dc3..59ef134 100644
+--- a/src/attr.rs
++++ b/src/attr.rs
+@@ -8,7 +8,7 @@
+ 
+ //! Provides a parser from syn attributes to our logical model.
+ 
+-use syn::{self, Attribute, Expr, Ident, Lit, Meta, NestedMeta, Type};
++use syn::{self, Attribute, Expr, Lit, Meta, NestedMeta, Type, Path};
+ 
+ use crate::error::{self, Ctx, DeriveResult};
+ use crate::interp;
+@@ -221,7 +221,7 @@ fn extract_modifiers(ctx: Ctx, attr: &Attribute) -> Vec<Meta> {
+         error::inner_attr(ctx);
+     }
+ 
+-    match attr.interpret_meta() {
++    match attr.parse_meta().ok() {
+         Some(Meta::List(list)) => {
+             return list
+                 .nested
+@@ -229,7 +229,7 @@ fn extract_modifiers(ctx: Ctx, attr: &Attribute) -> Vec<Meta> {
+                 .filter_map(|nm| extract_metas(ctx, nm))
+                 .collect()
+         }
+-        Some(Meta::Word(_)) => error::bare_proptest_attr(ctx),
++        Some(Meta::Path(_)) => error::bare_proptest_attr(ctx),
+         Some(Meta::NameValue(_)) => error::literal_set_proptest(ctx),
+         None => error::no_interp_meta(ctx),
+     }
+@@ -239,7 +239,7 @@ fn extract_modifiers(ctx: Ctx, attr: &Attribute) -> Vec<Meta> {
+ 
+ fn extract_metas(ctx: Ctx, nested: NestedMeta) -> Option<Meta> {
+     match nested {
+-        NestedMeta::Literal(_) => {
++        NestedMeta::Lit(_) => {
+             error::immediate_literals(ctx);
+             None
+         }
+@@ -263,21 +263,21 @@ fn is_outer_attr(attr: &Attribute) -> bool {
+ /// let's them add stuff into our accumulartor.
+ fn dispatch_attribute(ctx: Ctx, mut acc: ParseAcc, meta: Meta) -> ParseAcc {
+     // Dispatch table for attributes:
+-    let name = meta.name().to_string();
+-    let name = name.as_ref();
+-    match name {
++    let name = meta.path().get_ident().map(|id| id.to_string());
++    match name.as_deref() {
+         // Valid modifiers:
+-        "skip" => parse_skip(ctx, &mut acc, meta),
+-        "w" | "weight" => parse_weight(ctx, &mut acc, &meta),
+-        "no_params" => parse_no_params(ctx, &mut acc, meta),
+-        "params" => parse_params(ctx, &mut acc, meta),
+-        "strategy" => parse_strategy(ctx, &mut acc, &meta),
+-        "value" => parse_value(ctx, &mut acc, &meta),
+-        "regex" => parse_regex(ctx, &mut acc, &meta),
+-        "filter" => parse_filter(ctx, &mut acc, &meta),
+-        "no_bound" => parse_no_bound(ctx, &mut acc, meta),
++        Some("skip") => parse_skip(ctx, &mut acc, meta),
++        Some("w") | Some("weight") => parse_weight(ctx, &mut acc, &meta),
++        Some("no_params") => parse_no_params(ctx, &mut acc, meta),
++        Some("params") => parse_params(ctx, &mut acc, meta),
++        Some("strategy") => parse_strategy(ctx, &mut acc, &meta),
++        Some("value") => parse_value(ctx, &mut acc, &meta),
++        Some("regex") => parse_regex(ctx, &mut acc, &meta),
++        Some("filter") => parse_filter(ctx, &mut acc, &meta),
++        Some("no_bound") => parse_no_bound(ctx, &mut acc, meta),
+         // Invalid modifiers:
+-        name => dispatch_unknown_mod(ctx, name),
++        Some(name) => dispatch_unknown_mod(ctx, name),
++        None => error::unkown_modifier(ctx, &format!("{:?}", meta.path())),
+     }
+     acc
+ }
+@@ -368,7 +368,7 @@ fn parse_weight(ctx: Ctx, acc: &mut ParseAcc, meta: &Meta) {
+ fn parse_filter(ctx: Ctx, acc: &mut ParseAcc, meta: &Meta) {
+     if let Some(filter) = match normalize_meta(meta.clone()) {
+         Some(NormMeta::Lit(Lit::Str(lit))) => lit.parse().ok(),
+-        Some(NormMeta::Word(ident)) => Some(parse_quote!( #ident )),
++        Some(NormMeta::Path(path)) => Some(parse_quote!( #path )),
+         _ => None,
+     } {
+         acc.filter.push(filter);
+@@ -390,7 +390,7 @@ fn parse_regex(ctx: Ctx, acc: &mut ParseAcc, meta: &Meta) {
+     error_if_set(ctx, &acc.regex, &meta);
+ 
+     if let expr @ Some(_) = match normalize_meta(meta.clone()) {
+-        Some(NormMeta::Word(fun)) => Some(function_call(fun)),
++        Some(NormMeta::Path(fun)) => Some(function_call(fun)),
+         Some(NormMeta::Lit(lit @ Lit::Str(_))) => Some(lit_to_expr(lit)),
+         _ => None,
+     } {
+@@ -433,7 +433,7 @@ fn parse_strategy_base(ctx: Ctx, loc: &mut Option<Expr>, meta: &Meta) {
+     error_if_set(ctx, &loc, &meta);
+ 
+     if let expr @ Some(_) = match normalize_meta(meta.clone()) {
+-        Some(NormMeta::Word(fun)) => Some(function_call(fun)),
++        Some(NormMeta::Path(fun)) => Some(function_call(fun)),
+         Some(NormMeta::Lit(lit)) => extract_expr(lit),
+         _ => None,
+     } {
+@@ -493,7 +493,7 @@ fn parse_params(ctx: Ctx, acc: &mut ParseAcc, meta: Meta) {
+ 
+     let typ = match normalize_meta(meta) {
+         // Form is: `#[proptest(params(<type>)]`.
+-        Some(NormMeta::Word(ident)) => Some(ident_to_type(ident)),
++        Some(NormMeta::Path(path)) => Some(path_to_type(path)),
+         // Form is: `#[proptest(params = "<type>"]` or,
+         // Form is: `#[proptest(params("<type>")]`..
+         Some(NormMeta::Lit(Lit::Str(lit))) => lit.parse().ok(),
+@@ -546,11 +546,11 @@ fn error_if_set<T>(ctx: Ctx, loc: &Option<T>, meta: &Meta) {
+     }
+ }
+ 
+-/// Constructs a type out of an identifier.
+-fn ident_to_type(ident: Ident) -> Type {
++/// Constructs a type out of a path.
++fn path_to_type(path: Path) -> Type {
+     Type::Path(syn::TypePath {
+         qself: None,
+-        path: ident.into(),
++        path,
+     })
+ }
+ 
+@@ -579,7 +579,7 @@ fn lit_to_expr(lit: Lit) -> Expr {
+ }
+ 
+ /// Construct a function call expression for an identifier.
+-fn function_call(fun: Ident) -> Expr {
++fn function_call(fun: Path) -> Expr {
+     parse_quote!( #fun() )
+ }
+ 
+@@ -591,19 +591,19 @@ enum NormMeta {
+     /// Accepts: `#[proptest(<word> = <lit>)]` and `#[proptest(<word>(<lit>))]`
+     Lit(Lit),
+     /// Accepts: `#[proptest(<word>(<word>))`.
+-    Word(Ident),
++    Path(Path),
+ }
+ 
+ /// Normalize a `meta: Meta` into the forms accepted in `#[proptest(<meta>)]`.
+ fn normalize_meta(meta: Meta) -> Option<NormMeta> {
+     Some(match meta {
+-        Meta::Word(_) => NormMeta::Plain,
++        Meta::Path(_) => NormMeta::Plain,
+         Meta::NameValue(nv) => NormMeta::Lit(nv.lit),
+         Meta::List(ml) => {
+             if let Some(nm) = util::match_singleton(ml.nested) {
+                 match nm {
+-                    NestedMeta::Literal(lit) => NormMeta::Lit(lit),
+-                    NestedMeta::Meta(Meta::Word(word)) => NormMeta::Word(word),
++                    NestedMeta::Lit(lit) => NormMeta::Lit(lit),
++                    NestedMeta::Meta(Meta::Path(path)) => NormMeta::Path(path),
+                     _ => return None,
+                 }
+             } else {
+diff --git a/src/error.rs b/src/error.rs
+index a59963b..deebde2 100644
+--- a/src/error.rs
++++ b/src/error.rs
+@@ -426,9 +426,9 @@ error!(
+ error!(
+     set_again(meta: &syn::Meta),
+     E0017,
+-    "The attribute modifier `{}` inside `#[proptest(..)]` has already been \
++    "The attribute modifier `{:?}` inside `#[proptest(..)]` has already been \
+      set. To fix the error, please remove at least one such modifier.",
+-    meta.name()
++    meta.path()
+ );
+ 
+ // Happens when `<modifier>` in `#[proptest(<modifier>)]` is unknown to
+@@ -472,11 +472,11 @@ error!(
+ error!(
+     weight_malformed(meta: &syn::Meta),
+     E0021,
+-    "The attribute modifier `{0}` inside `#[proptest(..)]` must have the \
+-    format `#[proptest({0} = <integer>)]` where `<integer>` is an integer that \
+-    fits within a `u32`. An example: `#[proptest({0} = 2)]` to set a relative \
++    "The attribute modifier `{0:?}` inside `#[proptest(..)]` must have the \
++    format `#[proptest({0:?} = <integer>)]` where `<integer>` is an integer that \
++    fits within a `u32`. An example: `#[proptest({0:?} = 2)]` to set a relative \
+     weight of 2.",
+-    meta.name()
++    meta.path()
+ );
+ 
+ // Happens when both `#[proptest(params = "<type>")]` and
+@@ -526,10 +526,10 @@ fatal!(
+ error!(
+     strategy_malformed(meta: &syn::Meta),
+     E0026,
+-    "The attribute modifier `{0}` inside `#[proptest(..)]` must have the \
+-     format `#[proptest({0} = \"<expr>\")]` where `<expr>` is a valid Rust \
++    "The attribute modifier `{0:?}` inside `#[proptest(..)]` must have the \
++     format `#[proptest({0:?} = \"<expr>\")]` where `<expr>` is a valid Rust \
+      expression.",
+-    meta.name()
++    meta.path()
+ );
+ 
+ // Happens when `#[proptest(filter..)]` is malformed.
+@@ -538,10 +538,10 @@ error!(
+ error!(
+     filter_malformed(meta: &syn::Meta),
+     E0027,
+-    "The attribute modifier `{0}` inside `#[proptest(..)]` must have the \
+-     format `#[proptest({0} = \"<expr>\")]` where `<expr>` is a valid Rust \
++    "The attribute modifier `{0:?}` inside `#[proptest(..)]` must have the \
++     format `#[proptest({0:?} = \"<expr>\")]` where `<expr>` is a valid Rust \
+      expression.",
+-    meta.name()
++    meta.path()
+ );
+ 
+ // Any attributes on a skipped variant has no effect - so we emit this error
+diff --git a/src/interp.rs b/src/interp.rs
+index 594c5d8..34f0968 100644
+--- a/src/interp.rs
++++ b/src/interp.rs
+@@ -6,134 +6,13 @@
+ // option. This file may not be copied, modified, or distributed
+ // except according to those terms.
+ 
+-use syn::{self, BinOp as B, Expr as E, IntSuffix as IS, Lit as L, UnOp as U};
+-
+-/// Adapted from https://docs.rs/syn/0.14.2/src/syn/lit.rs.html#943 to accept
+-/// u128.
+-fn parse_lit_int(mut s: &str) -> Option<u128> {
+-    /// Get the byte at offset idx, or a default of `b'\0'` if we're looking
+-    /// past the end of the input buffer.
+-    pub fn byte<S: AsRef<[u8]> + ?Sized>(s: &S, idx: usize) -> u8 {
+-        let s = s.as_ref();
+-        if idx < s.len() {
+-            s[idx]
+-        } else {
+-            0
+-        }
+-    }
+-
+-    let base = match (byte(s, 0), byte(s, 1)) {
+-        (b'0', b'x') => {
+-            s = &s[2..];
+-            16
+-        }
+-        (b'0', b'o') => {
+-            s = &s[2..];
+-            8
+-        }
+-        (b'0', b'b') => {
+-            s = &s[2..];
+-            2
+-        }
+-        (b'0'..=b'9', _) => 10,
+-        _ => unreachable!(),
+-    };
+-
+-    let mut value = 0u128;
+-    loop {
+-        let b = byte(s, 0);
+-        let digit = match b {
+-            b'0'..=b'9' => u128::from(b - b'0'),
+-            b'a'..=b'f' if base > 10 => 10 + u128::from(b - b'a'),
+-            b'A'..=b'F' if base > 10 => 10 + u128::from(b - b'A'),
+-            b'_' => {
+-                s = &s[1..];
+-                continue;
+-            }
+-            // NOTE: Looking at a floating point literal, we don't want to
+-            // consider these integers.
+-            b'.' if base == 10 => return None,
+-            b'e' | b'E' if base == 10 => return None,
+-            _ => break,
+-        };
+-
+-        if digit >= base {
+-            panic!("Unexpected digit {:x} out of base range", digit);
+-        }
+-
+-        value = value.checked_mul(base)?.checked_add(digit)?;
+-        s = &s[1..];
+-    }
+-
+-    Some(value)
+-}
+-
+-/// Parse a suffix of an integer literal.
+-fn parse_suffix(lit: &str) -> IS {
+-    [
+-        ("i8", IS::I8),
+-        ("i16", IS::I16),
+-        ("i32", IS::I32),
+-        ("i64", IS::I64),
+-        ("i128", IS::I128),
+-        ("isize", IS::Isize),
+-        ("u8", IS::U8),
+-        ("u16", IS::U16),
+-        ("u32", IS::U32),
+-        ("u64", IS::U64),
+-        ("u128", IS::U128),
+-        ("usize", IS::Usize),
+-    ]
+-    .iter()
+-    .find(|&(s, _)| lit.ends_with(s))
+-    .map(|(_, suffix)| suffix.clone())
+-    .unwrap_or(IS::None)
+-}
+-
+-/// Interprets an integer literal in a string.
+-fn eval_str_int(lit: &str) -> Option<u128> {
+-    use std::{i128, i16, i32, i64, i8, u16, u32, u64, u8};
+-    use syn::IntSuffix::*;
+-
+-    let val = parse_lit_int(lit)?;
+-    Some(match parse_suffix(lit) {
+-        None => val,
+-        I8 if val <= i8::MAX as u128 => val,
+-        I16 if val <= i16::MAX as u128 => val,
+-        I32 if val <= i32::MAX as u128 => val,
+-        I64 if val <= i64::MAX as u128 => val,
+-        U8 if val <= u128::from(u8::MAX) => val,
+-        U16 if val <= u128::from(u16::MAX) => val,
+-        U32 if val <= u128::from(u32::MAX) => val,
+-        U64 if val <= u128::from(u64::MAX) => val,
+-        Usize if val <= u128::max_value() => val,
+-        Isize if val <= i128::max_value() as u128 => val,
+-        U128 => val,
+-        I128 if val <= i128::MAX as u128 => val,
+-
+-        // Does not fit in suffix:
+-        _ => return Option::None,
+-    })
+-}
+-
+-/// Interprets an integer literal.
+-fn eval_lit_int(lit: &syn::LitInt) -> Option<u128> {
+-    use quote::ToTokens;
+-    eval_str_int(&lit.into_token_stream().to_string())
+-}
+-
+-/// Interprets a verbatim literal.
+-fn eval_lit_verbatim(lit: &syn::LitVerbatim) -> Option<u128> {
+-    let lit = lit.token.to_string();
+-    eval_str_int(&lit)
+-}
++use syn::{self, BinOp as B, Expr as E, Lit as L, UnOp as U};
+ 
+ /// Interprets a literal.
+ fn eval_lit(lit: &syn::ExprLit) -> Option<u128> {
+     match &lit.lit {
+-        L::Int(lit) => eval_lit_int(lit),
++        L::Int(lit) => lit.base10_parse().ok(),
+         L::Byte(lit) => Some(u128::from(lit.value())),
+-        L::Verbatim(lit) => eval_lit_verbatim(lit),
+         _ => None,
+     }
+ }
+-- 
+2.30.4
+
