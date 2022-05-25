@@ -1957,6 +1957,26 @@ of operation.")
        (sha256
         (base32 "0fsv9hns5yfm900h8f02agxiazfdwn5rq43milcjhx9yyw8aly4l"))))))
 
+(define rust-tiff ; required by new rust-image
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-tiff-0.6))
+    (name "rust-tiff")
+    (version "0.7.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "tiff" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32 "11i2smxqa35a921pqs3x5xl7kf3cav3fhqd4xiqafiplhq4xmykw"))))
+    (arguments
+      `(#:cargo-inputs
+        (("rust-flate2" ,(p rust-flate2-1))
+         ("rust-jpeg-decoder" ,rust-jpeg-decoder)
+         ("rust-weezl" ,(p rust-weezl-0.1)))
+        #:cargo-development-inputs
+        (("rust-criterion" ,(p rust-criterion-0.3)))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2604,6 +2624,7 @@ of operation.")
     ("rust-miniz-oxide" ,rust-miniz-oxide)
     ("rust-deflate" ,rust-deflate)
     ("rust-png" ,rust-png)
+    ("rust-tiff" ,rust-tiff)
     ("rust-jpeg-decoder" ,rust-jpeg-decoder)
     ("rust-lebe" ,rust-lebe)
     ("rust-exr" ,rust-exr)
