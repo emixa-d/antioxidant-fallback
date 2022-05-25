@@ -1977,6 +1977,19 @@ of operation.")
         #:cargo-development-inputs
         (("rust-criterion" ,(p rust-criterion-0.3)))))))
 
+(define rust-image ; old rust-image doesn't build
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-image-0.23))
+    (name "rust-image")
+    (version "0.24.2")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "image" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32 "04hjf319s6hswfmy0llv3c0bfc6yidic0nij5r8f4sr5pkbxkv98"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2071,6 +2084,8 @@ of operation.")
     ;; Optional dependency cycle
     ("rust-ravif" -> "rust-image")
     ("rav1e" -> "rust-image")
+    ; ravif not used by default image features
+    ("rust-image" -> "rust-ravif")
     ;; TODO: rust-rav1e and rav1e
     ;; rust-futures-cpupool isn't updated anymore and doesn't
     ;; build anymore?
@@ -2626,6 +2641,7 @@ of operation.")
     ("rust-png" ,rust-png)
     ("rust-tiff" ,rust-tiff)
     ("rust-jpeg-decoder" ,rust-jpeg-decoder)
+    ("rust-image" ,rust-image)
     ("rust-lebe" ,rust-lebe)
     ("rust-exr" ,rust-exr)
     ;; 0.4.30 fails to build.
@@ -2689,6 +2705,7 @@ of operation.")
     ("rust-spki" (("rust-sha1" ,rust-sha1)
 		  ("rust-base64ct" ,(p rust-base64ct-1)) ; missing dep
 		  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
+    ("rust-image" (("rust-exr" ,rust-exr)))
     ;; possibly only required by new version
     #;("rust-boxxy" (("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1)))) ; TODO: currently useless because in %removed-dependencies, revisit when tests are supported
     ("rust-petgraph" (("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
