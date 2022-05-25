@@ -105,6 +105,19 @@
 					  #~((add-after 'unpack 'unbundle
 					       (lambda _ ; TODO: move to origin snippet (& upstream Guix?)
 						 (delete-file-recursively "freetype2")))))
+					 ;; TODO: in upstream Guix, replace
+					 ;; (delete-file-recursively "jemalloc")
+					 ;; by (delete-file-recursively "rep")
+					 ;; TODO: why a static library?
+					 ((string-prefix? "rust-jemalloc-sys" name)
+					  #~((add-after 'unpack 'unbundle
+					       (lambda _
+						 (delete-file-recursively "rep")))
+					     ;; keep upstream phase
+					     (add-before 'configure 'find-jemalloc
+					       (lambda* (#:key inputs #:allow-other-keys)
+						 (setenv "JEMALLOC_OVERRIDE"
+							 (search-input-file inputs "lib/libjemalloc.so.2"))))))
 					 ;; TODO: upstream / update
 					 ((string-prefix? "rust-x509-parser" name)
 					  #~((add-after 'unpack 'use-nondeprecated
