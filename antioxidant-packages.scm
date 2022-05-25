@@ -1742,6 +1742,7 @@ of operation.")
 	  "clone-impls"
 	  "proc-macro" "full"
 	  "visit" "visit-mut"
+	  "fold" ; used by rust-diesel-derives
 	  ;; Used by rust-strum-macros
 	  "extra-traits"))
     ("rust-proc-macro2"
