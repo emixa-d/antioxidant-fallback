@@ -1781,6 +1781,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-memoffset" ,(p rust-memoffset-0.6)) ; @0.5 doesn't build
     ("rust-signal-hook" ,(p rust-signal-hook-0.3)) ; @0.1 doesn't build
     ("rust-semver" ,(p rust-semver-1))
     ("rust-rustc-version" ,(p rust-rustc-version-0.4)) ; @0.2.3 doesn't build against rust-semver@1
