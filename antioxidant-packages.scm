@@ -1875,6 +1875,19 @@ of operation.")
        (sha256
         (base32 "0bs319wa9wl7pn9j6jrrxg1gaqbak581rkx210cbix0qyljpwvy8"))))))
 
+(define rust-png ; old version doesn't build against certain new crates
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-png-0.16))
+    (name "rust-png")
+    (version "0.17.5")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "png" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32 "1fp3vnaxmjdv71dcakc21k07ir5s31dlx1mrazfqddzgaynw0f6w"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2521,6 +2534,7 @@ of operation.")
     ("rust-gif" ,(p rust-gif-0.11)) ;; @0.11.2 - crates-graphics @0.11.3 doesn't build ATM
     ("rust-miniz-oxide" ,rust-miniz-oxide)
     ("rust-deflate" ,rust-deflate)
+    ("rust-png" ,rust-png)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
