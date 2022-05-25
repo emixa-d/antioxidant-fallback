@@ -1580,6 +1580,7 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ("rust-encoding-rs" ,#~'()) ; "simd-accel" requires unstable "packed_simd"
     ;; TODO: investigate build_dictionaries, and maybe not embedding libraries.
     ;; TODO: cannot choose multiple normalization forms, is this important?
     ("rust-hyphenation" ,#~'("embed_all"))
