@@ -20,7 +20,7 @@
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
-	     (guix git-download) (ice-9 optargs)
+	     (guix git-download) (ice-9 optargs) ((guix licenses) #:prefix license:)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define (target-environment-variables target)
@@ -628,7 +628,7 @@
     (home-page "https://github.com/qnighy/yasna.rs")
     (synopsis "ASN.1 library for Rust")
     (description "ASN.1 library for Rust")
-    (license '(list license:expat license:asl2.0))))
+    (license (list license:expat license:asl2.0))))
 
 ;; rust-tokio-openssl@0.6.3 needs a recent rust-openssl
 (define rust-openssl-macros
@@ -651,7 +651,7 @@
     (home-page "")
     (synopsis "Internal macros used by the openssl crate.")
     (description "Internal macros used by the openssl crate.")
-    (license '(list license:expat license:asl2.0))))
+    (license (list license:expat license:asl2.0))))
 (define-public rust-openssl-sys
   (package
    (inherit (p rust-openssl-sys-0.9))
@@ -714,7 +714,7 @@
     (home-page "https://github.com/est31/rcgen")
     (synopsis "Rust X.509 certificate generator")
     (description "Rust X.509 certificate generator") ;; TODO
-    (license '(list license:expat license:asl2.0))))
+    (license (list license:expat license:asl2.0))))
 
 ;; Old pkcs5 doesn't build
 (define rust-pkcs5
@@ -801,7 +801,7 @@
    (home-page "https://github.com/RustCrypto/block-modes")
    (synopsis "Cipher Block Chaining (CBC) block cipher mode of operation")
    (description "Cipher Block Chaining (CBC) block cipher mode of operation")
-   (license '(list license:expat license:asl2.0))))
+   (license (list license:expat license:asl2.0))))
 
 ;; Old vesion incompatible with new rust-hmac
 (define rust-cookie
@@ -1260,7 +1260,7 @@
    (description
     "Custom reference types for code generic over in-place and buffer-to-buffer modes
 of operation.")
-   (license '(list license:expat license:asl2.0))))
+   (license (list license:expat license:asl2.0))))
 
 ;; devise-core@0.2 requires unstable
 (define rust-devise-core
@@ -1315,7 +1315,7 @@ of operation.")
     (home-page "")
     (synopsis "Diagnostics for proc-macro2.")
     (description "Diagnostics for proc-macro2.")
-    (license '(list license:expat license:asl2.0))))
+    (license (list license:expat license:asl2.0))))
 
 (define rust-hash32-derive ; @0.1.0 doesn't build gainst new rust-quote and  friends
   (package
@@ -1348,7 +1348,7 @@ of operation.")
     (home-page "https://github.com/japaric/as-slice")
     (synopsis "`AsSlice` and `AsMutSlice` traits")
     (description "`AsSlice` and `AsMutSlice` traits")
-    (license '(list license:expat license:asl2.0))))
+    (license (list license:expat license:asl2.0))))
 
 (define rust-blake2 ; 0.9 doesn't build against new rust-digest.
   (package
