@@ -1559,7 +1559,6 @@ of operation.")
     "rust-fuchsia-zircon" "rust-fuchsia-zircon-sys" "rust-fuchsia-cprng" ; fuchsia not supported by Guix
     "rust-dwrote" ; Windows-only, skip for now, cross-compilation can be implemented later
     "rust-core-arch" ; doesn't build, nowadays part of Rust itself?
-    "rust-doc-comment"
     "rust-hermit-abi"
     "rust-model" ;; doesn't build, avoid for now
     "rust-tokio-core" ;; doesn't exist in recent tokios
@@ -1580,6 +1579,7 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ("rust-doc-comment" ,#~'()) ; no_core requires unstable, and old_macros is detected by build.rs
     ("rust-encoding-rs" ,#~'()) ; "simd-accel" requires unstable "packed_simd"
     ;; TODO: investigate build_dictionaries, and maybe not embedding libraries.
     ;; TODO: cannot choose multiple normalization forms, is this important?
