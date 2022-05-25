@@ -2350,6 +2350,8 @@ of operation.")
   (public-test-package (vitaminate/auto dutree)))
 (define-public antioxidated-hexyl
   (public-test-package (vitaminate/auto (@ (gnu packages rust-apps) hexyl))))
+(define-public antioxidated-ripgrep
+  (public-test-package (vitaminate/auto ripgrep)))
 (define-public antioxidated-sniffglue
   (public-test-package (vitaminate/auto sniffglue)))
 
@@ -2360,4 +2362,5 @@ of operation.")
       antioxidated-dutree
       antioxidated-diffr
       antioxidated-hexyl
+      antioxidated-ripgrep
       antioxidated-sniffglue)
