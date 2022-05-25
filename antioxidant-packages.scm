@@ -1911,6 +1911,39 @@ of operation.")
       "Tiny, dead simple, high performance endianness conversions with a generic API")
     (license '(list license:bsd-3))))  ;; FIXME: Validate
 
+(define rust-exr ; maybe required by new rust-image
+  (package
+    (name "rust-exr")
+    (version "1.4.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "exr" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "05f269cpxvnyiwvdbijilwdcmfn9zs1a7wxdpvbfarszzc30xk0l"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+      `(#:cargo-inputs
+        (("rust-bit-field" ,(p rust-bit-field-0.10))
+         ("rust-deflate" ,rust-deflate)
+         ("rust-flume" ,(p rust-flume-0.10))
+         ("rust-half" ,(p rust-half-1))
+         ("rust-inflate" ,(p rust-inflate-0.4))
+         ("rust-lebe" ,rust-lebe)
+         ("rust-smallvec" ,(p rust-smallvec-1))
+         ("rust-threadpool" ,(p rust-threadpool-1)))
+        #:cargo-development-inputs
+        (("rust-bencher" ,(p rust-bencher-0.1))
+         ;;("rust-image" ,(p rust-image-0.23))  ;; cycle
+         ("rust-rand" ,(p rust-rand-0.8))
+         ("rust-rayon" ,(p rust-rayon-1))
+         ("rust-walkdir" ,(p rust-walkdir-2)))))
+    (home-page "https://github.com/johannesvollmer/exrs")
+    (synopsis "Read and write OpenEXR files without any unsafe code")
+    (description "Read and write OpenEXR files without any unsafe code")
+    (license '(list license:bsd-3))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2559,6 +2592,7 @@ of operation.")
     ("rust-deflate" ,rust-deflate)
     ("rust-png" ,rust-png)
     ("rust-lebe" ,rust-lebe)
+    ("rust-exr" ,rust-exr)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
