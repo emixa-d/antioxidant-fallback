@@ -1862,6 +1862,19 @@ of operation.")
        (sha256
         (base32 "10phz3ppw4p8pz4rwniy3qkw95wiq64kbvpb0l8kjcrzpka9pcnj"))))))
 
+(define rust-deflate ; maybe required for new rust-png
+  (package
+    (inherit (p rust-deflate-0.9))
+    (name "rust-deflate")
+    (version "1.0.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "deflate" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32 "0bs319wa9wl7pn9j6jrrxg1gaqbak581rkx210cbix0qyljpwvy8"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2507,6 +2520,7 @@ of operation.")
     ("rust-arc-swap" ,(p rust-arc-swap-1))
     ("rust-gif" ,(p rust-gif-0.11)) ;; @0.11.2 - crates-graphics @0.11.3 doesn't build ATM
     ("rust-miniz-oxide" ,rust-miniz-oxide)
+    ("rust-deflate" ,rust-deflate)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
