@@ -216,7 +216,13 @@ with open(there, \"w\") as out_file:
 (define* (add-c-library! library)
   "Link the crate to be compiled against C-LIBRARY -- i.e., do the rust
 equivalent of adding \"-lLIBRARY ...\" to the invocation of \"gcc\"."
-  (set! *c-libraries* (cons library *c-libraries*)))
+  (let ((corrected-library
+	 (cond ((string-suffix? ".so" library) ; happens for rust-jemalloc-sys@0.3
+		(format #t "note: the build script explicitly included a .so suffix (~a) for the shared library. We cannot pass that to the linker, so the suffix is removed.~%" library)
+		(string-drop-right library (string-length ".so")))
+	       ;; TODO: .a case?
+	       (#true library))))
+    (set! *c-libraries* (cons corrected-library *c-libraries*))))
 
 (define* (add-c-library-directory! library-directory)
   "Search for non-Rust libraries in LIBRARY-DIRECTORY -- i.e., do the rust
