@@ -966,6 +966,7 @@ raise an error instead."
   ;; optimisation levels, ...
   (setenv "PROFILE" "release")
   (setenv "DEBUG" "true")
+  (setenv "NUM_JOBS" (number->string (parallel-job-count)))
   (let ((set-version-environment-variables
 	 (lambda (major minor patch pre)
 	   (setenv "CARGO_PKG_VERSION_MAJOR" major)
