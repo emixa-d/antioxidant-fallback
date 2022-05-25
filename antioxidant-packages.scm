@@ -2034,6 +2034,20 @@ of operation.")
         (base32
          "08yqsp93vijrhskarrlxb16bbbyyakzhlm34z9vg460f3cs5a15k"))))))
 
+(define rust-nettle-7 ; old rust-nettle doesn't build
+  (package
+    (inherit (p rust-nettle-7))
+    (name "rust-nettle")
+    (version "7.2.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "nettle" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32
+         "0da0d5kv2w93zjy7acsxvmg969ybi05bqibfs72nj0ri16l97lgm"))))))
+
 (define rust-nettle-sys-2 ; for new rust-nettle
   (package
     (inherit (p rust-nettle-sys-2))
@@ -2713,6 +2727,7 @@ of operation.")
     ("rust-lalrpop" ,rust-lalrpop)
     ("rust-lalrpop-util" ,rust-lalrpop-util)
     ("rust-nettle-sys" ,rust-nettle-sys-2)
+    ("rust-nettle" ,rust-nettle-7)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
