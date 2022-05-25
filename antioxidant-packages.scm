@@ -1849,6 +1849,19 @@ of operation.")
         (sha256
           (base32 "10zl67i9gr7qarmnnnd8538mydw0yr6jlpbsvb5kxap9mr15h2ff"))))))
 
+(define rust-miniz-oxide ; new rust-png incompatible with old rust-miniz-oxide (probably?)
+  (package
+    (inherit (p rust-miniz-oxide-0.4))
+    (name "rust-miniz-oxide")
+    (version "0.5.1")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "miniz-oxide" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32 "10phz3ppw4p8pz4rwniy3qkw95wiq64kbvpb0l8kjcrzpka9pcnj"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2492,7 +2505,8 @@ of operation.")
      ,(p rust-parking-lot-0.11))
     ("rust-proptest-derive" ,rust-proptest-derive)
     ("rust-arc-swap" ,(p rust-arc-swap-1))
-    ("rust-gif" ,(p rust-gif-0.11)) ;; @0.11.2 -- crates-graphics @0.11.3 doesn't build ATM
+    ("rust-gif" ,(p rust-gif-0.11)) ;; @0.11.2 - crates-graphics @0.11.3 doesn't build ATM
+    ("rust-miniz-oxide" ,rust-miniz-oxide)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
