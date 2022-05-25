@@ -20,6 +20,7 @@
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
+	     (gnu packages rust-apps)
 	     (guix git-download) (ice-9 optargs) ((guix licenses) #:prefix license:)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
@@ -223,7 +224,15 @@
 					  #~((add-after 'unpack 'unpreview
 					       (lambda _
 						 (substitute* "Cargo.toml"
-						   (("-preview\\]") "]"))))))
+							      (("-preview\\]") "]"))))))
+					 ((string-contains name "dutree")
+					  ;; See <https://github.com/nachoparker/dutree/pull/40>
+					  #~((add-after 'unpack 'update-to-new-signal-hookversion
+					        (lambda _
+						  (substitute* "src/main.rs"
+						    (("signal_hook::register") "signal_hook::low_level::register"))
+						  (substitute* "src/main.rs"
+						    (("signal_hook::SIGPIPE") "signal_hook::consts::signal::SIGPIPE"))))))
 					 ((string-prefix? "rust-tuikit" name)
 					  ;; TODO: upstream
 					  #~((add-after 'unpack 'fix-unresolved+deprecated
@@ -1756,6 +1765,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-signal-hook" ,(p rust-signal-hook-0.3)) ; @0.1 doesn't build
     ("rust-semver" ,(p rust-semver-1))
     ("rust-rustc-version" ,(p rust-rustc-version-0.4)) ; @0.2.3 doesn't build against rust-semver@1
     ("rust-dotenv" ,(p rust-dotenv-0.15)) ; @0.10 doesn't build
@@ -2324,6 +2334,8 @@ of operation.")
   (public-test-package (vitaminate/auto castor)))
 (define-public antioxidated-diffr
   (public-test-package (vitaminate/auto (@ (gnu packages rust-apps) diffr))))
+(define-public antioxidated-dutree
+  (public-test-package (vitaminate/auto dutree)))
 (define-public antioxidated-hexyl
   (public-test-package (vitaminate/auto (@ (gnu packages rust-apps) hexyl))))
 (define-public antioxidated-sniffglue
@@ -2333,6 +2345,7 @@ of operation.")
 (list antioxidated-rust-bindgen
       antioxidated-agate
       antioxidated-castor
+      antioxidated-dutree
       antioxidated-diffr
       antioxidated-hexyl
       antioxidated-sniffglue)
