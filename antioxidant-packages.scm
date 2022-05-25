@@ -1535,6 +1535,7 @@ of operation.")
     "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
     "rust-bencher" ; FTB
     "rust-criterion" "rust-criterion-cycles-per-byte" ;; fails to build because rust-async-log-attributes fails to build
+    "rust-femme" ; some dependencies fail to build
     "rust-proptest"
     "rust-futures-util-preview" ; futures-util has been updated?
     "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
