@@ -1944,6 +1944,19 @@ of operation.")
     (description "Read and write OpenEXR files without any unsafe code")
     (license '(list license:bsd-3))))
 
+(define rust-jpeg-decoder ; required by new rust-tiff
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-jpeg-decoder-0.1))
+    (name "rust-jpeg-decoder")
+    (version "0.2.6")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "jpeg-decoder" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32 "0fsv9hns5yfm900h8f02agxiazfdwn5rq43milcjhx9yyw8aly4l"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2591,6 +2604,7 @@ of operation.")
     ("rust-miniz-oxide" ,rust-miniz-oxide)
     ("rust-deflate" ,rust-deflate)
     ("rust-png" ,rust-png)
+    ("rust-jpeg-decoder" ,rust-jpeg-decoder)
     ("rust-lebe" ,rust-lebe)
     ("rust-exr" ,rust-exr)
     ;; 0.4.30 fails to build.
