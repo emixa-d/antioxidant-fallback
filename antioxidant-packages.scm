@@ -2020,6 +2020,20 @@ of operation.")
        (sha256
         (base32 "1i1dbp489pjzsmxqhnsc47p37akkjbfawk2g861xkd79g34rdxxw"))))))
 
+(define rust-lalrpop ; old lalrpop doesn't build
+  (package
+    (inherit (p rust-lalrpop-0.19))
+    (name "rust-lalrpop")
+    (version "0.19.8")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "lalrpop" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32
+         "08yqsp93vijrhskarrlxb16bbbyyakzhlm34z9vg460f3cs5a15k"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2674,6 +2688,7 @@ of operation.")
     ("rust-image" ,rust-image)
     ("rust-lebe" ,rust-lebe)
     ("rust-exr" ,rust-exr)
+    ("rust-lalrpop" ,rust-lalrpop)
     ("rust-lalrpop-util" ,rust-lalrpop-util)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
@@ -2741,6 +2756,8 @@ of operation.")
     #;("rust-boxxy" (("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1)))) ; TODO: currently useless because in %removed-dependencies, revisit when tests are supported
     ("rust-petgraph" (("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
     ("sniffglue" (("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
+    ("rust-lalrpop" (("rust-tiny-keccak" ,(p rust-tiny-keccak-2))
+                     ("rust-pico-args" ,rust-pico-args)))
     ;; TODO: is this sufficient?
     ("rust-futures-core-preview"
      (("rust-futures-core" ,rust-futures-core-0.3)))
