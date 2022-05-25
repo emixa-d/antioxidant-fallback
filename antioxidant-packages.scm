@@ -2034,6 +2034,28 @@ of operation.")
         (base32
          "08yqsp93vijrhskarrlxb16bbbyyakzhlm34z9vg460f3cs5a15k"))))))
 
+(define rust-nettle-sys-2 ; for new rust-nettle
+  (package
+    (inherit (p rust-nettle-sys-2))
+    (name "rust-nettle-sys")
+    (version "2.1.0")
+    (source
+     (origin
+       (method url-fetch)
+       (uri (crate-uri "nettle-sys" version))
+       (file-name (string-append name "-" version ".tar.gz"))
+       (sha256
+        (base32
+         "05rdwqzkv83wvrby2x1xwjn3gv2795cwxwycjqhs7qw3g1f6hfxi"))))
+    (arguments
+      `(#:cargo-inputs
+        (("rust-bindgen" ,(p rust-bindgen-0.57))
+         ("rust-cc" ,(p rust-cc-1))
+         ("rust-libc" ,(p rust-libc-0.2))
+         ("rust-pkg-config" ,(p rust-pkg-config-0.3))
+         ("rust-tempfile" ,(p rust-tempfile-3))
+         ("rust-vcpkg" ,(p rust-vcpkg-0.2)))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2690,6 +2712,7 @@ of operation.")
     ("rust-exr" ,rust-exr)
     ("rust-lalrpop" ,rust-lalrpop)
     ("rust-lalrpop-util" ,rust-lalrpop-util)
+    ("rust-nettle-sys" ,rust-nettle-sys-2)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
