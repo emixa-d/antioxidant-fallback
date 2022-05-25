@@ -1888,6 +1888,29 @@ of operation.")
        (sha256
         (base32 "1fp3vnaxmjdv71dcakc21k07ir5s31dlx1mrazfqddzgaynw0f6w"))))))
 
+(define rust-lebe ; required by new rust-exr
+  (package
+    (name "rust-lebe")
+    (version "0.5.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "lebe" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1zr6g3d35h349j0dsx6722lrjws00x2d8z0sy5p9wxdhimlivzby"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+      `(#:cargo-development-inputs
+        (("rust-bencher" ,(p rust-bencher-0.1))
+         ("rust-byteorder" ,(p rust-byteorder-1)))))
+    (home-page "https://github.com/johannesvollmer/lebe")
+    (synopsis
+      "Tiny, dead simple, high performance endianness conversions with a generic API")
+    (description
+      "Tiny, dead simple, high performance endianness conversions with a generic API")
+    (license '(list license:bsd-3))))  ;; FIXME: Validate
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2535,6 +2558,7 @@ of operation.")
     ("rust-miniz-oxide" ,rust-miniz-oxide)
     ("rust-deflate" ,rust-deflate)
     ("rust-png" ,rust-png)
+    ("rust-lebe" ,rust-lebe)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))))
