@@ -1990,7 +1990,24 @@ of operation.")
        (sha256
         (base32 "04hjf319s6hswfmy0llv3c0bfc6yidic0nij5r8f4sr5pkbxkv98"))))))
 
-(define rust-lalrpop-util ; for new rust-lalrpop?
+(define rust-pico-args
+  (package
+    (name "rust-pico-args")
+    (version "0.4.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "pico-args" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0s646i0pbcck300rqldb21m151zxp66m3mdskha063blrfbcv2yv"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (home-page "https://github.com/RazrFalcon/pico-args")
+    (synopsis "An ultra simple CLI arguments parser.")
+    (description "An ultra simple CLI arguments parser.")
+    (license '(list license:expat))))
+
+(define rust-lalrpop-util
   (package
     (inherit (p rust-lalrpop-util-0.19))
     (name "rust-lalrpop-util")
