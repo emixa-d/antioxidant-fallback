@@ -1739,8 +1739,9 @@ of operation.")
     ;; Required by rust-rand-core.
     ("rust-getrandom" ,#~'("std"))
     ("rust-ena" ,#~'())  ;; disable "bench", which fails for stable build
-    ;; Required by rust-env-logger
-    ("rust-log" ,#~'("std"))
+    ;; Required by rust-env-logger.
+    ;; kv_unstable is required by rust-kv-log-macro.
+    ("rust-log" ,#~'("std" "kv_unstable"))
     ;; The feature "alloc" is not set by default, causing the
     ;; build to fail (TODO: maybe report upstream?)
     ("rust-bitvec"
