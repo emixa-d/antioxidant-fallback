@@ -1629,6 +1629,18 @@ of operation.")
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
           (base32 "18yjln9h49rj2gxy79a8pipp3wl66g7cnjqkpa7azv955mkwcw97"))))))
+(define-public rust-trust-dns-rustls ; likewise
+  (package
+    (inherit (p rust-trust-dns-rustls-0.20))
+    (name "rust-trust-dns-rustls")
+    (version "0.21.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "trust-dns-rustls" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1vsyy6zn0jv30nfyzs4y5rl6rnb4dm0m502gawk3klm2xq4dr5jx"))))))
 
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
@@ -1708,7 +1720,8 @@ of operation.")
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ;; dns-over-openssl is required by rust-trust-dns-openssl.
     ;; dns-over-native-tls is required by rust-trust-dns-native-tls
-    ("rust-trust-dns-proto" ,#~'("default" "dns-over-openssl" "dns-over-native-tls"))
+    ;; dns-over-rustls is required by rust-trust-dns-rustls
+    ("rust-trust-dns-proto" ,#~'("default" "dns-over-openssl" "dns-over-native-tls" "dns-over-rustls"))
     ;; rust-swayipcs requires 'spawn_blocking' which is only
     ;; public if "unstable" is enabled.
     ("rust-async-std" ,#~'("default" "unstable"))
@@ -1918,6 +1931,7 @@ of operation.")
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
     ("rust-trust-dns-native-tls" ,rust-trust-dns-native-tls)
+    ("rust-trust-dns-rustls" ,rust-trust-dns-rustls)
     ("rust-pulse" ,(package-with-extra-patches
 		    (p rust-pulse-0.5)
 		    ;; For compatibility with new rust-time
