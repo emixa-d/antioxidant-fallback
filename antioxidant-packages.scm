@@ -454,6 +454,20 @@
      (sha256
       (base32 "19mq96kwgf06axgdc2fbrjhqzdnxww9vw6cz8b82gqr9z86bj84l"))))))
 
+(define-public rust-futures-intrusive
+  (package
+    (inherit (p rust-futures-intrusive-0.3)) ; 0.3 doesn't build because of a type error
+    (name "rust-futures-intrusive")
+    (version "0.4.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "futures-intrusive" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0gmnn86ifc2ngmwf3mpiw00kmxm8m2wxxxqnchmpraj6mj97a032"))))))
+
+
 ;; The old tokio doesn't build against recent rust-futures
 (define rust-tokio-io-0.2
   (package
@@ -1781,6 +1795,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-futures-intrusive" ,rust-futures-intrusive)
     ("rust-memoffset" ,(p rust-memoffset-0.6)) ; @0.5 doesn't build
     ("rust-signal-hook" ,(p rust-signal-hook-0.3)) ; @0.1 doesn't build
     ("rust-semver" ,(p rust-semver-1))
