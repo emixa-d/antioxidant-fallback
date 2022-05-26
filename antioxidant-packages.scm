@@ -869,6 +869,23 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "01fa6z8sqqg19ya0l9ifh8vn05l5hpxdzkbh489mpymhw5np1m4l"))))))
 
+(define rust-partial-io
+  (package
+    (inherit (p rust-partial-io-0.3)) ; @0.3.1 requires old rust-futures
+    (name "rust-partial-io")
+    (version "0.5.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "partial-io" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "17q39vnwas6f4l5wiiqzlxh8la21rzpiy010mb95d9f0bj5ik056"))))
+    (inputs
+     (modify-inputs (package-inputs (p rust-partial-io-0.3))
+		    (prepend (p rust-tokio-1)
+			     (p rust-rand-0.8)
+			     (p rust-pin-project-1))))))
 
 ;; Old agate doesn't build
 (define agate
@@ -1630,6 +1647,8 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; "quickcheck" features requires removed crate "quickcheck"
+    ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ;; rust-swayipcs requires 'spawn_blocking' which is only
     ;; public if "unstable" is enabled.
     ("rust-async-std" ,#~'("default" "unstable"))
@@ -1834,6 +1853,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-partial-io" ,rust-partial-io)
     ;; swayhide requires non-async to build
     ("rust-swayipc" ,(package-with-rust-features (p rust-swayipc-2)
 						 #~'()
