@@ -1526,6 +1526,22 @@ of operation.")
 	(base32 "0jhsd8vhz0z0x8p3k5gaf8wwyn253n5fjvf27sdvv4nkh4b1cp2d"))
        (file-name (git-file-name name version))))))
 
+(define-public rust-async-process ; @1.0.1 is not compatible with new rust-signal-hook
+  (package
+    (inherit (p rust-async-process-1))
+    (name "rust-async-process")
+    (version "1.4.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "async-process" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "037ns7dazk1z0vdpnzh2bvrnxxzd604pzl47765cgs141bihcb6g"))))
+    (inputs
+     (modify-inputs (package-inputs (p rust-async-process-1))
+       (prepend (p rust-libc-0.2)))))) ; new dependency
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1797,6 +1813,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-async-process" ,rust-async-process) ; @1.0.1 doesn't build against new rust-signal-hookx
     ("rust-blocking" ,(p rust-blocking-1)) ; @0.4 doesn't build
     ("rust-inotify" ,(p rust-inotify-0.9)) ; @0.8 doesn't build
     ("rust-futures-intrusive" ,rust-futures-intrusive)
