@@ -1612,6 +1612,9 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; rust-swayipcs requires 'spawn_blocking' which is only
+    ;; public if "unstable" is enabled.
+    ("rust-async-std" ,#~'("default" "unstable"))
     ("rust-doc-comment" ,#~'()) ; no_core requires unstable, and old_macros is detected by build.rs
     ("rust-encoding-rs" ,#~'()) ; "simd-accel" requires unstable "packed_simd"
     ;; TODO: investigate build_dictionaries, and maybe not embedding libraries.
