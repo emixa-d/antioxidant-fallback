@@ -65,6 +65,22 @@ antioxidant.scm)
 
 # How to fix build failures
 
+## Build failures caused by incompatible features?
+
+What if rust-foo requires the 'yes' feature of rust-bar, and rust-oof requires
+the _absence_ of the 'yes' feature of rust-bar?
+
+Then add a context-dependent replacement to %replacements:
+
+```scheme
+  ("rust-bar" ,(package-with-rust-features rust-bar #~'() #:metatada "guix-variant=without-yes")
+  	      #:for-dependent
+	      ,(lambda (dependent)
+	         (string=? "rust-oof" (package-name dependent))))
+```
+
+and enable the feature by default in %features.
+
 ## Build failures caused by missing features.
 
 Does "rust-foo" fail to build because it requires the feature "baz" of "rust-bar"?

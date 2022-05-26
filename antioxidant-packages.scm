@@ -20,7 +20,7 @@
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
-	     (gnu packages rust-apps)
+	     (gnu packages rust-apps) (guix utils)
 	     (guix git-download) (ice-9 optargs) ((guix licenses) #:prefix license:)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
@@ -59,6 +59,7 @@
 			    modules ; what to do about 'modules'
 			    install-source? ; not used by antioxidant-build-system
 			    system target source search-paths outputs
+			    (rust-metadata "")
 			    ;; TODO: consider optimisations (what does cargo-build-system
 			    ;; do?)
 			    (optimisation-level 0)
@@ -91,6 +92,7 @@
 		     #:features #$features
 		     #:optimisation-level '#$optimisation-level
 		     #:cargo-env-variables #$cargo-env-variables
+		     #:rust-metadata #$rust-metadata
 		     #:phases (modify-phases %standard-antioxidant-phases
 				#$@(cond ((string-prefix? "rust-backtrace-sys" name)
 				          #~((add-after 'unpack 'break-cycle
@@ -270,6 +272,7 @@
 
 (define* (lower name #:key system source inputs native-inputs outputs target
 		(features #~'("default"))
+		(rust-metadata #~"")
 		#:rest arguments)
   (define private-keywords
     '(#:inputs #:native-inputs #:outputs))
@@ -320,6 +323,19 @@
 
 (use-modules (guix download))
 (define crate-uri (@ (guix build-system cargo) crate-uri))
+
+(define* (package-with-rust-features base new-features #:key (name (package-name base))
+				     (rust-metadata #~""))
+  "Return a variant of BASE with name NAME build with the features FEATURES.
+To distinguish this variant from other variants, RUST-METADATA can be set to
+an unique string, which can be useful for resolving symbol conflicts."
+  (package
+   (inherit base)
+   (name name)
+   (arguments
+    (ensure-keyword-arguments
+     (package-arguments base)
+     (list #:features new-features #:rust-metadata rust-metadata)))))
 
 ;; Use an updated set of rust-futures-... crates to avoid build failures
 ;; caused by uses of unstable rust things.  (and because they will need to
@@ -1816,6 +1832,14 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ;; swayhide requires non-async to build
+    ("rust-swayipc" ,(package-with-rust-features (p rust-swayipc-2)
+						 #~'()
+						 #:name "rust-swayipc+sync"
+						 #:rust-metadata "guix-variant=sync")
+     #:for-dependent
+     ,(lambda (dependent)
+	(string=? "swayhide" (package-name dependent))))
     ("rust-smol" ,(p rust-smol-1)) ; @0.1 or its dependencies don't build
     ("rust-async-process" ,rust-async-process) ; @1.0.1 doesn't build against new rust-signal-hookx
     ("rust-blocking" ,(p rust-blocking-1)) ; @0.4 doesn't build
@@ -2035,6 +2059,9 @@ of operation.")
     ("rust-swayipc"
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-failure" ,(p rust-failure-0.1))))
+    ("rust-swayipc+sync"
+     (("rust-futures-core" ,rust-futures-core-0.3)
+      ("rust-failure" ,(p rust-failure-0.1))))
     ("castor" ;; TODO: add them in upstream Guix
      (("rust-gio" ,(@ (gnu packages crates-gtk) rust-gio-0.14))
       ("rust-glib" ,(@ (gnu packages crates-gtk) rust-glib-0.14))
@@ -2093,6 +2120,18 @@ of operation.")
     ("rust-tokio-util"
      (("rust-tracing" ,(p rust-tracing-0.1)))))) ; missing dependency
 
+(define (find-replacement dependent dependency)
+  (define test-replacement
+    (match-lambda
+      ((key new) (and (equal? key (package-name dependency)) new))
+      ((key new #:for-dependent dependent-match?)
+       (and (equal? key (package-name dependency))
+	    (dependent-match? dependent)
+	    new))
+      (stuff (pk 'oops stuff)
+	     (error "bogus entry in %replacments"))))
+  (any test-replacement %replacements))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -2102,6 +2141,7 @@ of operation.")
 		 (phases '%standard-phases)
 		 ;; TODO: cargo test flags
 		 skip-build? cargo-test-flags tests?
+		 (rust-metadata "")
 		 modules ; TODO: handle #:modules
 		 install-source? ; not used by antioxidant-build-system
 		 (features #~'("default")))
@@ -2288,11 +2328,7 @@ of operation.")
 		   (cons* label (vitaminate/auto
 				 ;; Resolve version conflicts, choose newer versions,
 				 ;; etc.
-				 (match (assoc (package-name dependency) %replacements)
-				   ((_ new) new)
-				   (#false dependency)
-				   (stuff (pk 'oops stuff)
-					  (error "bogus entry in %extra-inputs"))))
+				 (or (find-replacement pack dependency) dependency))
 			  maybe-output)))))
 	 ;; Detect cycles early by unthunking
 	 (define i
@@ -2322,7 +2358,8 @@ of operation.")
 	       ;; TODO: for compatibility with rust-http
 	       (patches (list (local-file "rust-itoa-Reintroduce-fmt.patch")))))
 	     (_ (package-source pack))))
-	  (arguments (list #:features
+	  (arguments (list #:rust-metadata rust-metadata
+			   #:features
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?

@@ -471,6 +471,7 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs outputs
+		       (rust-metadata "")
 		       (configuration '())
 		       (available-crates '())
 		       (crate-mappings '())
@@ -486,6 +487,7 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 	 "--extern=proc_macro"
 	 "--cap-lints" "warn" ;; ignore #[deny(warnings)], it's too noisy
 	 "-C" "prefer-dynamic" ;; for C dependencies & grafting and such?
+	 "-C" (string-append "metadata=" rust-metadata) ;; two crates with the same name can only be used in the same binary if they have different metadata, so allow changing the metadata.
 	 source "-o" destination
 	 (append (extern-arguments available-crates crate-mappings)
 		 (L-arguments available-crates crate-mappings extra-library-directories)
