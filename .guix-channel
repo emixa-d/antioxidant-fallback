@@ -1,5 +1,5 @@
 (channel
  (version 0)
- (news-file "news.scm")
+ (news-file ".news")
  ;; TODO: notabug doesn't support 🗝
  (keyring-reference "keys"))
