@@ -1987,6 +1987,8 @@ of operation.")
     ("rust-crossbeam-channel"
      ;; avoid old version that don't build
      ,(p rust-crossbeam-channel-0.5))
+    ("rust-crossbeam-utils" ; avoid errors by multiple versions of the same crate
+     ,(p rust-crossbeam-utils-0.8))
     ;; Likewise.
     ("rust-hyper"
      ,(p rust-hyper-0.14))
