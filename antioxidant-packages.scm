@@ -2029,6 +2029,9 @@ of operation.")
 (define %extra-inputs
   `(("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
+    ("rust-swayipc"
+     (("rust-futures-core" ,rust-futures-core-0.3)
+      ("rust-failure" ,(p rust-failure-0.1))))
     ("castor" ;; TODO: add them in upstream Guix
      (("rust-gio" ,(@ (gnu packages crates-gtk) rust-gio-0.14))
       ("rust-glib" ,(@ (gnu packages crates-gtk) rust-glib-0.14))
