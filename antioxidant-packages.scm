@@ -1647,6 +1647,7 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ;; rust-swayipcs requires 'spawn_blocking' which is only
