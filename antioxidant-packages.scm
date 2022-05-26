@@ -1601,7 +1601,7 @@ of operation.")
     "rust-bencher" ; FTB
     "rust-criterion" "rust-criterion-cycles-per-byte" ;; fails to build because rust-async-log-attributes fails to build
     "rust-femme" ; some dependencies fail to build
-    "rust-proptest"
+    "rust-proptest" "rust-proptest-derive"
     "rust-futures-util-preview" ; futures-util has been updated?
     "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
     ;; TODO: how do the three following crates even work?
