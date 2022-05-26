@@ -1589,6 +1589,7 @@ of operation.")
     "rust-rand-xorshift"
     "rust-serde-test"
     "rust-wasm-bindgen" "rust-wasi"
+    "rust-wasm-bindgen-futures" ; ECMAScript-only and doesn't build
     "rust-wasm-bindgen-test"))
 
 (define %features
