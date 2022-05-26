@@ -1854,6 +1854,10 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-pulse" ,(package-with-extra-patches
+		    (p rust-pulse-0.5)
+		    ;; For compatibility with new rust-time
+		    (list (local-file "0001-use-std-time-bump-to-0.5.4.patch"))))
     ("rust-partial-io" ,rust-partial-io)
     ;; swayhide requires non-async to build
     ("rust-swayipc" ,(package-with-rust-features (p rust-swayipc-2)
