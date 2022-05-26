@@ -1795,6 +1795,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-blocking" ,(p rust-blocking-1)) ; @0.4 doesn't build
     ("rust-inotify" ,(p rust-inotify-0.9)) ; @0.8 doesn't build
     ("rust-futures-intrusive" ,rust-futures-intrusive)
     ("rust-memoffset" ,(p rust-memoffset-0.6)) ; @0.5 doesn't build
