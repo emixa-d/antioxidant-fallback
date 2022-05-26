@@ -868,6 +868,18 @@ an unique string, which can be useful for resolving symbol conflicts."
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
           (base32 "01fa6z8sqqg19ya0l9ifh8vn05l5hpxdzkbh489mpymhw5np1m4l"))))))
+(define-public rust-cookie-store ; old version incompatible with new rust-time
+  (package
+    (inherit (p rust-cookie-store-0.15))
+    (name "rust-cookie-store")
+    (version "0.16.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "cookie-store" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0idrphkllykjmvx1vnjyihi3w76lphwbj6k0vqzpiib4lqvgsfzq"))))))
 
 (define rust-partial-io
   (package
@@ -1901,6 +1913,8 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
+    ("rust-cookie-store-15" ,rust-cookie-store)
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
     ("rust-trust-dns-native-tls" ,rust-trust-dns-native-tls)
