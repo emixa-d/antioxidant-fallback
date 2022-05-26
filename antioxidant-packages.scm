@@ -1591,7 +1591,7 @@ of operation.")
     "rust-skeptic" ; @0.13.4 doesn't build
     "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
     "rust-macrotest"
-    "rust-ntest-test-cases" ; test-only, and @0.3.4 tries using non-exported syn::export
+    "rust-ntest" "rust-ntest-test-cases" ; test-only, and @0.3.4 tries using non-exported syn::export
     "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
     "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
     "rust-cortex-m" ; ARM targets not yet supported for Rust in Guix
