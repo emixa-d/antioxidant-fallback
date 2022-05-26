@@ -1813,6 +1813,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-smol" ,(p rust-smol-1)) ; @0.1 or its dependencies don't build
     ("rust-async-process" ,rust-async-process) ; @1.0.1 doesn't build against new rust-signal-hookx
     ("rust-blocking" ,(p rust-blocking-1)) ; @0.4 doesn't build
     ("rust-inotify" ,(p rust-inotify-0.9)) ; @0.8 doesn't build
