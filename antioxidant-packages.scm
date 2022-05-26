@@ -1547,6 +1547,7 @@ of operation.")
     "rust-cortex-m" ; ARM targets not yet supported for Rust in Guix
     ;;"rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
     "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
+    "rust-gloo-timers" ; web-only crate
     "rust-bencher" ; FTB
     "rust-criterion" "rust-criterion-cycles-per-byte" ;; fails to build because rust-async-log-attributes fails to build
     "rust-femme" ; some dependencies fail to build
