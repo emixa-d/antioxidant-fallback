@@ -1589,6 +1589,8 @@ of operation.")
          (base32 "0p95ig8dfp30ga6gz01m683zy33abbna0givpgac6xwqym0g4ccw"))))
     (inputs (modify-inputs (package-inputs (p rust-trust-dns-proto-0.20))
 	      (prepend (p rust-tinyvec-1)
+		       (p rust-tokio-native-tls-0.3)
+		       (p rust-native-tls-0.2)
 		       (p rust-tokio-openssl-0.6))))))
 
 (define-public rust-trust-dns-openssl ; @0.20 doesn't build
@@ -1603,6 +1605,18 @@ of operation.")
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
           (base32 "0r8z7l757lf5yvsdxkb9324f663i3kyqkjjj3g3whilby5fz36z1"))))))
+(define-public rust-trust-dns-native-tls ; likewise
+  (package
+    (inherit (p rust-trust-dns-native-tls-0.20))
+    (name "rust-trust-dns-native-tls")
+    (version "0.21.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "trust-dns-native-tls" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "18yjln9h49rj2gxy79a8pipp3wl66g7cnjqkpa7azv955mkwcw97"))))))
 
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
@@ -1680,8 +1694,9 @@ of operation.")
     ("rust-xz2" ,#~'("futures")) ; likewise
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
-    ;; dns-over-openssl is required by rust-trust-dns-openssl
-    ("rust-trust-dns-proto" ,#~'("default" "dns-over-openssl"))
+    ;; dns-over-openssl is required by rust-trust-dns-openssl.
+    ;; dns-over-native-tls is required by rust-trust-dns-native-tls
+    ("rust-trust-dns-proto" ,#~'("default" "dns-over-openssl" "dns-over-native-tls"))
     ;; rust-swayipcs requires 'spawn_blocking' which is only
     ;; public if "unstable" is enabled.
     ("rust-async-std" ,#~'("default" "unstable"))
@@ -1888,6 +1903,7 @@ of operation.")
   `(("rust-blake2" ,rust-blake2)
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
+    ("rust-trust-dns-native-tls" ,rust-trust-dns-native-tls)
     ("rust-pulse" ,(package-with-extra-patches
 		    (p rust-pulse-0.5)
 		    ;; For compatibility with new rust-time
