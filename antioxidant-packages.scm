@@ -1608,7 +1608,10 @@ of operation.")
 		       (p rust-rustls-0.20)
 		       (p rust-tokio-rustls-0.22)
 		       (p rust-rustls-pemfile-0.2)
-		       (p rust-tokio-openssl-0.6))))))
+		       (p rust-tokio-openssl-0.6)
+		       (p rust-http-0.2)
+		       (p rust-h2-0.3)
+		       (p rust-bytes-1))))))
 
 (define-public rust-trust-dns-openssl ; @0.20 doesn't build
   (package
@@ -1646,6 +1649,19 @@ of operation.")
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
           (base32 "1vsyy6zn0jv30nfyzs4y5rl6rnb4dm0m502gawk3klm2xq4dr5jx"))))))
+
+(define-public rust-trust-dns-https ; @0.20 incompatible with rust-trust-dns-proto@0.21
+  (package
+    (inherit (p rust-trust-dns-https-0.20))
+    (name "rust-trust-dns-https")
+    (version "0.21.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "trust-dns-https" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0002375rn8hlakrvi0r0d7xm4kvcykxi93hrn2hz3hlx69gq814b"))))))
 
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
@@ -1726,9 +1742,12 @@ of operation.")
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ;; dns-over-openssl is required by rust-trust-dns-openssl.
-    ;; dns-over-native-tls is required by rust-trust-dns-native-tls
-    ;; dns-over-rustls is required by rust-trust-dns-rustls
-    ("rust-trust-dns-proto" ,#~'("default" "dns-over-openssl" "dns-over-native-tls" "dns-over-rustls"))
+    ;; dns-over-native-tls is required by rust-trust-dns-native-tls.
+    ;; dns-over-rustls is required by rust-trust-dns-rustls.
+    ;; dns-over-https is required by rust-trust-dns-https.
+    ("rust-trust-dns-proto"
+     ,#~'("default" "dns-over-openssl" "dns-over-native-tls" "dns-over-rustls"
+	  "dns-over-https"))
     ;; rust-swayipcs requires 'spawn_blocking' which is only
     ;; public if "unstable" is enabled.
     ("rust-async-std" ,#~'("default" "unstable"))
@@ -1939,6 +1958,7 @@ of operation.")
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
     ("rust-trust-dns-native-tls" ,rust-trust-dns-native-tls)
     ("rust-trust-dns-rustls" ,rust-trust-dns-rustls)
+    ("rust-trust-dns-https" ,rust-trust-dns-https)
     ("rust-pulse" ,(package-with-extra-patches
 		    (p rust-pulse-0.5)
 		    ;; For compatibility with new rust-time
