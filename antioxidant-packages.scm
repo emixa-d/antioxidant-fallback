@@ -1699,6 +1699,19 @@ of operation.")
        (prepend (p rust-mime-0.3)
 		(p rust-mime-guess-2))))))
 
+(define-public rust-askama-derive
+  (package
+    (inherit (p rust-askama-derive-0.10))
+    (name "rust-askama-derive")
+    (version "0.11.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "askama-derive" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0wbb5l1x1bx8x8vvz4ayw196l9y64mi3vrmxm7pn8wmlx3k8ggw7"))))))
+
 (define-public rust-clap-derive ; 3.0.0-beta.2 doesn't build against new rust-heck
   (package
     (inherit (p rust-clap-derive-3))
@@ -2007,6 +2020,7 @@ of operation.")
   `(("rust-blake2" ,rust-blake2)
     ("rust-clap-derive" ,rust-clap-derive)
     ("rust-askama-shared" ,rust-askama-shared)
+    ("rust-askama-derive" ,rust-askama-derive)
     ("rust-zstd" ,(p rust-zstd-0.9)) ; @0.6 doesn't build a dependency failing to build
     ("rust-reqwest" ,(p rust-reqwest-0.11)) ; @0.10 has
     ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
