@@ -1966,7 +1966,8 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
-    ("rust-zstd" ,(p rust-zstd-0.9)) ; @0.6 doesn't build
+    ("rust-zstd" ,(p rust-zstd-0.9)) ; @0.6 doesn't build a dependency failing to build
+    ("rust-reqwest" ,(p rust-reqwest-0.11)) ; @0.10 has
     ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
     ("rust-cookie-store-15" ,rust-cookie-store)
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
