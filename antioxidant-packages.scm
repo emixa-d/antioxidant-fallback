@@ -1699,6 +1699,19 @@ of operation.")
        (prepend (p rust-mime-0.3)
 		(p rust-mime-guess-2))))))
 
+(define-public rust-clap-derive ; 3.0.0-beta.2 doesn't build against new rust-heck
+  (package
+    (inherit (p rust-clap-derive-3))
+    (name "rust-clap-derive")
+    (version "3.1.18")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "clap-derive" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0g53w6qkqcc122bqh51jzfg51147il643idvq1czxkr2x5306ci5"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1992,6 +2005,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-clap-derive" ,rust-clap-derive)
     ("rust-askama-shared" ,rust-askama-shared)
     ("rust-zstd" ,(p rust-zstd-0.9)) ; @0.6 doesn't build a dependency failing to build
     ("rust-reqwest" ,(p rust-reqwest-0.11)) ; @0.10 has
