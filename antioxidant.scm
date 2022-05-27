@@ -587,6 +587,13 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 
 
 
+;; Fake cargo crates that antioxidant doesn't need
+(define %rustc-std-workspace-crates
+  (map normalise-crate-name
+       '("rust-rustc-std-workspace-std"
+	 "rust-rustc-std-workspace-core"
+	 "rust-rustc-std-workspace-alloc")))
+
 ;; If too many crates are included in --extern, errors like
 ;; error[E0659]: `time` is ambiguous (name vs any other name during import resolution)
 ;; are possible.  Avoid them!
@@ -620,7 +627,11 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 			    (dependency-name dependency))
 			(and (dependency-package dependency) ; <-- first clause required for rust-new-debug-unreachable / rust-string-cache@0.8.0
 			     (dependency-name dependency))))
-  (map construct-crate dependencies))
+  (define (fake? mapping) ;; avoid warnings about fake crates being missing
+    ;; TODO: which name is important?
+    (and (member (crate-mapping-dependency-name mapping) %rustc-std-workspace-crates)
+	 (member (crate-mapping-local-name mapping) %rustc-std-workspace-crates)))
+  (filter (negate fake?) (map construct-crate dependencies)))
 
 ;; Some cargo:??? lines from build.rs are ‘propagated’ to dependencies
 ;; as environment variables, see
