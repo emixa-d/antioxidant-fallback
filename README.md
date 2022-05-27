@@ -4,9 +4,11 @@ Rust without cargo, with the idea of eventually stopping wasting energy.  Some W
 
 Currently, the Rust apps 'agate', 'castor', 'diffr', 'git-absorb', 'hexyl', 'sniffglue' and 'tealdeer' can be built, see guix.scm:
 
+```
 $ guix build -L . -f antioxidant-packages.scm
 $ [...]/bin/hexyl
 (input some lines)
+```
 
 Warning: some packages have been updated without checking the source code diff!
 
@@ -86,7 +88,9 @@ and enable the feature by default in %features.
 Does "rust-foo" fail to build because it requires the feature "baz" of "rust-bar"?
 Then go to %features in guix.scm and add an entry
 
+```
   ("rust-bar" ,#~'("default" "baz")).
+```
 
 If there's already an entry for "rust-bar", modify the existing entry to add "baz".
 
@@ -94,20 +98,26 @@ If there's already an entry for "rust-bar", modify the existing entry to add "ba
 
 If you see
 
+```
   warning: #<<crate-mapping> true-name: "packed_simd" local-name: "packed_simd"> not found in the available crates -- this might cause the build to fail!
+```
 
 and
 
+```
 error[E0463]: can't find crate for `packed_simd`
  --> src/simd/generic.rs:1:1
   |
 1 | extern crate packed_simd;
   | ^^^^^^^^^^^^^^^^^^^^^^^^^ can't find crate
+```
 
 the solution is probably to remove "simd" or "generic-simd" feature or such,
 by making the list of features explicit instead of implicit.
 
+```
   ("rust-bytecount" ,#~'())
+```
 
 ## Build failures related to rust-digest
 
