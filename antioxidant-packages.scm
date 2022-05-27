@@ -1754,6 +1754,8 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
+    ("rust-slog" ,#~'("default" "nested-values"))
     ;; early-data is required by rust-trust-dns-proto
     ("rust-tokio-rustls" ,#~'("default" "early-data"))
     ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
