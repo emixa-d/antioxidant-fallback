@@ -2590,6 +2590,28 @@ of operation.")
    (parameterize ((vitamination-stack (cons pack (vitamination-stack))))
      (vitaminate/auto* pack))))
 
+(define (check-removed-extra-inputs)
+  ;; list names %removed-dependencies which have %extra-inputs defined
+  (for-each
+   (lambda (name)
+     (let ((dependencies (assoc name %extra-inputs)))
+       (when dependencies
+         (pk name "in %removed-dependencies and %extra-inputs"))))
+   %removed-dependencies)
+  ;; list names listed as an extra-input for some package and also in
+  ;; %removed-dependencies
+  (for-each
+   (match-lambda
+    ((name deps)
+     (for-each
+      (match-lambda
+       ((dep _) (when (member dep %removed-dependencies)
+                  (pk "extra-input" dep "of" name "in %removed-dependencies"))))
+      deps)))
+   %extra-inputs))
+(check-removed-extra-inputs)
+
+
 ;; todo: cycle between rust-demo-hack and rust-demo-hack-impl
 
 ;; Make some functioning packages available to "guix install ANTIOXIDATED-FOO"
