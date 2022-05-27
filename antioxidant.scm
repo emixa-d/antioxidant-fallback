@@ -1034,6 +1034,15 @@ CARGO_CFG_TARGET_ARCH."
   (for-each (match-lambda ((name . value) (setenv name value)))
 	    cargo-env-variables)) ; TODO: maybe move more things inside
 
+;; Otherwise it looks for TARGET-strip even when compiling natively,
+;; due to how cross-compilation has been set up.
+(define* (fixed-strip #:key target build #:allow-other-keys #:rest arguments)
+  (if (string=? target build)
+      (apply (assoc-ref %standard-phases 'strip)
+	     (append arguments
+		     (list #:target #false)))
+      (apply (assoc-ref %standard-phases 'strip) arguments)))
+
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
@@ -1047,5 +1056,6 @@ CARGO_CFG_TARGET_ARCH."
     (replace 'configure configure)
     (replace 'build build)
     (add-after 'build 'build-binaries build-binaries)
+    (replace 'strip fixed-strip)
     (delete 'check) ; TODO
     (delete 'install))) ; TODO?
