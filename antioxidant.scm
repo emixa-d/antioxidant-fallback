@@ -628,9 +628,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 			(and (dependency-package dependency) ; <-- first clause required for rust-new-debug-unreachable / rust-string-cache@0.8.0
 			     (dependency-name dependency))))
   (define (fake? mapping) ;; avoid warnings about fake crates being missing
-    ;; TODO: which name is important?
-    (and (member (crate-mapping-dependency-name mapping) %rustc-std-workspace-crates)
-	 (member (crate-mapping-local-name mapping) %rustc-std-workspace-crates)))
+    (member (crate-mapping-dependency-name mapping) %rustc-std-workspace-crates))
   (filter (negate fake?) (map construct-crate dependencies)))
 
 ;; Some cargo:??? lines from build.rs are ‘propagated’ to dependencies
