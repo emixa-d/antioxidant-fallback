@@ -1682,6 +1682,23 @@ of operation.")
         (sha256
           (base32 "0n6m9yvhaip8dml5247d6qqdzf8bcrn4rvzwr685clc4xb175fp4"))))))
 
+(define-public rust-askama-shared ; @0.11 doesn't build against new rust-nom
+  (package
+    (inherit (p rust-askama-shared-0.11))
+    (name "rust-askama-shared")
+    (version "0.12.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "askama-shared" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "1l4fycmw65zyvfabf672sj2pc0ilfcj0y6a0csygq1wa26a2nwmz"))))
+    (inputs
+     (modify-inputs (package-inputs (p rust-askama-shared-0.11))
+       (prepend (p rust-mime-0.3)
+		(p rust-mime-guess-2))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1975,6 +1992,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-askama-shared" ,rust-askama-shared)
     ("rust-zstd" ,(p rust-zstd-0.9)) ; @0.6 doesn't build a dependency failing to build
     ("rust-reqwest" ,(p rust-reqwest-0.11)) ; @0.10 has
     ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
