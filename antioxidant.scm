@@ -340,7 +340,7 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
   (let loop ((indirect (find-indirect direct '())))
     (let ((next (find-indirect indirect indirect)))
       (if (equal? indirect next) ; fixpoint reached
-	  (values (pk 'd direct) indirect
+	  (values direct indirect
 		  (lset-difference eq? available-crates
 				   (lset-union eq? direct indirect)))
 	  (loop next)))))
@@ -419,7 +419,6 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 
 (define* (L-arguments available-crates crate-mappings #:optional
 		      (extra-library-directories '()))
-  (pk 'a available-crates crate-mappings)
   (let* ((direct-dependencies indirect-dependencies rest
 			      (partition-crates available-crates crate-mappings))
 	 (indirect-crate->argument
@@ -442,7 +441,7 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 	  (append (map make-Lnative-argument extra-library-directories)
 		  ;; Only use crates that are actually (indirectly) requested.
 		  (append-map make-Lnative-arguments*
-			      (append direct-dependencies (pk 'i indirect-dependencies))))))
+			      (append direct-dependencies indirect-dependencies)))))
     ;; Delete duplicates to shrink the invocation of 'rustc' a bit.
     (append (delete-duplicates Lnative-arguments string=?)
 	    indirect-crate-arguments))) ; shouldn't contain duplicates
@@ -690,11 +689,10 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 		     foo))
 	   (basename (format #f "lib~a.a" name)))
       (define (match? c-library-directory)
-	(pk #:whats-there c-library-directory (find-files c-library-directory))
-	(and (pk 'l c-library-directory (local-directory? c-library-directory))
-	     (pk 'e (file-exists? (pk 'n (in-vicinity
-					  (directory-without-prefix c-library-directory)
-					  basename))))))
+	(and (local-directory? c-library-directory)
+	     (file-exists? (in-vicinity
+			    (directory-without-prefix c-library-directory)
+			    basename))))
       ;; rust-sha2-asm doesn't add the current directory to c-library-directories
       ;; even though it adds a static library there.
       (any match? (cons (getcwd) *c-library-directories*))))
