@@ -2595,6 +2595,8 @@ of operation.")
   (public-test-package (vitaminate/auto sniffglue)))
 (define-public antioxidated-swayhide
   (public-test-package (vitaminate/auto swayhide)))
+(define-public antioxidated-tealdeer
+  (public-test-package (vitaminate/auto tealdeer)))
 
 ;; For local development
 (list antioxidated-rust-bindgen
@@ -2607,4 +2609,5 @@ of operation.")
       antioxidated-ripgrep
       antioxidated-rtss
       antioxidated-sniffglue
-      antioxidated-swayhide)
+      antioxidated-swayhide
+      antioxidated-tealdeer)

@@ -2,7 +2,7 @@
 
 Rust without cargo, with the idea of eventually stopping wasting energy.  Some WIP experiments into making rust work with Guix properly.
 
-Currently, the Rust apps 'agate', 'castor', 'diffr', 'hexyl and 'sniffglue' can be built, see guix.scm:
+Currently, the Rust apps 'agate', 'castor', 'diffr', 'hexyl', 'sniffglue' and 'tealdeer' can be built, see guix.scm:
 
 $ guix build -L . -f antioxidant-packages.scm
 $ [...]/bin/hexyl
