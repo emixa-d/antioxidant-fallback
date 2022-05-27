@@ -1605,6 +1605,9 @@ of operation.")
 	      (prepend (p rust-tinyvec-1)
 		       (p rust-tokio-native-tls-0.3)
 		       (p rust-native-tls-0.2)
+		       (p rust-rustls-0.20)
+		       (p rust-tokio-rustls-0.22)
+		       (p rust-rustls-pemfile-0.2)
 		       (p rust-tokio-openssl-0.6))))))
 
 (define-public rust-trust-dns-openssl ; @0.20 doesn't build
