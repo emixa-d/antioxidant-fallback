@@ -1,0 +1,552 @@
+From bcf3d534e38d6afaca9e898cef1af7fa3e0ecdb3 Mon Sep 17 00:00:00 2001
+From: Maxime Devos <maximedevos@telenet.be>
+Date: Sat, 21 May 2022 11:31:16 +0000
+Subject: [PATCH] Port src/parsers.rs to nom 7
+
+TODO:
+  * [ ] run tests (the build system I use (not Cargo) hasn't
+  implemented running tests yet)
+  * [ ] probably not done idiomatically
+  * [ ] how to resolve expr_res
+---
+ Cargo.toml     |   2 +-
+ src/parsers.rs | 479 ++++++++++++++++++++++---------------------------
+ 2 files changed, 213 insertions(+), 268 deletions(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 3afe4c2..f02795e 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -13,7 +13,7 @@ edition = "2018"
+ heapless = "0.5.6"
+ 
+ [dependencies.nom]
+-version = "4.2.3"
++version = "^7."
+ default-features = false
+ 
+ [features]
+diff --git a/src/parsers.rs b/src/parsers.rs
+index b0bf613..66651db 100644
+--- a/src/parsers.rs
++++ b/src/parsers.rs
+@@ -5,235 +5,177 @@ use crate::AnsiSequence;
+ 
+ use core::convert::TryInto;
+ use heapless::Vec;
++use nom::branch::alt;
++use nom::bytes::streaming::tag;
++use nom::character::streaming::{digit0, digit1};
++use nom::combinator::{map_res, opt};
++use nom::error::ErrorKind;
+ use nom::*;
+ 
++// TODO: copied from rust-nom@4.2.3 -- what should it be changed to
++// when using combinators instead of macros?
++macro_rules! expr_res (
++  ($i:expr, $e:expr) => (
++    {
++      match $e {
++        Ok(output) => Ok(($i, output)),
++	// TODO: what should be the error for a failed Vec::from_slice?
++	// ErrorKind::ExprRes has been removed in rust-nom@7.0.0
++        Err(_)     => Err(Err::Error(error_position!($i, ErrorKind::TooLarge)))
++      }
++    }
++  )
++);
++
+ macro_rules! tag_parser {
+     ($sig:ident, $tag:expr, $ret:expr) => {
+-        named!(
+-            $sig<&str, AnsiSequence>,
+-            do_parse!(
+-                tag!($tag) >>
+-                ($ret)
+-            )
+-        );
+-    }
++        fn $sig(input: &str) -> IResult<&str, AnsiSequence> {
++            let (input, _) = tag($tag)(input)?;
++            Ok((input, $ret))
++        }
++    };
+ }
+ 
+-named!(
+-    parse_int<&str, u32>,
+-    map_res!(
+-        nom::digit,
+-        |s: &str| s.parse::<u32>()
+-    )
+-);
++fn parse_int(input: &str) -> IResult<&str, u32> {
++    combinator::map_res(digit1, |s: &str| s.parse::<u32>())(input)
++}
+ 
+ // TODO kind of ugly, would prefer to pass in the default so we could use it for
+ // all escapes with defaults (not just those that default to 1).
+-named!(
+-    parse_def_cursor_int<&str, u32>,
+-    map!(
+-        nom::digit0,
+-        |s: &str| s.parse::<u32>().unwrap_or(1)
+-    )
+-);
++fn parse_def_cursor_int(input: &str) -> IResult<&str, u32> {
++    combinator::map(digit0, |s: &str| s.parse::<u32>().unwrap_or(1))(input)
++}
+ 
+-named!(
+-    cursor_pos<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")               >>
+-        x: parse_def_cursor_int >>
+-        opt!(tag!(";"))         >>
+-        y: parse_def_cursor_int >>
+-        alt!(
+-            tag!("H") |
+-            tag!("f")
+-        )               >>
+-        (AnsiSequence::CursorPos(x, y))
+-    )
+-);
++fn cursor_pos(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, x) = parse_def_cursor_int(input)?;
++    let (input, _) = opt(tag(";"))(input)?;
++    let (input, y) = parse_def_cursor_int(input)?;
++    let (input, _) = alt((tag("H"), tag("f")))(input)?;
++    Ok((input, AnsiSequence::CursorPos(x, y)))
++}
+ 
+-named!(
+-    escape<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("\u{1b}") >>
+-        (AnsiSequence::Escape)
+-    )
+-);
++fn escape(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("\u{1b}")(input)?;
++    Ok((input, AnsiSequence::Escape))
++}
+ 
+-named!(
+-    cursor_up<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")                >>
+-        am: parse_def_cursor_int >>
+-        tag!("A")                >>
+-        (AnsiSequence::CursorUp(am))
+-    )
+-);
++fn cursor_up(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, am) = parse_def_cursor_int(input)?;
++    Ok((input, AnsiSequence::CursorUp(am)))
++}
+ 
+-named!(
+-    cursor_down<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")                >>
+-        am: parse_def_cursor_int >>
+-        tag!("B")                >>
+-        (AnsiSequence::CursorDown(am))
+-    )
+-);
++fn cursor_down(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, am) = parse_def_cursor_int(input)?;
++    let (input, _) = tag("B")(input)?;
++    Ok((input, AnsiSequence::CursorDown(am)))
++}
+ 
+-named!(
+-    cursor_forward<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")                >>
+-        am: parse_def_cursor_int >>
+-        tag!("C")                >>
+-        (AnsiSequence::CursorForward(am))
+-    )
+-);
++fn cursor_forward(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, am) = parse_def_cursor_int(input)?;
++    let (input, _) = tag("C")(input)?;
++    Ok((input, AnsiSequence::CursorForward(am)))
++}
+ 
+-named!(
+-    cursor_backward<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")                >>
+-        am: parse_def_cursor_int >>
+-        tag!("D")                >>
+-        (AnsiSequence::CursorBackward(am))
+-    )
+-);
++fn cursor_backward(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, am) = parse_def_cursor_int(input)?;
++    let (input, _) = tag("D")(input)?;
++    Ok((input, AnsiSequence::CursorBackward(am)))
++}
+ 
+-named!(
+-    graphics_mode1<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")       >>
+-        val: parse_int >>
+-        tag!("m")      >>
+-        val: expr_res!(val.try_into()) >>
+-        conv: expr_res!(Vec::from_slice(&[val])) >>
+-        (AnsiSequence::SetGraphicsMode(conv))
+-    )
+-);
++fn graphics_mode1(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, val) = parse_int(input)?;
++    let (input, _) = tag("m")(input)?;
++    let (input, val) = expr_res!(input, val.try_into())?;
++    let (input, conv) = expr_res!(input, Vec::from_slice(&[val]))?;
++    Ok((input, AnsiSequence::SetGraphicsMode(conv)))
++}
+ 
+-named!(
+-    graphics_mode2<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")       >>
+-        val1: parse_int >>
+-        tag!(";")       >>
+-        val2: parse_int >>
+-        tag!("m")       >>
+-        val1: expr_res!(val1.try_into()) >>
+-        val2: expr_res!(val2.try_into()) >>
+-        conv: expr_res!(Vec::from_slice(&[
+-            val1,
+-            val2,
+-        ])) >>
+-        (AnsiSequence::SetGraphicsMode(conv))
+-    )
+-);
++fn graphics_mode2(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, val1) = parse_int(input)?;
++    let (input, _) = tag(";")(input)?;
++    let (input, val2) = parse_int(input)?;
++    let (input, _) = tag("m")(input)?;
++    let (input, val1) = expr_res!(input, val1.try_into())?;
++    let (input, val2) = expr_res!(input, val2.try_into())?;
++    let (input, conv) = expr_res!(input, Vec::from_slice(&[val1, val2,]))?;
++    Ok((input, AnsiSequence::SetGraphicsMode(conv)))
++}
+ 
+-named!(
+-    graphics_mode3<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")       >>
+-        val1: parse_int >>
+-        tag!(";")       >>
+-        val2: parse_int >>
+-        tag!(";")       >>
+-        val3: parse_int >>
+-        tag!("m")       >>
+-        val1: expr_res!(val1.try_into()) >>
+-        val2: expr_res!(val2.try_into()) >>
+-        val3: expr_res!(val3.try_into()) >>
+-        conv: expr_res!(Vec::from_slice(&[
+-            val1,
+-            val2,
+-            val3,
+-        ])) >>
+-        (AnsiSequence::SetGraphicsMode(conv))
+-    )
+-);
++fn graphics_mode3(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, val1) = parse_int(input)?;
++    let (input, _) = tag(";")(input)?;
++    let (input, val2) = parse_int(input)?;
++    let (input, _) = tag(";")(input)?;
++    let (input, val3) = parse_int(input)?;
++    let (input, _) = tag("m")(input)?;
++    let (input, val1) = expr_res!(input, val1.try_into())?;
++    let (input, val2) = expr_res!(input, val2.try_into())?;
++    let (input, val3) = expr_res!(input, val3.try_into())?;
++    let (input, conv) = expr_res!(input, Vec::from_slice(&[val1, val2, val3,]))?;
++    Ok((input, AnsiSequence::SetGraphicsMode(conv)))
++}
+ 
+-named!(
+-    graphics_mode4<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[m") >>
+-        (AnsiSequence::SetGraphicsMode(Vec::new()))
+-    )
+-);
++fn graphics_mode4(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[m")(input)?;
++    Ok((input, AnsiSequence::SetGraphicsMode(Vec::new())))
++}
+ 
+-named!(
+-    graphics_mode5<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")       >>
+-        val1: parse_int >>
+-        tag!(";")       >>
+-        val2: parse_int >>
+-        tag!(";")       >>
+-        val3: parse_int >>
+-        tag!(";")       >>
+-        val4: parse_int >>
+-        tag!(";")       >>
+-        val5: parse_int >>
+-        tag!("m")       >>
+-        val1: expr_res!(val1.try_into()) >>
+-        val2: expr_res!(val2.try_into()) >>
+-        val3: expr_res!(val3.try_into()) >>
+-        val4: expr_res!(val4.try_into()) >>
+-        val5: expr_res!(val5.try_into()) >>
+-        conv: expr_res!(Vec::from_slice(&[
+-            val1,
+-            val2,
+-            val3,
+-            val4,
+-            val5,
+-        ])) >>
+-        (AnsiSequence::SetGraphicsMode(conv))
+-    )
+-);
++fn graphics_mode5(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, val1) = map_res(parse_int, |s| s.try_into())(input)?;
++    let (input, _) = tag(";")(input)?;
++    let (input, val2) = map_res(parse_int, |s| s.try_into())(input)?;
++    let (input, _) = tag(";")(input)?;
++    let (input, val3) = map_res(parse_int, |s| s.try_into())(input)?;
++    let (input, _) = tag(";")(input)?;
++    let (input, val4) = map_res(parse_int, |s| s.try_into())(input)?;
++    let (input, _) = tag(";")(input)?;
++    let (input, val5) = map_res(parse_int, |s| s.try_into())(input)?;
++    let (input, _) = tag("m")(input)?;
++    let (input, conv) = expr_res!(input, Vec::from_slice(&[val1, val2, val3, val4, val5,]))?;
++    Ok((input, AnsiSequence::SetGraphicsMode(conv)))
++}
+ 
+-named!(
+-    graphics_mode<&str, AnsiSequence>,
+-    alt!(
+-          graphics_mode1
+-        | graphics_mode2
+-        | graphics_mode3
+-        | graphics_mode4
+-        | graphics_mode5
+-    )
+-);
++fn graphics_mode(input: &str) -> IResult<&str, AnsiSequence> {
++    alt((
++        graphics_mode1,
++        graphics_mode2,
++        graphics_mode3,
++        graphics_mode4,
++        graphics_mode5,
++    ))(input)
++}
+ 
+-named!(
+-    set_mode<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[=")                       >>
+-        mode: parse_int                  >>
+-        conv: expr_res!(mode.try_into()) >>
+-        tag!("h")                        >>
+-        (AnsiSequence::SetMode(conv))
+-    )
+-);
++fn set_mode(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[=")(input)?;
++    let (input, conv) = map_res(parse_int, |s| s.try_into())(input)?;
++    let (input, _) = tag("h")(input)?;
++    Ok((input, AnsiSequence::SetMode(conv)))
++}
+ 
+-named!(
+-    reset_mode<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[=")                       >>
+-        mode: parse_int                  >>
+-        conv: expr_res!(mode.try_into()) >>
+-        tag!("l")                        >>
+-        (AnsiSequence::ResetMode(conv))
+-    )
+-);
++fn reset_mode(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[=")(input)?;
++    let (input, conv) = map_res(parse_int, |s| s.try_into())(input)?;
++    let (input, _) = tag("l")(input)?;
++    Ok((input, AnsiSequence::ResetMode(conv)))
++}
+ 
+-named!(
+-    set_top_and_bottom<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("[")    >>
+-        x: parse_int >>
+-        tag!(";")    >>
+-        y: parse_int >>
+-        tag!("r")    >>
+-        (AnsiSequence::SetTopAndBottom(x, y))
+-    )
+-);
++fn set_top_and_bottom(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("[")(input)?;
++    let (input, x) = parse_int(input)?;
++    let (input, _) = tag(";")(input)?;
++    let (input, y) = parse_int(input)?;
++    let (input, _) = tag("r")(input)?;
++    Ok((input, AnsiSequence::SetTopAndBottom(x, y)))
++}
+ 
+ tag_parser!(cursor_save, "[s", AnsiSequence::CursorSave);
+ tag_parser!(cursor_restore, "[u", AnsiSequence::CursorRestore);
+@@ -276,66 +218,69 @@ tag_parser!(set_g1_graph, ")2", AnsiSequence::SetG1AltAndSpecialGraph);
+ tag_parser!(set_single_shift2, "N", AnsiSequence::SetSingleShift2);
+ tag_parser!(set_single_shift3, "O", AnsiSequence::SetSingleShift3);
+ 
+-named!(
+-    combined<&str, AnsiSequence>,
+-    alt!(
+-          escape
+-        | cursor_pos
+-        | cursor_up
+-        | cursor_down
+-        | cursor_forward
+-        | cursor_backward
+-        | cursor_save
+-        | cursor_restore
+-        | erase_display
+-        | erase_line
+-        | graphics_mode
+-        | set_mode
+-        | reset_mode
+-        | hide_cursor
+-        | show_cursor
+-        | cursor_to_app
+-        | set_new_line_mode
+-        | set_col_132
+-        | set_smooth_scroll
+-        | set_reverse_video
+-        | set_origin_rel
+-        | set_auto_wrap
+-        | set_auto_repeat
+-        | set_interlacing
+-        | set_linefeed
+-        | set_cursorkey
+-        | set_vt52
+-        | set_col80
+-        | set_jump_scroll
+-        | set_normal_video
+-        | set_origin_abs
+-        | reset_auto_wrap
+-        | reset_auto_repeat
+-        | reset_interlacing
+-        | set_top_and_bottom
+-        | set_alternate_keypad
+-        | set_numeric_keypad
+-        | set_uk_g0
+-        | set_uk_g1
+-        | set_us_g0
+-        | set_us_g1
+-        | set_g0_special
+-        | set_g1_special
+-        | set_g0_alternate
+-        | set_g1_alternate
+-        | set_g0_graph
+-        | set_g1_graph
+-        | set_single_shift2
+-        | set_single_shift3
+-    )
+-);
++fn combined(input: &str) -> IResult<&str, AnsiSequence> {
++    // alt supports only 21 cases, so avoid the limit by nesting them
++    alt((
++        alt((
++            escape,
++            cursor_pos,
++            cursor_up,
++            cursor_down,
++            cursor_forward,
++            cursor_backward,
++            cursor_save,
++            cursor_restore,
++            erase_display,
++            erase_line,
++            graphics_mode,
++            set_mode,
++            reset_mode,
++            hide_cursor,
++            show_cursor,
++            cursor_to_app,
++        )),
++        alt((
++            set_new_line_mode,
++            set_col_132,
++            set_smooth_scroll,
++            set_reverse_video,
++            set_origin_rel,
++            set_auto_wrap,
++            set_auto_repeat,
++            set_interlacing,
++            set_linefeed,
++            set_cursorkey,
++            set_vt52,
++            set_col80,
++            set_jump_scroll,
++            set_normal_video,
++            set_origin_abs,
++        )),
++        alt((
++            reset_auto_wrap,
++            reset_auto_repeat,
++            reset_interlacing,
++            set_top_and_bottom,
++            set_alternate_keypad,
++            set_numeric_keypad,
++            set_uk_g0,
++            set_uk_g1,
++            set_us_g0,
++            set_us_g1,
++            set_g0_special,
++            set_g1_special,
++            set_g0_alternate,
++            set_g1_alternate,
++            set_g0_graph,
++            set_g1_graph,
++            set_single_shift2,
++            set_single_shift3,
++        )),
++    ))(input)
++}
+ 
+-named!(
+-    pub parse_escape<&str, AnsiSequence>,
+-    do_parse!(
+-        tag!("\u{1b}")    >>
+-        seq: combined     >>
+-        (seq)
+-    )
+-);
++pub fn parse_escape(input: &str) -> IResult<&str, AnsiSequence> {
++    let (input, _) = tag("\u{1b}")(input)?;
++    let (input, seq) = combined(input)?;
++    Ok((input, seq))
++}
+
+base-commit: 6ed05bfb18ce3c5382393388c259e9c0e95d4a9d
+-- 
+2.30.2
+

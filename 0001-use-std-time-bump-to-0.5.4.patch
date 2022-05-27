@@ -1,0 +1,82 @@
+From 6aa867bc4e6df72fbab4f6968b7ffa7d3b6e11f6 Mon Sep 17 00:00:00 2001
+From: Oussama <md.oussama@gmail.com>
+Date: Thu, 4 Jan 2018 14:53:22 +0100
+Subject: [PATCH] use std::time & bump to 0.5.4
+
+Submitted upstream at <https://github.com/csherratt/pulse/pull/1>
+
+---
+ Cargo.toml |  3 +--
+ src/lib.rs | 14 +++++++-------
+ 2 files changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 70b1e92..816f4c9 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -1,6 +1,6 @@
+ [package]
+ name = "pulse"
+-version = "0.5.3"
++version = "0.5.4"
+ authors = ["Colin Sherratt <colin.sherratt@gmail.com>"]
+ license = "Apache-2.0"
+ description = "A library for async wake signals"
+@@ -8,7 +8,6 @@ homepage = "https://github.com/csherratt/pulse"
+ 
+ [dependencies]
+ atom = "0.3"
+-time = "0.1"
+ 
+ [features]
+ default = []
+diff --git a/src/lib.rs b/src/lib.rs
+index f874e76..b5a72d5 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -13,7 +13,6 @@
+ //   limitations under the License.
+ 
+ extern crate atom;
+-extern crate time;
+ 
+ use std::sync::atomic::AtomicUsize;
+ use std::thread;
+@@ -24,9 +23,10 @@ use std::sync::atomic::Ordering;
+ use std::cell::RefCell;
+ 
+ use atom::*;
+-use time::precise_time_s;
+ use fnbox::FnBox;
+ 
++use std::time::{Duration,Instant};
++
+ pub use select::{Select, SelectMap};
+ pub use barrier::Barrier;
+ mod select;
+@@ -517,17 +517,17 @@ impl Scheduler for ThreadScheduler {
+     }
+ 
+     fn wait_timeout_ms(&self, signal: Signal, ms: u32) -> Result<(), TimeoutError> {
+-        let mut now = (precise_time_s() * 1000.) as u64;
+-        let end = now + ms as u64;
++        let now = Instant::now();
++        let total = Duration::from_millis(ms as _);
+ 
+         loop {
+             let id = signal.add_to_waitlist(Waiting::thread());
+             if signal.is_pending() {
+-                now = (precise_time_s() * 1000.) as u64;
+-                if now > end {
++                let elapsed = now.elapsed();
++                if elapsed > total {
+                     return Err(TimeoutError::Timeout);
+                 }
+-                thread::park_timeout_ms((end - now) as u32);
++                thread::park_timeout(total - elapsed);
+             }
+             signal.remove_from_waitlist(id);
+ 
+-- 
+2.36.0
+
