@@ -103,6 +103,12 @@
 					         (delete-file "build.rs")
 					         (substitute* "Cargo.toml"
 							      (("^build =(.*)$") ""))))))
+					 ((string-prefix? "rust-libssh2-sys" name)
+					  ;; Otherwise, build.rs fails to find libssh2, causing
+					  ;; a build failure.
+					  #~((add-after 'unpack 'find-ssh2
+					       (lambda _
+						 (setenv "LIBSSH2_SYS_USE_PKG_CONFIG" "don't use the bundled copy in the git submodule")))))
 					 ((string-prefix? "rust-freetype-sys-" name)
 					  #~((add-after 'unpack 'unbundle
 					       (lambda _ ; TODO: move to origin snippet (& upstream Guix?)
