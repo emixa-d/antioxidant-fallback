@@ -1663,6 +1663,19 @@ of operation.")
         (sha256
           (base32 "0002375rn8hlakrvi0r0d7xm4kvcykxi93hrn2hz3hlx69gq814b"))))))
 
+(define-public rust-trust-dns-resolver ; likewise
+  (package
+    (inherit (p rust-trust-dns-resolver-0.20))
+    (name "rust-trust-dns-resolver")
+    (version "0.21.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "trust-dns-resolver" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0n6m9yvhaip8dml5247d6qqdzf8bcrn4rvzwr685clc4xb175fp4"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -1959,6 +1972,7 @@ of operation.")
     ("rust-trust-dns-native-tls" ,rust-trust-dns-native-tls)
     ("rust-trust-dns-rustls" ,rust-trust-dns-rustls)
     ("rust-trust-dns-https" ,rust-trust-dns-https)
+    ("rust-trust-dns-resolver" ,rust-trust-dns-resolver)
     ("rust-pulse" ,(package-with-extra-patches
 		    (p rust-pulse-0.5)
 		    ;; For compatibility with new rust-time
