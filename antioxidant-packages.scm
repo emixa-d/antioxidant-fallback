@@ -2591,6 +2591,8 @@ of operation.")
   (public-test-package (vitaminate/auto (@ (gnu packages rust-apps) diffr))))
 (define-public antioxidated-dutree
   (public-test-package (vitaminate/auto dutree)))
+(define-public antioxidated-git-absorb
+  (public-test-package (vitaminate/auto git-absorb)))
 (define-public antioxidated-hex
   (public-test-package (vitaminate/auto hex)))
 (define-public antioxidated-hexyl
@@ -2612,6 +2614,7 @@ of operation.")
       antioxidated-castor
       antioxidated-dutree
       antioxidated-diffr
+      antioxidated-git-absorb
       antioxidated-hex
       antioxidated-hexyl
       antioxidated-ripgrep
