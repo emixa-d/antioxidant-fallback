@@ -720,10 +720,22 @@ chosen, enabling all features like Cargo does (except nightly).~%")
        o))
     #:encoding "UTF-8"))
 
+;; To avoid cluttering the .crate-info and to reduce the number of environment
+;; variables set, exclude these variables which aren't used by dependents.
+;; Not exhaustive.
+(define %excluded-keys
+  '("rerun-if-env-changed" "rerun-if-changed" "rustc-link-search" "rustc-link-lib"
+    "rustc-cfg" "include" "warning"))
+
 (define *save* #false) ;; TODO: less impure
 (define* (configure #:key inputs native-inputs target build optimisation-level
 		    #:allow-other-keys #:rest arguments)
   (define saved-settings '())
+  (define (save! key value)
+    "Add a KEY=VALUE mapping to the saved settings, unless it is excluded
+by %excluded-keys."
+    (unless (member key %excluded-keys)
+      (set! saved-settings (cons (cons key value) saved-settings))))
   (define extra-configuration '()) ; --cfg options, computed by build.rs
   (define (handle-line line)
     (when (string-prefix? "cargo:" line)
@@ -732,7 +744,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	(if =-index
 	    (let ((this (substring rest 0 =-index))
 		  (that (substring rest (+ 1 =-index))))
-	      (set! saved-settings (cons (cons this that) saved-settings)))
+	      (save! this that))
 	    (begin
 	      (pk 'l rest)
 	      (error "cargo: line doesn't look right, = missing?")))))
