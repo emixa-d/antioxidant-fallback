@@ -573,7 +573,9 @@ an unique string, which can be useful for resolving symbol conflicts."
      (uri (crate-uri "hyper-rustls" version))
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
-      (base32 "1b2wi75qrmwfpw3pqwcg1xjndl4z0aris15296wf7i8d5v04hz6q"))))))
+      (base32 "1b2wi75qrmwfpw3pqwcg1xjndl4z0aris15296wf7i8d5v04hz6q"))))
+   (inputs (modify-inputs (package-inputs (p rust-hyper-rustls-0.22))
+	     (prepend (p rust-http-0.2))))))
 
 ;; Old versions don't support the new rustls
 (define rust-boxxy
@@ -1714,6 +1716,8 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; early-data is required by rust-trust-dns-proto
+    ("rust-tokio-rustls" ,#~'("default" "early-data"))
     ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
     ("rust-xz2" ,#~'("futures")) ; likewise
     ;; "quickcheck" features requires removed crate "quickcheck"
