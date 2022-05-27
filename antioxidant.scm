@@ -471,6 +471,7 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs outputs
+		       target
 		       (rust-metadata "")
 		       (configuration '())
 		       (available-crates '())
@@ -481,6 +482,7 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
   (mkdir-p (dirname destination))
   (apply invoke
 	 "rustc" "--verbose"
+	 (string-append "--target=" target)
 	 ;; Cargo adds '--extern=proc_macro' by default,
 	 ;; see <https://github.com/rust-lang/cargo/pull/7700>.
 	 ;; Make sure that it will be used.
@@ -810,6 +812,9 @@ by %excluded-keys."
 	     ;; <https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html>.
 	     (list #:crate-mappings (manifest-all-dependencies *manifest* '(build))
 		   #:available-crates (find-directly-available-crates native-inputs)
+		   ;; Build for the machine the configuration script will be run
+		   ;; on.
+		   #:target build ; todo: correct terminology?
 		   #:configuration (map feature->config *features*))))
     ;; Expected by rust-const-fn's build.rs
     (setenv "OUT_DIR" (getcwd))
