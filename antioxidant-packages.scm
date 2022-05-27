@@ -1753,6 +1753,7 @@ of operation.")
     ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
     ("rust-xz2" ,#~'("futures")) ; likewise
     ("rust-zstd-safe" ,#~'("default" "std")) ; std is reaquired by rust-zstd@0.9.0
+    ("rust-reqwest" ,#~'("default" "blocking")) ; tealdeer@1.4.1 requires "blocking" to build
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ;; dns-over-openssl is required by rust-trust-dns-openssl.
