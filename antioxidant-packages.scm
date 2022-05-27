@@ -1752,6 +1752,7 @@ of operation.")
     ("rust-tokio-rustls" ,#~'("default" "early-data"))
     ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
     ("rust-xz2" ,#~'("futures")) ; likewise
+    ("rust-zstd-safe" ,#~'("default" "std")) ; std is reaquired by rust-zstd@0.9.0
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ;; dns-over-openssl is required by rust-trust-dns-openssl.
