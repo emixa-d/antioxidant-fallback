@@ -2496,7 +2496,6 @@ of operation.")
 				      '->
 				      (package-name dependency))
 				%removed-dependencies->))
-		   (not (string=? (package-name dependency) "rust-futures-cpupool"))
 		   ;; The Redox operating system is not supported by Guix.
 		   (not (string-prefix? "rust-redox" (package-name dependency)))
 		   (not (and (member (package-name pack)
