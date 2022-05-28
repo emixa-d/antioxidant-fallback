@@ -1833,6 +1833,100 @@ of operation.")
     "rust-wasm-bindgen-futures" ; ECMAScript-only and doesn't build
     "rust-wasm-bindgen-test"))
 
+;; Like %removed-dependencies, but only remove the dependency right of the '->'
+;; when used by the dependent left of the '<-'.
+(define %removed-dependencies->
+  ;; Maybe a test or example cycle?
+  '(("rust-bytemuck-derive" -> "rust-bytemuck")
+    ("rust-diesel-derives" -> "rust-diesel")
+    ("rust-colored" -> "rust-rspec")
+    ;; Not a dependency anymore, resolve cycle.
+    ("rust-pkcs8" -> "rust-pkcs1")
+    ;; Break cycle (test or something like that?)
+    ("rust-quote" -> "rust-rustversion")
+    ;; Break cycle.
+    ("rust-async-attributes" -> "rust-async-std")
+    ("rust-async-channel" -> "rust-blocking")
+    ("rust-async-io" -> "rust-async-net")
+    ;; Optional dependency cycle
+    ("rust-async-std" -> "rust-surf")
+    ;; Optional dependency cycle
+    ("rust-ravif" -> "rust-image")
+    ("rav1e" -> "rust-image")
+    ;; TODO: rust-rav1e and rav1e
+    ;; rust-futures-cpupool isn't updated anymore and doesn't
+    ;; build anymore?
+    ("rust-serde-derive" -> "rust-serde")
+    ;; (Test?) cycle
+    ("rust-actix-web" -> "rust-actix-web-codegen")
+    ("rust-actix-macros" -> "rust-actix-rt")
+    ;; Test cycle (rust-paw <-> rust-paw-structopt).
+    ("rust-paw" -> "rust-paw-structopt")
+    ("rust-paw" -> "rust-structopt")
+    ("rust-anyhow" -> "rust-thiserror")
+    ("rust-proc-macro-hack" -> "rust-demo-hack")
+    ("rust-proc-macro-hack" -> "rust-demo-hack-impl")
+    ("rust-nom" -> "rust-jemallocator")
+    ("rust-serde-bytes" -> "rust-bincode")
+    ("rust-failure-derive" -> "rust-failure")
+    ("rust-serde-bytes" -> "rust-bincode")
+    ("rust-serde-json" -> "rust-serde-stacker")
+    ("rust-erased-serde" -> "rust-serde-json")
+    ("rust-proc-macro2" -> "rust-quote")
+    ("rust-indexmap" -> "rust-itertools")
+    ("rust-tracing-attributes" -> "rust-tracing")
+    ("rust-tracing-attributes" -> "rust-async-trait")
+    ("rust-tracing-attributes" -> "rust-tracing-futures")
+    ("rust-tracing" -> "rust-tokio")
+    ("rust-hashbrown" -> "rust-bumpalo") ; todo: remove from #:cargo-inputs?, unused?
+    ("rust-fastrand" -> "rust-getrandom")
+    ("rust-fastrand" -> "rust-instant")
+    ("rust-fastrand" -> "rust-wyhash")
+    ("rust-tokio-io" -> "rust-tokio-current-thread")
+    ("rust-tokio-core" -> "rust-flate2")
+    ;; Remove unused dependencies
+    ("rust-flate2" -> "rust-cloudflare-zlib-sys")
+    ("rust-flate2" -> "rust-miniz-sys")
+    ("rust-flate2" -> "rust-miniz-oxide")
+    ("rust-tokio-core" -> "rust-httparse")
+    ("rust-tokio" -> "rust-httparse")
+    ("rust-tokio" -> "rust-async-stream") ;; test
+    ("rust-tokio" -> "rust-nix") ;; test
+    ("rust-tokio-process" -> "rust-failure") ;; otherwise cc needs to be removed from rust-cloudflare-zlib-sys
+    ("rust-tokio" -> "rust-tokio-executor")
+    ("rust-tokio" -> "rust-tokio-current-thread")
+    ("rust-tokio" -> "rust-tokio-fs")
+    ("rust-tokio" -> "rust-tokio-reactor")
+    ("rust-tokio" -> "rust-tokio-sync")
+    ("rust-tokio" -> "rust-tokio-stream")
+    ("rust-tokio-sync" -> "rust-loom")
+    ("rust-tokio" -> "rust-tokio-tcp")
+    ("rust-tokio" -> "rust-tokio-timer")
+    ("rust-tokio" -> "rust-tokio-threadpool")
+    ("rust-tokio" -> "rust-tokio-udp")
+    ("rust-tokio" -> "rust-tokio-uds")
+    ("rust-tokio-macros" -> "rust-tokio")
+    ("rust-parking-lot-core" -> "rust-backtrace")
+    ;; See %features
+    ("rust-parking-lot-core" -> "rust-petgraph")
+    ;; TODO: can be removed by relaxing versions in rust-signal-hook@0.1
+    ("rust-signal-hook-registry" -> "rust-signal-hook")
+    ;; TODO why benchmark?
+    ("rust-unicode-bidi" -> "rust-flame")
+    ("rust-unicode-bidi" -> "rust-flamer")
+    ("rust-odds" -> "rust-lazy-static")
+    ;; TODO
+    ("rust-boxxy" -> "rust-ctrlc")
+    ("rust-flate2" -> "rust-tokio-tcp")
+    ("rust-flate2" -> "rust-tokio-threadpool")
+    ("rust-tokio" -> "rust-flate2") ;; TODO remove old tokios
+    ("rust-semver" -> "rust-crates-index") ;; TODO why????
+    ("rust-semver-parser" -> "rust-pest-generator")
+    ("rust-spmc" -> "rust-loom")
+    ("rust-tokio-test" -> "rust-tokio") ; TODO
+    ;; Break dev-dependencies cycle
+    ("rust-regex-automata" -> "rust-bstr")))
+
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
@@ -2398,175 +2492,16 @@ of operation.")
 	   (match-lambda
 	     ((label dependency . maybe-output)
 	      (and (not (member (package-name dependency) %removed-dependencies))
-		   ;; Maybe a test or example cycle?
-		   (not (and (string=? (package-name dependency) "rust-bytemuck")
-			     (string=? (package-name pack) "rust-bytemuck-derive")))
-		   (not (and (string=? (package-name dependency) "rust-diesel")
-			     (string=? (package-name pack) "rust-diesel-derives")))
-		   (not (and (string=? (package-name dependency) "rust-rspec")
-			     (string=? (package-name pack) "rust-colored")))
-		   ;; Not a dependency anymore, resolve cycle.
-		   (not (and (string=? (package-name dependency) "rust-pkcs1")
-			     (string=? (package-name pack) "rust-pkcs8")))
-		   ;; Break cycle (test or something like that?)
-		   (not (and (string=? (package-name dependency) "rust-rustversion")
-			     (string=? (package-name pack) "rust-quote")))
-		   ;; Break cycle.
-		   (not (and (string=? (package-name dependency) "rust-async-std")
-			     (string=? (package-name pack) "rust-async-attributes")))
-		   (not (and (string=? (package-name dependency) "rust-blocking")
-			     (string=? (package-name pack) "rust-async-channel")))
-		   (not (and (string=? (package-name dependency) "rust-async-net")
-			     (string=? (package-name pack) "rust-async-io")))
-		   ;; Optional dependency cycle
-		   (not (and (string=? (package-name dependency) "rust-surf")
-			     (string=? (package-name pack) "rust-async-std")))
-		   ;; Optional dependency cycle
-		   (not (and (string=? (package-name dependency) "rust-image")
-			     (string=? (package-name pack) "rust-ravif")))
-		   (not (and (string=? (package-name dependency) "rust-image")
-			     (string=? (package-name pack) "rav1e")))
-		   ;; TODO: rust-rav1e and rav1e
-		   ;; rust-futures-cpupool isn't updated anymore and doesn't
-		   ;; build anymore?
+		   (not (member (list (package-name pack)
+				      '->
+				      (package-name dependency))
+				%removed-dependencies->))
 		   (not (string=? (package-name dependency) "rust-futures-cpupool"))
 		   ;; The Redox operating system is not supported by Guix.
 		   (not (string-prefix? "rust-redox" (package-name dependency)))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-serde-derive" "rust-serde")))
-		   ;; (Test?) cycle
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-actix-web" "rust-actix-web-codegen")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-actix-macros" "rust-actix-rt")))
-		   ;; Test cycle (rust-paw <-> rust-paw-structopt).
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-paw" "rust-paw-structopt")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-paw" "rust-structopt")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-anyhow" "rust-thiserror")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-proc-macro-hack" "rust-demo-hack")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-proc-macro-hack" "rust-demo-hack-impl")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-nom" "rust-jemallocator")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-serde-bytes" "rust-bincode")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-failure-derive" "rust-failure")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-serde-bytes" "rust-bincode")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-serde-json" "rust-serde-stacker")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-erased-serde" "rust-serde-json")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-proc-macro2" "rust-quote")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-indexmap" "rust-itertools")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tracing-attributes" "rust-tracing")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tracing-attributes" "rust-async-trait")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tracing-attributes" "rust-tracing-futures")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tracing" "rust-tokio")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-hashbrown" "rust-bumpalo"))) ; todo: remove from #:cargo-inputs?, unused?
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-fastrand" "rust-getrandom")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-fastrand" "rust-instant")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-fastrand" "rust-wyhash")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio-io" "rust-tokio-current-thread")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio-core" "rust-flate2")))
-		   ;; Remove unused dependencies
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-flate2" "rust-cloudflare-zlib-sys")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-flate2" "rust-miniz-sys")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-flate2" "rust-miniz-oxide")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio-core" "rust-httparse")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-httparse")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-async-stream"))) ;; test
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-nix"))) ;; test
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio-process" "rust-failure"))) ;; otherwise cc needs to be removed from rust-cloudflare-zlib-sys
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-executor")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-current-thread")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-fs")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-reactor")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-sync")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-stream")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio-sync" "rust-loom")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-tcp")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-timer")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-threadpool")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-udp")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-tokio-uds")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio-macros" "rust-tokio")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-parking-lot-core" "rust-backtrace")))
-		   ;; See %features
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-parking-lot-core" "rust-petgraph")))
-		   ;; TODO: can be removed by relaxing versions in rust-signal-hook@0.1
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-signal-hook-registry" "rust-signal-hook")))
-		   ;; TODO why benchmark?
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-unicode-bidi" "rust-flame")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-unicode-bidi" "rust-flamer")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-odds" "rust-lazy-static")))
-		   ;; TODO
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-boxxy" "rust-ctrlc")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-flate2" "rust-tokio-tcp")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-flate2" "rust-tokio-threadpool")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio" "rust-flate2"))) ;; TODO remove old tokios
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-semver" "rust-crates-index"))) ;; TODO why????
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-semver-parser" "rust-pest-generator")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-spmc" "rust-loom")))
 		   (not (and (member (package-name pack)
 				     (list "rust-futures-util"))
 			     (string=? (package-name dependency) "rust-proc-macro-hack")))
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-tokio-test" "rust-tokio"))) ; TODO
-		   ;; Break dev-dependencies cycle
-		   (not (equal? (list (package-name pack) (package-name dependency))
-				(list "rust-regex-automata" "rust-bstr")))
 		   ;; These are actually test inputs! (TODO guix)
 		   ;; (TODO: this isn't build from source)
 		   ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
