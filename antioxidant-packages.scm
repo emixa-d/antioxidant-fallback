@@ -1788,6 +1788,19 @@ of operation.")
        (modules '((guix build utils)))
        (patches (list (local-file "rust-proptest-derive-upgrade-to-stable-proc-macro-ecosyst.patch")))))))
 
+(define-public rust-syslog ; @0.4 doesn't build against new rust-time
+  (package
+    (inherit (p rust-syslog-4))
+    (name "rust-syslog")
+    (version "6.0.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "syslog" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1k0snk06c3gzq8g6kkqvpbbh5zg64nkzdjc303jda2hmd364904p"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2177,6 +2190,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-syslog" ,rust-syslog)
     ("rust-clap-derive" ,rust-clap-derive)
     ("rust-askama-shared" ,rust-askama-shared)
     ("rust-askama-derive" ,rust-askama-derive)
@@ -2431,6 +2445,8 @@ of operation.")
     ("rust-swayipc"
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-failure" ,(p rust-failure-0.1))))
+    ("rust-syslog"
+     (("rust-hostname" ,(p rust-hostname-0.3)))) ; new dependency of new version of rust-syslog
     ("rust-swayipc+sync"
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-failure" ,(p rust-failure-0.1))))
