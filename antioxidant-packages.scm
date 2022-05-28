@@ -2012,7 +2012,7 @@ of operation.")
     ("rust-jetscii" ,#~'())
     ;; rust-cookie requires the non-default "parsing" and "macros" feature. Might as well enable
     ;; "formatting" as well.
-    ("rust-time" ,#~'("default" "macros" "formatting" "parsing"))
+    ("rust-time" ,#~'("default" "macros" "formatting" "parsing" "local-offset"))
     ;; Avoid "use-intrisics", which requires unstable.
     ("rust-half" ,#~'("alloc" "serialize" "std"))
     ;; Avoid removed feature(custom_derive)
