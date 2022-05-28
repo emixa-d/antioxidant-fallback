@@ -1810,6 +1810,19 @@ of operation.")
         (sha256
           (base32 "1k0snk06c3gzq8g6kkqvpbbh5zg64nkzdjc303jda2hmd364904p"))))))
 
+(define rust-ivf ; @0.1.0 doesn't build against new rust-bitstream-io@1
+  (package
+    (inherit (p rust-ivf-0.1))
+    (name "rust-ivf")
+    (version "0.1.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "ivf" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1qmpqnwlcvp7xpi1f6l63icaafpsak6hv7s326snffhs6rj1rc0g"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2207,6 +2220,8 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
+    ("rust-ivf" ,rust-ivf)
     ("rust-syslog" ,rust-syslog)
     ("rust-clap-derive" ,rust-clap-derive)
     ("rust-askama-shared" ,rust-askama-shared)
