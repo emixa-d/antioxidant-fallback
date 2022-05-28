@@ -72,6 +72,7 @@
 			 "README" "NEWS" "INSTALL" "ChangeLog" "AUTHORS" ; these are for freetype, not rust-servo-freetype-sys
 			 "COPYING" ; this is for freetype, not rust-servo-freetype-sys which is MPL
 			 ))))))
+    ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
     ("rust-backtrace-sys"
      ,#~((add-after 'unpack 'break-cycle
 	   (lambda _
@@ -279,6 +280,9 @@
 	   ;; name+version is confused by the -alpha suffix
 	   ((? (cut string-prefix? "rust-tokio-sync-0.2.0-alpha" <>) name)
 	    "rust-tokio-sync")
+	   ;; likewise
+	   ((? (cut string-prefix? "rust-mesalink-1.1.0-cratesio" <>) name)
+	    "rust-mesalink")
 	   (_ (drop-version name)))))
     (match (assoc name %custom-phases)
       ((_ phases) phases)
