@@ -1999,6 +1999,7 @@ of operation.")
     ;; TODO: investigate build_dictionaries, and maybe not embedding libraries.
     ;; TODO: cannot choose multiple normalization forms, is this important?
     ("rust-hyphenation" ,#~'("embed_all"))
+    ("rust-fern" ,#~'("syslog-6")) ; avoid having to include multiple versions of syslog
     ("rust-servo-fontconfig-sys" ,#~'("force_system_lib")) ; be extra sure the bundled copy isn't used
     ;; The "dox" feature requires non-stable.
     ("rust-glib-sys" ,#~'("v2_68"))
