@@ -1874,6 +1874,7 @@ of operation.")
     "rust-version-sync"
     "rust-trybuild"
     "rust-clippy"
+    "rust-cargo" "rust-cargo-c" ; rust-cargo doesn't build even when updated to @0.62
     "rust-tokio-mock-task" ; doesn't build
     "rust-tokio-test"
     "rust-rand-xorshift"
