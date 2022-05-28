@@ -1979,6 +1979,7 @@ of operation.")
     ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
+    ("rust-im-rc" ,#~'()) ; "pool" feature doesn't build and "debug" probably makess things less efficient
     ;; early-data is required by rust-trust-dns-proto
     ("rust-tokio-rustls" ,#~'("default" "early-data"))
     ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
