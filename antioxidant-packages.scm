@@ -130,6 +130,13 @@
 		"ToUpperCamelCase, ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase")
 	       (("to_camel_case") "to_upper_camel_case")
 	       (("to_mixed_case") "to_lower_camel_case"))))))
+    ;; TODO: Upstream/update
+    ("rust-cbindgen"
+     ,#~((add-after 'unpack 'use-existing
+	   (lambda _
+	     (substitute* "src/bindgen/rename.rs"
+	       (("to_camel_case") "to_upper_camel_case")
+	       (("to_mixed_case") "to_lower_camel_case"))))))
     ;; TODO: update
     ("rust-glib-macros"
      ,#~((add-after 'unpack 'use-existing
