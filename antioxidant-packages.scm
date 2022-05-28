@@ -2417,6 +2417,8 @@ of operation.")
 (define %extra-inputs
   `(("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
+    ("rust-aom-sys"
+     (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
     ("rust-servo-fontconfig-sys"
      (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))))
     ("rust-swayipc"
