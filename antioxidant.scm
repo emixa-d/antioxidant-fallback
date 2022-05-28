@@ -590,9 +590,9 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 ;; Fake cargo crates that antioxidant doesn't need
 (define %rustc-std-workspace-crates
   (map normalise-crate-name
-       '("rust-rustc-std-workspace-std"
-	 "rust-rustc-std-workspace-core"
-	 "rust-rustc-std-workspace-alloc")))
+       '("rustc-std-workspace-std"
+	 "rustc-std-workspace-core"
+	 "rustc-std-workspace-alloc")))
 
 ;; If too many crates are included in --extern, errors like
 ;; error[E0659]: `time` is ambiguous (name vs any other name during import resolution)
