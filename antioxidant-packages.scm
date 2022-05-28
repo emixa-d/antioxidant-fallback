@@ -1809,6 +1809,7 @@ of operation.")
     "rust-packed-simd" "rust-packed-simd-2" ; requires unstable (TODO: rust-packed-simd-2?)
     "rust-security-framework" "rust-cocoa" "rust-cocoa-foundation" "rust-core-foundation" "rust-core-foundation-sys" "rust-core-text" "rust-fsevent" "rust-fsevent-sys" "rust-core-video-sys" "rust-core-graphics" "rust-core-graphics-types" "rust-objc-foundation" "rust-security-framework-sys" ; non-Linux, non-Hurd things,
     "rust-ndk" "rust-ndk-glue" "rust-ndk-sys" "rust-ndk-macro" "rust-android-logger" "rust-android-glue" "rust-android-log-sys" ; Android userspace is not yet supported
+    "rust-redox-syscall" "rust-redox-termios" "rust-redox-users" ; Redox is not a supported target of Guix
     "rust-mach" ; skip Mach (used by Hurd and others) support for now.
     "rust-ws2-32-sys"
     "rust-winapi-util" "rust-winapi-build"
@@ -2496,8 +2497,6 @@ of operation.")
 				      '->
 				      (package-name dependency))
 				%removed-dependencies->))
-		   ;; The Redox operating system is not supported by Guix.
-		   (not (string-prefix? "rust-redox" (package-name dependency)))
 		   (not (and (member (package-name pack)
 				     (list "rust-futures-util"))
 			     (string=? (package-name dependency) "rust-proc-macro-hack")))
