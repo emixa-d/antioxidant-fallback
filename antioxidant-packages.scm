@@ -56,7 +56,23 @@
 	  '())))
 
 (define %custom-phases
-  `(("rust-backtrace-sys"
+  ;; TODO home page is incorrect
+  `(("rust-servo-fontconfig-sys"
+     ,#~((add-after 'unpack 'unbundle
+	   (lambda _
+	     (for-each ((@ (srfi srfi-26) cut) delete-file-recursively <>)
+		       '("doc" "test" "src" "missing" "m4" "fonts.dtd" "fonts.conf.in"
+			 "fontconfig.spec" "fontconfig.spec.in" "fontconfig.pc.in"
+			 "fontconfig-zip.in" "fontconfig" "fc-validate"
+			 "fc-scan" "fc-query" "fc-pattern" "fc-match" "fc-list"
+			 "fc-lang" "fc-glyphname" "fc-cat" "fc-case"
+			 "depcomp" "configure.ac" "configure" "config.sub" "config.h.in"
+			 "config.guess" "config-fixups.h" "conf.d" "compile" "aclocal.m4"
+			 "Tools.mk" "Makefile.in"
+			 "README" "NEWS" "INSTALL" "ChangeLog" "AUTHORS" ; these are for freetype, not rust-servo-freetype-sys
+			 "COPYING" ; this is for freetype, not rust-servo-freetype-sys which is MPL
+			 ))))))
+    ("rust-backtrace-sys"
      ,#~((add-after 'unpack 'break-cycle
 	   (lambda _
 	     ;; only needed for Android targets,
@@ -1957,6 +1973,7 @@ of operation.")
     ;; TODO: investigate build_dictionaries, and maybe not embedding libraries.
     ;; TODO: cannot choose multiple normalization forms, is this important?
     ("rust-hyphenation" ,#~'("embed_all"))
+    ("rust-servo-fontconfig-sys" ,#~'("force_system_lib")) ; be extra sure the bundled copy isn't used
     ;; The "dox" feature requires non-stable.
     ("rust-glib-sys" ,#~'("v2_68"))
     ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise
@@ -2398,6 +2415,8 @@ of operation.")
 (define %extra-inputs
   `(("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
+    ("rust-servo-fontconfig-sys"
+     (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))))
     ("rust-swayipc"
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-failure" ,(p rust-failure-0.1))))
