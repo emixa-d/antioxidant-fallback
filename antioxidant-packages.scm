@@ -200,6 +200,11 @@
 	     ;; Already upstream: <https://github.com/RustCrypto/formats/blob/fbf4334be7717e1f393c3f7b9b4c85c584ce8395/pkcs1/src/lib.rs#L49>, but not yet in any release.
 	     (substitute* "src/lib.rs"
 	       (("ObjectIdentifier::new") "ObjectIdentifier::new_unwrap"))))))
+    ("rust-mio-extras"
+     ,#~((add-after 'unpack 'mio@0.6.21-compatibility
+	   (lambda _
+	     (substitute* '("src/channel.rs" "src/timer.rs")
+	       (("::\\{Evented,") "::{event::Evented,"))))))
     ;; TODO: change in Guix upstream.
     ;; TODO: adjust README.md? Make sure LICENSE-APACHE
     ;; is installed?
