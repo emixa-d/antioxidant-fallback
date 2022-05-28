@@ -1822,6 +1822,7 @@ of operation.")
     "rust-skeptic" ; @0.13.4 doesn't build
     "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
     "rust-macrotest"
+    "rust-rust-hawktracer" "rust-rust-hawktracer-sys" "rust-hawktracer-normal-macro" "rust-rust-hawktracer-proc-macro" ; only for tracing (debugging-only), so maybe the build failure can be avoided?
     "rust-ntest" "rust-ntest-test-cases" ; test-only, and @0.3.4 tries using non-exported syn::export
     "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
     "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
