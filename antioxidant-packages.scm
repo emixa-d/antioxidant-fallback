@@ -514,6 +514,7 @@ an unique string, which can be useful for resolving symbol conflicts."
 
 
 ;; The old tokio doesn't build against recent rust-futures
+#; ; currently removed
 (define rust-tokio-io-0.2
   (package
    (inherit (@ (gnu packages crates-io) rust-tokio-io-0.1))
@@ -1883,18 +1884,18 @@ of operation.")
     ("rust-fastrand" -> "rust-getrandom")
     ("rust-fastrand" -> "rust-instant")
     ("rust-fastrand" -> "rust-wyhash")
-    ("rust-tokio-io" -> "rust-tokio-current-thread")
-    ("rust-tokio-core" -> "rust-flate2")
+    ;; ("rust-tokio-io" -> "rust-tokio-current-thread") ; rust-tokio-io currently removed
+    ;; ("rust-tokio-core" -> "rust-flate2") ; likewise
+    ;; ("rust-tokio-core" -> "rust-httparse")
+    ;; ("rust-tokio-process" -> "rust-failure") ;; otherwise cc needs to be removed from rust-cloudflare-zlib-sys ;; likewise, rust-tokio-process is currently removed
+    ;; ("rust-tokio" -> "rust-tokio-executor") ; similar
     ;; Remove unused dependencies
     ("rust-flate2" -> "rust-cloudflare-zlib-sys")
     ("rust-flate2" -> "rust-miniz-sys")
     ("rust-flate2" -> "rust-miniz-oxide")
-    ("rust-tokio-core" -> "rust-httparse")
     ("rust-tokio" -> "rust-httparse")
     ("rust-tokio" -> "rust-async-stream") ;; test
     ("rust-tokio" -> "rust-nix") ;; test
-    ("rust-tokio-process" -> "rust-failure") ;; otherwise cc needs to be removed from rust-cloudflare-zlib-sys
-    ("rust-tokio" -> "rust-tokio-executor")
     ("rust-tokio" -> "rust-tokio-current-thread")
     ("rust-tokio" -> "rust-tokio-fs")
     ("rust-tokio" -> "rust-tokio-reactor")
@@ -1917,14 +1918,14 @@ of operation.")
     ("rust-unicode-bidi" -> "rust-flamer")
     ("rust-odds" -> "rust-lazy-static")
     ;; TODO
-    ("rust-boxxy" -> "rust-ctrlc")
+    #;("rust-boxxy" -> "rust-ctrlc") ; TODO currently useless because boxxy is in %removed-dependencies, revisit when tests are supported
     ("rust-flate2" -> "rust-tokio-tcp")
     ("rust-flate2" -> "rust-tokio-threadpool")
     ("rust-tokio" -> "rust-flate2") ;; TODO remove old tokios
     ("rust-semver" -> "rust-crates-index") ;; TODO why????
     ("rust-semver-parser" -> "rust-pest-generator")
     ("rust-spmc" -> "rust-loom")
-    ("rust-tokio-test" -> "rust-tokio") ; TODO
+    ;; ("rust-tokio-test" -> "rust-tokio") ; currently rust-tokio-test is removed
     ;; Break dev-dependencies cycle
     ("rust-regex-automata" -> "rust-bstr")))
 
@@ -2272,7 +2273,7 @@ of operation.")
     ("rust-streebog" ,(p rust-streebog-0.10))
     ("rust-pbkdf2" ,rust-pbkdf2)
     ("rust-hmac" ,(p rust-hmac-0.12))
-    ("rust-boxxy" ,rust-boxxy)
+    ; ("rust-boxxy" ,rust-boxxy) ; TODO: currently useless because in %removed-dependencies, revisit when tests are supported
     ("rust-block-buffer" ,rust-block-buffer)
     ("rust-enum-as-inner" ,rust-enum-as-inner)
     ("rust-md-5" ,rust-md-5)
@@ -2333,8 +2334,8 @@ of operation.")
     ("rust-nix" ,(p rust-nix-0.23))
     ("rust-autocfg" ,(p rust-autocfg-1))
     ("rust-bytes" ,(p rust-bytes-1))
-    ("rust-tokio-io" ,rust-tokio-io-0.2)
-    ("rust-tokio-codec" ,rust-tokio-io-0.2)
+    ;; ("rust-tokio-io" ,rust-tokio-io-0.2) ; tokio-io currently removed
+    ; ("rust-tokio-codec" ,rust-tokio-io-0.2) ; looks like an error in retrospect
     ("rust-tokio-util" ,rust-tokio-util-0.7)
     ("rust-tokio" ,(p rust-tokio-1.8))
     ("rust-futures" ,rust-futures-0.3)
@@ -2445,7 +2446,7 @@ of operation.")
 		  ("rust-base64ct" ,(p rust-base64ct-1)) ; missing dep
 		  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
     ;; possibly only required by new version
-    ("rust-boxxy" (("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1))))
+    #;("rust-boxxy" (("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1)))) ; TODO: currently useless because in %removed-dependencies, revisit when tests are supported
     ("rust-petgraph" (("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
     ("sniffglue" (("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
     ;; TODO: is this sufficient?
@@ -2590,25 +2591,40 @@ of operation.")
    (parameterize ((vitamination-stack (cons pack (vitamination-stack))))
      (vitaminate/auto* pack))))
 
+;; Self-checks
 (define (check-removed-extra-inputs)
-  ;; list names %removed-dependencies which have %extra-inputs defined
-  (for-each
-   (lambda (name)
-     (let ((dependencies (assoc name %extra-inputs)))
-       (when dependencies
-         (pk name "in %removed-dependencies and %extra-inputs"))))
-   %removed-dependencies)
+  "Verify that %extra-inputs is not in contradiction with
+%removed-dependencies or %removed-dependencies->"
+  ;; List packages in %removed-dependencies which have an entry in
+  ;; %extra-inputs defined (useless, unless it's a leaf package)
+  (define (check-removed-dependency name)
+    (when (assoc name %extra-inputs)
+      (pk name "in %removed-dependencies and %extra-inputs (probably useless)")
+      (throw 'oops)))
+  (define (check-removed-dependency-> entry)
+    (match entry
+      (((? string? left) '-> (? string? right))
+       (when (member right %removed-dependencies)
+	 (pk right "after %removed-dependencies-> and in %removed-dependencies (useless)")
+	 (throw 'oops))
+       (when (member left %removed-dependencies)
+	 (pk left "left in %removed-dependencies-> and in %removed-dependencies (redundant)")
+	 (throw 'oops)))))
   ;; list names listed as an extra-input for some package and also in
-  ;; %removed-dependencies
-  (for-each
-   (match-lambda
-    ((name deps)
-     (for-each
-      (match-lambda
-       ((dep _) (when (member dep %removed-dependencies)
-                  (pk "extra-input" dep "of" name "in %removed-dependencies"))))
-      deps)))
-   %extra-inputs))
+  ;; %removed-dependencies (confusing, because they would have to be both
+  ;; added and removed).
+  (define check-extra-input
+    (match-lambda
+      (((? string? name) (? list? dependencies))
+       (let ((check-dependency
+	      (match-lambda ((dependency-name _)
+			     (when (member dependency-name %removed-dependencies)
+			       (pk "extra-input " dependency-name " of " name "in %removed-dependencies (contradictory)")
+			       (throw 'oops))))))
+	 (for-each check-dependency dependencies)))))
+  (for-each check-removed-dependency %removed-dependencies)
+  (for-each check-removed-dependency-> %removed-dependencies->)
+  (for-each check-extra-input %extra-inputs))
 (check-removed-extra-inputs)
 
 
