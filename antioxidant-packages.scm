@@ -1822,7 +1822,7 @@ of operation.")
     "rust-skeptic" ; @0.13.4 doesn't build
     "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
     "rust-macrotest"
-    "rust-rust-hawktracer" "rust-rust-hawktracer-sys" "rust-hawktracer-normal-macro" "rust-rust-hawktracer-proc-macro" ; only for tracing (debugging-only), so maybe the build failure can be avoided?
+    "rust-rust-hawktracer-sys" ; only for tracing (debugging-only), so maybe the build failure can be avoided?
     "rust-ntest" "rust-ntest-test-cases" ; test-only, and @0.3.4 tries using non-exported syn::export
     "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
     "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
@@ -1974,6 +1974,8 @@ of operation.")
 (define %features
   ;; rust-rsa requires "prime" and "zeroize"
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ("rust-rust-hawktracer-normal-macro" ,#~'()) ; for now, don't enable the profiling feature which requires a currently non-building package rust-hawktracer-sys (which also bundles things!)
+    ("rust-rust-hawktracer-proc-macro" ,#~'()) ; likewise!
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
     ;; early-data is required by rust-trust-dns-proto
