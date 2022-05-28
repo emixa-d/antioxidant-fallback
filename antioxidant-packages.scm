@@ -19,8 +19,8 @@
 
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
-	     (gnu packages guile) (ice-9 match) (srfi srfi-1)
-	     (gnu packages rust-apps) (guix utils)
+	     (gnu packages guile) (ice-9 match) (srfi srfi-1) (srfi srfi-71)
+	     (gnu packages rust-apps) (guix utils) (srfi srfi-26)
 	     (guix git-download) (ice-9 optargs) ((guix licenses) #:prefix license:)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
@@ -54,6 +54,207 @@
     ,@(if (target-x86-64? target)
 	  '(("CARGO_CFG_TARGET_FEATURE" . "sse,sse2"))
 	  '())))
+
+(define %custom-phases
+  `(("rust-backtrace-sys"
+     ,#~((add-after 'unpack 'break-cycle
+	   (lambda _
+	     ;; only needed for Android targets,
+	     ;; by removing it we avoid depending
+	     ;; on crate-cc, breaking a cycle
+	     (delete-file "build.rs")
+	     (substitute* "Cargo.toml"
+	       (("^build =(.*)$") ""))))))
+    ("rust-libssh2-sys"
+     ;; Otherwise, build.rs fails to find libssh2, causing
+     ;; a build failure.
+     ,#~((add-after 'unpack 'find-ssh2
+	   (lambda _
+	     (setenv "LIBSSH2_SYS_USE_PKG_CONFIG" "don't use the bundled copy in the git submodule")))))
+    ("rust-freetype-sys"
+     ,#~((add-after 'unpack 'unbundle
+	   (lambda _ ; TODO: move to origin snippet (& upstream Guix?)
+	     (delete-file-recursively "freetype2")))))
+    ;; TODO: in upstream Guix, replace
+    ;; (delete-file-recursively "jemalloc")
+    ;; by (delete-file-recursively "rep")
+    ;; TODO: why a static library?
+    ("rust-jemalloc-sys"
+     ,#~((add-after 'unpack 'unbundle
+	   (lambda _
+	     (delete-file-recursively "rep")))
+	 ;; keep upstream phase
+	 (add-before 'configure 'find-jemalloc
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (setenv "JEMALLOC_OVERRIDE"
+		     (search-input-file inputs "lib/libjemalloc.so.2"))))))
+    ;; TODO: upstream / update
+    ("rust-x509-parser"
+     ,#~((add-after 'unpack 'use-nondeprecated
+	   (lambda _
+	     (substitute* "src/time.rs"
+	       (("use std::time::Duration;")
+		"use std::time::Duration;use std::convert::TryInto;")
+	       (("\\.to_std\\(\\)") ".try_into()"))))))
+    ;; Preserve this phase from (gnu packages crates-io)
+    ("rust-pkg-config"
+     ,#~((add-after 'unpack 'hardcode-pkg-config-loation
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (substitute* "src/lib.rs"
+	       (("\"pkg-config\"")
+		(string-append "\"" (assoc-ref inputs "pkg-config")
+			       "/bin/pkg-config\"")))))))
+    ;; TODO: Upstream/update
+    ("rust-structopt-derive"
+     ,#~((add-after 'unpack 'use-existing
+	   (lambda _
+	     (substitute* "src/attrs.rs"
+	       (("CamelCase, KebabCase, MixedCase, ShoutySnakeCase, SnakeCase")
+		;; ?? CamelCase, MixedCase
+		"ToUpperCamelCase, ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase")
+	       (("to_camel_case") "to_upper_camel_case")
+	       (("to_mixed_case") "to_lower_camel_case"))))))
+    ;; TODO: update
+    ("rust-glib-macros"
+     ,#~((add-after 'unpack 'use-existing
+	   (lambda _
+	     (substitute* '("src/genum_derive.rs" "src/gflags_attribute.rs")
+	       (("CamelCase, KebabCase") "ToUpperCamelCase, ToKebabCase")
+	       (("to_camel_case") "to_upper_camel_case"))))))
+    ;; TODO: add rust-peg-macros to native-inputs for
+    ;; cross-compilation reasons.
+    ;;
+    ;; There appears to be a bootstrapping cycle here:
+    ;; IIUC, rust-peg/rust-peg-macros accepts a PEG grammar.
+    ;; This grammar is parsed & compiled into Rust code.
+    ;; The parser (of the grammar of the PEG grammar) is
+    ;; generated with rust-peg/rust-peg-macros.
+    ;;
+    ;; The solution to the cycle appears to be:
+    ;;
+    ;;   * peg-macros ships a pre-generated parser
+    ;;   * the generated code is sufficiently short
+    ;;     for there not to be any opportunity for
+    ;;     hiding anything malicious
+    ;;   * peg (in its bootstrap.sh) regenerates
+    ;;     the parser and check that its a fixpoint.
+    ("rust-peg"
+     ,#~((replace 'bootstrap
+	   (lambda* (#:key native-inputs #:allow-other-keys)
+	     (with-output-to-file "new-grammar.rs"
+	       (lambda ()
+		 (invoke "rust-peg"
+			 (search-input-file native-inputs
+					    "share/rust-peg-macros/grammar.rustpeg"))))
+	     ;; TODO: the fixpoint test fails!
+	     #;(invoke "diff" "-s" "--ignore-space-change" "new-grammar.rs"
+	     (search-input-file native-inputs
+	     "share/rust-peg-macros/grammar.rs"))
+	     (delete-file "new-grammar.rs")))))
+    ("rust-peg-macros"
+     ,#~((add-after 'install 'install-grammar
+	   (lambda _
+	     (install-file "grammar.rustpeg" (string-append #$output "/share/rust-peg-macros"))
+	     (install-file "grammar.rs" (string-append #$output "/share/rust-peg-macros"))))))
+    ("rust-chrono"
+     ,#~((add-after 'unpack 'use-nondeprecated-names
+	   (lambda _
+	     ;; TODO: upstream
+	     (substitute* '("src/naive/date.rs" "src/naive/time.rs" "src/round.rs")
+	       (("num_days\\(\\)") "whole_days()")
+	       (("num_weeks\\(\\)") "whole_weeks()")
+	       (("num_seconds\\(\\)") "whole_seconds()")
+	       ;; XXX this is not exactly the same behaviour,
+	       ;; as a panic has been replaced by a truncation.
+	       (("rhs.num_nanoseconds\\(\\)\\.unwrap\\(\\)") "(rhs.whole_nanoseconds() as i64)")
+	       (("\\(rhs - OldDuration::seconds\\(rhssecs\\)\\)\\.num_nanoseconds\\(\\)\\.unwrap\\(\\)")
+		"((rhs - OldDuration::seconds(rhssecs)).whole_nanoseconds() as i64)")
+	       (("duration\\.num_nanoseconds\\(\\)")
+		"Some(duration.whole_nanoseconds() as i64)"))))))
+    ("rust-pkcs1"
+     ,#~((add-after 'unpack 'fix-typing
+	   (lambda _
+	     ;; Already upstream: <https://github.com/RustCrypto/formats/blob/fbf4334be7717e1f393c3f7b9b4c85c584ce8395/pkcs1/src/lib.rs#L49>, but not yet in any release.
+	     (substitute* "src/lib.rs"
+	       (("ObjectIdentifier::new") "ObjectIdentifier::new_unwrap"))))))
+    ;; TODO: change in Guix upstream.
+    ;; TODO: adjust README.md? Make sure LICENSE-APACHE
+    ;; is installed?
+    ("rust-cmake"
+     ,#~((add-after 'unpack 'absolute-cmake
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (substitute* "src/lib.rs"
+	       (("\"cmake\"") (format #f "\"~a\"" (search-input-file inputs "bin/cmake"))))))))
+    ("rust-clang-sys"
+     ;; TODO: are there some paths that need to be
+     ;; absolutised?
+     ,#~((add-after 'unpack 'set-libclang-path
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (setenv "LIBCLANG_PATH"
+		     (dirname (search-input-file inputs "lib/libclang.so")))))))
+    ;; TODO: when deciding what binaries to build,
+    ;; respect [[bin]]/required-features, then this
+    ;; phase can be removed.
+    ("rust-phf-generator"
+     ,#~((add-after 'unpack 'delete-bin
+	   (lambda _
+	     (delete-file "src/bin/gen_hash_test.rs")))))
+    ("rust-cpp-demangle"
+     ,#~((add-after 'unpack 'delete-bin
+	   (lambda _
+	     (delete-file "src/bin/afl_runner.rs")))))
+    ("rust-tokio-sync"
+     ,#~((add-after 'unpack 'unpreview
+	   (lambda _
+	     (substitute* "Cargo.toml"
+	       (("-preview\\]") "]"))))))
+    ("dutree"
+     ;; See <https://github.com/nachoparker/dutree/pull/40>
+     ,#~((add-after 'unpack 'update-to-new-signal-hookversion
+	   (lambda _
+	     (substitute* "src/main.rs"
+	       (("signal_hook::register") "signal_hook::low_level::register"))
+	     (substitute* "src/main.rs"
+	       (("signal_hook::SIGPIPE") "signal_hook::consts::signal::SIGPIPE"))))))
+    ("rust-tuikit"
+     ;; TODO: upstream
+     ,#~((add-after 'unpack 'fix-unresolved+deprecated
+	   (lambda _
+	     (substitute* "src/raw.rs"
+	       (("use nix::Error::Sys;") "")
+	       (("match err \\{") "{")
+	       (("nix::Error::from_errno\\(ENOTTY\\)") "ENOTTY")
+	       (("Sys\\((.*)") "err.into()")
+	       (("_ => (.*)$") ""))))))
+    ;; 'cc' and 'c++' don't exist
+    ("rust-gcc"
+     ,#~((add-after 'unpack 'fix-cc
+	   (lambda _
+	     (substitute* "src/lib.rs"
+	       (("\"cc\"") "\"gcc\"")
+	       (("\"c++\"") "\"g++\""))))))
+    ("rust-cc"
+     ,#~((add-after 'unpack 'fix-cc
+	   (lambda _
+	     (substitute* "src/lib.rs"
+	       (("\"cc\"") "\"gcc\"")
+	       (("\"c++\"") "\"g++\""))))))))
+
+(define (custom-phases name)
+  (define (drop-version name)
+    (let ((name _ (package-name->name+version name #\-)))
+      name))
+  (let ((name
+	 (match name
+	   ((? (cut string-prefix? "antioxidated-" <>) name)
+	    (drop-version (string-drop name (string-length "antioxidated-"))))
+	   ;; name+version is confused by the -alpha suffix
+	   ((? (cut string-prefix? "rust-tokio-sync-0.2.0-alpha" <>) name)
+	    "rust-tokio-sync")
+	   (_ (drop-version name)))))
+    (match (assoc name %custom-phases)
+      ((_ phases) phases)
+      (#false #~()))))
 
 (define* (antioxidant-build name inputs #:key
 			    modules ; what to do about 'modules'
@@ -94,185 +295,7 @@
 		     #:cargo-env-variables #$cargo-env-variables
 		     #:rust-metadata #$rust-metadata
 		     #:phases (modify-phases %standard-antioxidant-phases
-				#$@(cond ((string-prefix? "rust-backtrace-sys" name)
-				          #~((add-after 'unpack 'break-cycle
-					       (lambda _
-					         ;; only needed for Android targets,
-					         ;; by removing it we avoid depending
-					         ;; on crate-cc, breaking a cycle
-					         (delete-file "build.rs")
-					         (substitute* "Cargo.toml"
-							      (("^build =(.*)$") ""))))))
-					 ((string-prefix? "rust-libssh2-sys" name)
-					  ;; Otherwise, build.rs fails to find libssh2, causing
-					  ;; a build failure.
-					  #~((add-after 'unpack 'find-ssh2
-					       (lambda _
-						 (setenv "LIBSSH2_SYS_USE_PKG_CONFIG" "don't use the bundled copy in the git submodule")))))
-					 ((string-prefix? "rust-freetype-sys-" name)
-					  #~((add-after 'unpack 'unbundle
-					       (lambda _ ; TODO: move to origin snippet (& upstream Guix?)
-						 (delete-file-recursively "freetype2")))))
-					 ;; TODO: in upstream Guix, replace
-					 ;; (delete-file-recursively "jemalloc")
-					 ;; by (delete-file-recursively "rep")
-					 ;; TODO: why a static library?
-					 ((string-prefix? "rust-jemalloc-sys" name)
-					  #~((add-after 'unpack 'unbundle
-					       (lambda _
-						 (delete-file-recursively "rep")))
-					     ;; keep upstream phase
-					     (add-before 'configure 'find-jemalloc
-					       (lambda* (#:key inputs #:allow-other-keys)
-						 (setenv "JEMALLOC_OVERRIDE"
-							 (search-input-file inputs "lib/libjemalloc.so.2"))))))
-					 ;; TODO: upstream / update
-					 ((string-prefix? "rust-x509-parser" name)
-					  #~((add-after 'unpack 'use-nondeprecated
-					       (lambda _
-						 (substitute* "src/time.rs"
-						   (("use std::time::Duration;")
-						    "use std::time::Duration;use std::convert::TryInto;")
-						   (("\\.to_std\\(\\)") ".try_into()"))))))
-					 ;; Preserve this phase from (gnu packages crates-io)
-					 ((string-prefix? "rust-pkg-config-" name)
-					  #~((add-after 'unpack 'hardcode-pkg-config-loation
-					       (lambda* (#:key inputs #:allow-other-keys)
-						 (substitute* "src/lib.rs"
-							      (("\"pkg-config\"")
-							       (string-append "\"" (assoc-ref inputs "pkg-config")
-									      "/bin/pkg-config\"")))))))
-					 ;; TODO: Upstream/update
-					 ((string-prefix? "rust-structopt-derive" name)
-					  #~((add-after 'unpack 'use-existing
-					       (lambda _
-						 (substitute* "src/attrs.rs"
-						   (("CamelCase, KebabCase, MixedCase, ShoutySnakeCase, SnakeCase")
-						    ;; ?? CamelCase, MixedCase
-						    "ToUpperCamelCase, ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase")
-						   (("to_camel_case") "to_upper_camel_case")
-						   (("to_mixed_case") "to_lower_camel_case"))))))
-					 ;; TODO: update
-					 ((string-prefix? "rust-glib-macros" name)
-					  #~((add-after 'unpack 'use-existing
-					       (lambda _
-						 (substitute* '("src/genum_derive.rs" "src/gflags_attribute.rs")
-						   (("CamelCase, KebabCase") "ToUpperCamelCase, ToKebabCase")
-						   (("to_camel_case") "to_upper_camel_case"))))))
-					 ;; TODO: add rust-peg-macros to native-inputs for
-					 ;; cross-compilation reasons.
-
-					 ;; There appears to be a bootstrapping cycle here:
-					 ;; IIUC, rust-peg/rust-peg-macros accepts a PEG grammar.
-					 ;; This grammar is parsed & compiled into Rust code.
-					 ;; The parser (of the grammar of the PEG grammar) is
-					 ;; generated with rust-peg/rust-peg-macros.
-					 ;;
-					 ;; The solution to the cycle appears to be:
-					 ;;
-					 ;;   * peg-macros ships a pre-generated parser
-					 ;;   * the generated code is sufficiently short
-					 ;;     for there not to be any opportunity for
-					 ;;     hiding anything malicious
-					 ;;   * peg (in its bootstrap.sh) regenerates
-					 ;;     the parser and check that its a fixpoint.
-					 ((string-prefix? "rust-peg-0" name)
-					  #~((replace 'bootstrap
-					       (lambda* (#:key native-inputs #:allow-other-keys)
-						 (with-output-to-file "new-grammar.rs"
-						   (lambda ()
-						     (invoke "rust-peg"
-							     (search-input-file native-inputs
-										"share/rust-peg-macros/grammar.rustpeg"))))
-						 ;; TODO: the fixpoint test fails!
-						 #;(invoke "diff" "-s" "--ignore-space-change" "new-grammar.rs"
-							   (search-input-file native-inputs
-									      "share/rust-peg-macros/grammar.rs"))
-						 (delete-file "new-grammar.rs")))))
-					 ((string-prefix? "rust-peg-macros-" name)
-					  #~((add-after 'install 'install-grammar
-					       (lambda _
-						 (install-file "grammar.rustpeg" (string-append #$output "/share/rust-peg-macros"))
-						 (install-file "grammar.rs" (string-append #$output "/share/rust-peg-macros"))))))
-					 ((string-prefix? "rust-chrono" name)
-					  #~((add-after 'unpack 'use-nondeprecated-names
-					       (lambda _
-						 ;; TODO: upstream
-						 (substitute* '("src/naive/date.rs" "src/naive/time.rs" "src/round.rs")
-						   (("num_days\\(\\)") "whole_days()")
-						   (("num_weeks\\(\\)") "whole_weeks()")
-						   (("num_seconds\\(\\)") "whole_seconds()")
-						   ;; XXX this is not exactly the same behaviour,
-						   ;; as a panic has been replaced by a truncation.
-						   (("rhs.num_nanoseconds\\(\\)\\.unwrap\\(\\)") "(rhs.whole_nanoseconds() as i64)")
-						   (("\\(rhs - OldDuration::seconds\\(rhssecs\\)\\)\\.num_nanoseconds\\(\\)\\.unwrap\\(\\)")
-						    "((rhs - OldDuration::seconds(rhssecs)).whole_nanoseconds() as i64)")
-						   (("duration\\.num_nanoseconds\\(\\)")
-						    "Some(duration.whole_nanoseconds() as i64)"))))))
-					 ((string-prefix? "rust-pkcs1" name)
-					  #~((add-after 'unpack 'fix-typing
-					       (lambda _
-						 ;; Already upstream: <https://github.com/RustCrypto/formats/blob/fbf4334be7717e1f393c3f7b9b4c85c584ce8395/pkcs1/src/lib.rs#L49>, but not yet in any release.
-						 (substitute* "src/lib.rs"
-						   (("ObjectIdentifier::new") "ObjectIdentifier::new_unwrap"))))))
-					 ;; TODO: change in Guix upstream.
-					 ;; TODO: adjust README.md? Make sure LICENSE-APACHE
-					 ;; is installed?
-					 ((string-prefix? "rust-cmake" name)
-					  #~((add-after 'unpack 'absolute-cmake
-					       (lambda* (#:key inputs #:allow-other-keys)
-						 (substitute* "src/lib.rs"
-						   (("\"cmake\"") (format #f "\"~a\"" (search-input-file inputs "bin/cmake"))))))))
-					 ((string-prefix? "rust-clang-sys" name)
-					  ;; TODO: are there some paths that need to be
-					  ;; absolutised?
-				          #~((add-after 'unpack 'set-libclang-path
-					       (lambda* (#:key inputs #:allow-other-keys)
-						 (setenv "LIBCLANG_PATH"
-							 (dirname (search-input-file inputs "lib/libclang.so")))))))
-					 ;; TODO: when deciding what binaries to build,
-					 ;; respect [[bin]]/required-features, then this
-					 ;; phase can be removed.
-					 ((string-prefix? "rust-phf-generator" name)
-					  #~((add-after 'unpack 'delete-bin
-					       (lambda _
-						 (delete-file "src/bin/gen_hash_test.rs")))))
-					 ((string-prefix? "rust-cpp-demangle" name)
-					  #~((add-after 'unpack 'delete-bin
-					       (lambda _
-						 (delete-file "src/bin/afl_runner.rs")))))
-					 ((string-prefix? "rust-tokio-sync" name)
-					  #~((add-after 'unpack 'unpreview
-					       (lambda _
-						 (substitute* "Cargo.toml"
-							      (("-preview\\]") "]"))))))
-					 ((string-contains name "dutree")
-					  ;; See <https://github.com/nachoparker/dutree/pull/40>
-					  #~((add-after 'unpack 'update-to-new-signal-hookversion
-					        (lambda _
-						  (substitute* "src/main.rs"
-						    (("signal_hook::register") "signal_hook::low_level::register"))
-						  (substitute* "src/main.rs"
-						    (("signal_hook::SIGPIPE") "signal_hook::consts::signal::SIGPIPE"))))))
-					 ((string-prefix? "rust-tuikit" name)
-					  ;; TODO: upstream
-					  #~((add-after 'unpack 'fix-unresolved+deprecated
-					       (lambda _
-						 (substitute* "src/raw.rs"
-						   (("use nix::Error::Sys;") "")
-						   (("match err \\{") "{")
-						   (("nix::Error::from_errno\\(ENOTTY\\)") "ENOTTY")
-						   (("Sys\\((.*)") "err.into()")
-						   (("_ => (.*)$") ""))))))
-					 ;; 'cc' and 'c++' don't exist
-					 ((or (string-prefix? "rust-gcc-" name)
-					      (string-prefix? "rust-cc-" name))
-					  #~((add-after 'unpack 'fix-cc
-					       (lambda _
-						 (substitute* "src/lib.rs"
-						   (("\"cc\"") "\"gcc\"")
-						   (("\"c++\"") "\"g++\""))))))
-					 (#true #~()))))))))
+				#$@(custom-phases name)))))))
   ;; TODO graft stuff, package->derivation guile-for-build
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
 
