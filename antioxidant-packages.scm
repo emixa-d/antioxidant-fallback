@@ -1819,6 +1819,7 @@ of operation.")
     "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
     "rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
     "rust-pear" "rust-pear-codegen" ; current version in Guix requires non-stable
+    "rust-mesalink" ; doesn't build against recent rust-rustls
     "rust-defmt" ; accidentally requires unstable-test?
     "rust-heapsize-plugin" ; makes use of removed features
     "rust-rustc-test" ; doesn't build against recent rust-time
