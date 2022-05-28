@@ -2177,6 +2177,8 @@ of operation.")
     ("rust-reqwest" ,(p rust-reqwest-0.11)) ; @0.10 has
     ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
     ("rust-cookie-store-15" ,rust-cookie-store)
+    ("rust-structopt" ,(p rust-structopt-0.3))
+    ("rust-structopt-derive" ,(p rust-structopt-derive-0.4)) ; @0.2.18 doesn't build
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
     ("rust-trust-dns-native-tls" ,rust-trust-dns-native-tls)
