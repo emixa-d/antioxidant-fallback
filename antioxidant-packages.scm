@@ -1976,6 +1976,7 @@ of operation.")
   `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
     ("rust-rust-hawktracer-normal-macro" ,#~'()) ; for now, don't enable the profiling feature which requires a currently non-building package rust-hawktracer-sys (which also bundles things!)
     ("rust-rust-hawktracer-proc-macro" ,#~'()) ; likewise!
+    ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
     ;; early-data is required by rust-trust-dns-proto
