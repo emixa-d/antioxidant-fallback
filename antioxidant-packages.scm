@@ -2127,6 +2127,7 @@ of operation.")
     "rust-futures-util-preview" ; futures-util has been updated?
     "rust-iron" ; its dependency rust-hyper-native-tls fails to build
     "rust-rocket" ; its dependency rust-hyper-sync-rustls fails to build
+    "rust-nickel" ; fails to build
     "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
     ;; TODO: how do the three following crates even work?
     "rust-rustc-std-workspace-std"
@@ -2182,6 +2183,7 @@ of operation.")
     ("rust-pkcs8" -> "rust-pkcs1")
     ;; Break cycle (test or something like that?)
     ("rust-quote" -> "rust-rustversion")
+    ("rust-multipart" -> "rust-hyper") ; incompatible with hyper>0.10
     ;; Break cycle.
     ("rust-async-attributes" -> "rust-async-std")
     ("rust-async-channel" -> "rust-blocking")
@@ -2382,7 +2384,9 @@ of operation.")
      ,#~'("net" "os-ext" "os-poll"))
     ("rust-multipart"
      ;; default "iron" feature requires rust-iron which currently fails to build.
-     ,#~'("client" "hyper" "mock" "nickel" "server" "tiny_http"))
+     ;; Likewise for "nickel".
+     ;; The "hyper" feature is incompatible with rust-hyper>0.11
+     ,#~'("client" "mock" "server" "tiny_http"))
     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
     ("rust-nom"
      ,#~'("std" "lexical" "alloc"))
