@@ -1883,6 +1883,19 @@ of operation.")
         (sha256
           (base32 "000hxsbaxgd8jdmnw4dnlff4xdhggprnw2lk67pmiscqa4lnr8by"))))))
 
+(define rust-actix-server
+  (package
+    (inherit (p rust-actix-server-1)) ; @1 doesn't build against new rust-actix-rt
+    (name "rust-actix-server")
+    (version "2.1.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-server" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "096q1hj88kgzfk6zv251sn57dlswh65r8ds6pdvv18cycn74z8qd"))))))
+
 (define rust-avif-serialize ; @0.6 doesn't build against new rust-arrayvec
   (package
     (inherit (@ (gnu packages crates-graphics) rust-avif-serialize-0.6))
@@ -2657,6 +2670,7 @@ of operation.")
     ;; rust-atcix-derive@0.4.0,0.5.0 don't build against new
     ;; rust-syn@1.0.82 (Literal has been renamed to Lit)
     ("rust-actix-derive" ,rust-actix-derive)
+    ("rust-actix-server" ,rust-actix-server)
     ("rust-typenum" ,rust-typenum)
     ("rust-syscallz" ,rust-syscallz)
     ("rust-strum" ,rust-strum)
@@ -2864,6 +2878,8 @@ of operation.")
     ("rust-actix-utils" ;new dependencies for new version
      (("rust-local-waker" ,rust-local-waker)
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
+    ("rust-actix-server" ;new dependencies for new version
+     (("rust-mio" ,(p rust-mio-0.8))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
