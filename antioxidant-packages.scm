@@ -2609,6 +2609,7 @@ of operation.")
     ("rust-openssl-sys" ,rust-openssl-sys)
     ;; The old rust-tokio-openssl@0.4 doesn't build
     ("rust-tokio-openssl" ,(p rust-tokio-openssl-0.6))
+    ("rust-tokio-native-tls" ,(p rust-tokio-native-tls-0.3)) ; @0.1 doesn't build
     ("rust-bindgen"
      ;; In the old version 'runtime' cannot be
      ;; disabled.
