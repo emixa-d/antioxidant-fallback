@@ -2240,125 +2240,30 @@ of operation.")
     ;; Break dev-dependencies cycle
     ("rust-regex-automata" -> "rust-bstr")))
 
+;; Try keeping things sorted, to avoid rebase/merge conflicts.
 (define %features
-  ;; rust-rsa requires "prime" and "zeroize"
-  `(("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
-    ("rust-rust-hawktracer-normal-macro" ,#~'()) ; for now, don't enable the profiling feature which requires a currently non-building package rust-hawktracer-sys (which also bundles things!)
-    ("rust-rust-hawktracer-proc-macro" ,#~'()) ; likewise!
-    ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
-    ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
-    ("rust-slog" ,#~'("default" "nested-values"))
-    ("rust-im-rc" ,#~'()) ; "pool" feature doesn't build and "debug" probably makess things less efficient
-    ;; early-data is required by rust-trust-dns-proto
-    ("rust-tokio-rustls" ,#~'("default" "early-data"))
-    ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
-    ("rust-xz2" ,#~'("futures")) ; likewise
-    ("rust-zstd-safe" ,#~'("default" "std")) ; std is reaquired by rust-zstd@0.9.0
-    ("rust-reqwest" ,#~'("default" "blocking")) ; tealdeer@1.4.1 requires "blocking" to build
-    ;; "quickcheck" features requires removed crate "quickcheck"
-    ("rust-partial-io" ,#~'("futures03" "tokio1"))
-    ;; dns-over-openssl is required by rust-trust-dns-openssl.
-    ;; dns-over-native-tls is required by rust-trust-dns-native-tls.
-    ;; dns-over-rustls is required by rust-trust-dns-rustls.
-    ;; dns-over-https is required by rust-trust-dns-https.
-    ("rust-trust-dns-proto"
-     ,#~'("default" "dns-over-openssl" "dns-over-native-tls" "dns-over-rustls"
-	  "dns-over-https"))
-    ;; rust-swayipcs requires 'spawn_blocking' which is only
-    ;; public if "unstable" is enabled.
-    ("rust-async-std" ,#~'("default" "unstable"))
-    ("rust-doc-comment" ,#~'()) ; no_core requires unstable, and old_macros is detected by build.rs
-    ("rust-encoding-rs" ,#~'()) ; "simd-accel" requires unstable "packed_simd"
-    ;; TODO: investigate build_dictionaries, and maybe not embedding libraries.
-    ;; TODO: cannot choose multiple normalization forms, is this important?
-    ("rust-hyphenation" ,#~'("embed_all"))
-    ("rust-fern" ,#~'("syslog-6")) ; avoid having to include multiple versions of syslog
-    ("rust-servo-fontconfig-sys" ,#~'("force_system_lib")) ; be extra sure the bundled copy isn't used
+  ;; rust-swayipcs requires 'spawn_blocking' which is only
+  ;; public if "unstable" is enabled.
+  `(("rust-async-std" ,#~'("default" "unstable"))
     ;; The "dox" feature requires non-stable.
-    ("rust-glib-sys" ,#~'("v2_68"))
-    ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise
-    ("rust-gobject-sys" ,#~'("v2_68")) ; likewise
-    ("rust-gio-sys" ,#~'("v2_66")) ; likewise
-    ("rust-gio" ,#~'("v2_66")) ; likewise
-    ("rust-atk-sys" ,#~'("v2_34")) ; likewise (for dox)
-    ("rust-pango-sys" ,#~'("v1_46")) ; likewise (for dox)
-    ("rust-gdk-pixbuf-sys" ,#~'("v2_40")) ; likewise (for dox)
-    ("rust-gdk-pixbuf" ,#~'("v2_40")) ; likewise (for dox)
-    ("rust-gdk-sys" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
-    ("rust-gdk" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
-    ("rust-gtk-sys" ,#~'("v3_24_11")) ; likewise (for dox)
-    ("rust-gtk" ,#~'("v3_24_9")) ; likewise (for dox)
-    ("rust-atk" ,#~'("v2_34")) ; likewise
-    ("rust-pango" ,#~'("v1_46")) ; likewise
-    ("rust-lzma-sys" ,#~'()) ; don't enable "static" (TODO: add it to the list in antioxidant?)
-    ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
-    ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
-    ;; The default "benchmarks" feature requires unstable.
-    ("rust-galil-seiferas" ,#~'())
-    ("rust-plotters-svg" ,#~'()) ; "debug" feature causes a build failure
-    ;; Don't accidentally enable multiple encoding features, even
-    ;; though rust-fmt only supports one at the time.  An encoding
-    ;; will automatically be chosen.
-    ("rust-defmt" ,#~'("alloc"))
-    ("rust-lazycell" ,#~'()) ;; avoid nightly things
-    ;; "pattern" and "benchmarks" require non-stable (rust-jetscii@0.5)
-    ("rust-jetscii" ,#~'())
-    ;; rust-cookie requires the non-default "parsing" and "macros" feature. Might as well enable
-    ;; "formatting" as well.
-    ("rust-time" ,#~'("default" "macros" "formatting" "parsing" "local-offset"))
-    ;; Avoid "use-intrisics", which requires unstable.
-    ("rust-half" ,#~'("alloc" "serialize" "std"))
-    ;; Avoid removed feature(custom_derive)
-    ("rust-language-tags" ,#~'())
-    ("rust-tiny-keccak"
-     ;; By default nothing is build, which seems rather useless.
-     ;; Let's enable everything.
-     ,#~'("cshake" "fips202" "k12" "keccak" "kmac" "parallel_hash" "sha3" "shake" "sp800" "tuple_hash"))
+    ("rust-atk" ,#~'("v2_34"))
+    ("rust-atk-sys" ,#~'("v2_34"))
+    ;; Do _not_ include 'runtime', as dlopen isn't used,
+    ;; linking happens at compile time (and at program
+    ;; startup).
+    ("rust-bindgen" ,#~'("logging" "clap" "which-rustfmt"))
+    ;; The feature "alloc" is not set by default, causing the
+    ;; build to fail (TODO: maybe report upstream?)
+    ("rust-bitvec"
+     ,#~'("std" "atomic" "alloc"))
     ;; the default "generic-simd" feature required rust-packed-simd
     ;; which is currently uncompilable.
     ("rust-bytecount" ,#~'())
-    ;; "paw" required by sniffglue
-    ("rust-structopt" ,#~'("default" "paw"))
-    ;; rust-rcgen requires "time". While at it, enable other
-    ;; features as well.
-    ("rust-yasna" ,#~'("default" "time" "bit-vec" "bigint" "std"))
-    ;; rust-num-bigint-dig's zeroize feature requires the "derive"
-    ;; feature of rust-zeroize
-    ("rust-zeroize" ,#~'("default" "derive"))
-    ;; For now avoid optional dependencies
-    ("rust-typenum" ,#~'())
-    ;; serde1 failure requires undeclared ‘Glob’ dependency
-    ("rust-globset" ,#~'())
-    ("rust-openssl-sys" ,#~'()) ;; avoid the 'vendored' feature
-    ;; The 'backtrace' and 'petgraph' dependency has been removed.
-    ;; (including petgraph causes a cycle between rust-ahash and rust-hashbrown,
-    ;; but it's ‘only’ required for deadlock detection).
-    ("rust-parking-lot-core" ,#~'())
-    ;; asm! syntax not supported anymore, and "capture"
-    ;; requires non-existent io::set_panic
-    ("rust-rustc-test" ,#~'())
-    ;; The 'inline-asm' feature requires non-stable
-    ("rust-riscv" ,#~'())
-    ("rust-smallvec" ,#~'()) ; default features require non-stable
-    ;; Default serde1_lib requires unpackaged rust-serde1-lib
-    ("rust-sval" ,#~'("alloc" "arbitrary-depth" "derive" "fmt" "std"))
-    ;; rust-cipher requires non-default rand_core
-    ("rust-crypto-common" ,#~'("std" "rand_core"))
-    ;; Require rust-cipher.
-    ("rust-inout" ,#~'("std" "block-padding"))
+    ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
+    ;; "alloc" is required by some crates.
+    ("rust-chrono" ,#~'("default" "alloc"))
     ;; zeroize required by rust-ctr
     ("rust-cipher" ,#~'("alloc" "std" "block-padding" "rand_core" "dev" "zeroize"))
-    ;; Likewise.
-    ("rust-value-bag" ,#~'("std"))
-    ;; rust-pkcs1 requires "pem"
-    ("rust-der" ,#~'("std" "alloc" "oid" "pem"))
-    ;; Required by hmac.
-    ("rust-digest" ,#~'("default" "std" "mac"))
-    ;; Required by 'sniffglue'
-    ("rust-pktparse" ,#~'("serde"))
-    ;; Avoid extra dependencies by using the C library that
-    ;; is used elsewhere anyway.
-    ("rust-flate2" ,#~'("zlib"))
     ;; Don't just support libclang 3.5, also include
     ;; bindings for later versions which rust-bindgen might
     ;; need.  Don't include the "runtime" feature, because
@@ -2366,28 +2271,166 @@ of operation.")
     ;; to be found.  Don't include the "static" feature for
     ;; the standard reasons against static linking in Guix.
     ("rust-clang-sys" ,#~'("clang_10_0")) ; Guix by default does dynamic linking, not static linking, which would use the "static" feature IIUC
-    ;; Do _not_ include 'runtime', as dlopen isn't used,
-    ;; linking happens at compile time (and at program
-    ;; startup).
-    ("rust-bindgen" ,#~'("logging" "clap" "which-rustfmt"))
-    ("rust-numtoa" ,#~'("std"))
-    ;; rust-cargo-metadata requires the serialisation
-    ;; / deserialisation traits.
-    ("rust-semver" ,#~'("default" "serde"))
-    ("rust-hyper" ,#~'("full"))
-    ("rust-itoa" ,#~'("std"))
+    ;; This addresses the build failure
+    ;; ‘could not find `collector` in the crate root’
+    ;; and ‘cannot find function `pin` in crate `epoch`’
+    ("rust-crossbeam-epoch"
+     ,#~'("std" "alloc"))
+    ;; rust-cipher requires non-default rand_core
+    ("rust-crypto-common" ,#~'("std" "rand_core"))
+    ;; Don't accidentally enable multiple encoding features, even
+    ;; though rust-fmt only supports one at the time.  An encoding
+    ;; will automatically be chosen.
+    ("rust-defmt" ,#~'("alloc"))
+    ;; rust-pkcs1 requires "pem"
+    ("rust-der" ,#~'("std" "alloc" "oid" "pem"))
     ;; rust-x509-parser requires bigint
     ("rust-der-parser" ,#~'("default" "bigint"))
-    ;; rust-x509-parser required 'crypto' and 'x509'
-    ("rust-oid-registry" ,#~'("default" "crypto" "x509"))
-    ("rust-similar" ,#~'("default" "text" "inline"))
-    ;; 'derive' is needed by rust-ron
-    ("rust-serde" ,#~'("std" "alloc" "derive"))
-    ("rust-webpki" ,#~'("std" "alloc"))
+    ;; Required by hmac.
+    ("rust-digest" ,#~'("default" "std" "mac"))
+    ("rust-doc-comment" ,#~'()) ; no_core requires unstable, and old_macros is detected by build.rs
+    ("rust-ena" ,#~'())  ;; disable "bench", which fails for stable build
+    ("rust-encoding-rs" ,#~'()) ; "simd-accel" requires unstable "packed_simd"
+    ("rust-fern" ,#~'("syslog-6")) ; avoid having to include multiple versions of syslog
+    ;; Avoid extra dependencies by using the C library that
+    ;; is used elsewhere anyway.
+    ("rust-flate2" ,#~'("zlib"))
+    ("rust-futures-core"
+     ,#~'("std" "alloc"))
+    ("rust-futures-channel"
+     ,#~'("std" "alloc"))
+    ;; Enable some features such that "rust-futures" actually builds.
+    ("rust-futures-task"
+     ,#~'("std" "alloc"))
+    ("rust-futures-util"
+     ,#~'("std" "alloc" "sink"
+	  "io" "async-await"
+	  "async-await-macro"
+	  "channel"))
+    ;; The default "benchmarks" feature requires unstable.
+    ("rust-galil-seiferas" ,#~'())
+    ("rust-gdk-pixbuf" ,#~'("v2_40")) ; "dox" requires non-stable
+    ("rust-gdk-pixbuf-sys" ,#~'("v2_40")) ; likewise (for dox)
+    ("rust-gdk-sys" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
+    ("rust-gdk" ,#~'("v3_24")) ; likewise (for dox) (look in the .pc for the version)
+    ;; Required by rust-rand-core.
+    ("rust-getrandom" ,#~'("std"))
+    ("rust-gio" ,#~'("v2_66")) ; likewise
+    ("rust-gio-sys" ,#~'("v2_66")) ; likewise
+    ;; serde1 failure requires undeclared ‘Glob’ dependency
+    ("rust-globset" ,#~'())
+    ;; The "dox" feature requires non-stable.
+    ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise
+    ("rust-glib-sys" ,#~'("v2_68"))
+    ("rust-gobject-sys" ,#~'("v2_68")) ; likewise
+    ("rust-gtk" ,#~'("v3_24_9")) ; likewise (for dox)
+    ("rust-gtk-sys" ,#~'("v3_24_11")) ; likewise (for dox)
+    ;; Avoid "use-intrisics", which requires unstable.
+    ("rust-half" ,#~'("alloc" "serialize" "std"))
+    ;; TODO: move into Guix proper?
+    ("rust-hashbrown" ,#~'("default" "raw")) ; default "ahash" is required by rust-lru@0.7
+    ("rust-hyper" ,#~'("full"))
+    ;; TODO: investigate build_dictionaries, and maybe not embedding libraries.
+    ;; TODO: cannot choose multiple normalization forms, is this important?
+    ("rust-hyphenation" ,#~'("embed_all"))
+    ("rust-im-rc" ,#~'()) ; "pool" feature doesn't build and "debug" probably makess things less efficient
+    ;; Require rust-cipher.
+    ("rust-inout" ,#~'("std" "block-padding"))
+    ("rust-itoa" ,#~'("std"))
+    ;; "pattern" and "benchmarks" require non-stable (rust-jetscii@0.5)
+    ("rust-jetscii" ,#~'())
+    ;; Avoid removed feature(custom_derive)
+    ("rust-language-tags" ,#~'())
+    ("rust-lazycell" ,#~'()) ;; avoid nightly things
+    ;; extra-traits is required by rust-nix
+    ("rust-libc" ,#~'("std" "extra_traits"))
+    ;; Required by rust-env-logger.
+    ;; kv_unstable is required by rust-kv-log-macro.
+    ("rust-log" ,#~'("std" "kv_unstable"))
+    ("rust-lzma-sys" ,#~'()) ; don't enable "static" (TODO: add it to the list in antioxidant?)
     ;; Required by rust-tokio
     ;; TODO remove os-poll, as implied features are implemented.
     ("rust-mio"
      ,#~'("net" "os-ext" "os-poll"))
+    ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
+    ("rust-nom"
+     ,#~'("std" "lexical" "alloc"))
+    ("rust-numtoa" ,#~'("std"))
+    ;; rust-rsa requires "prime" and "zeroize"
+    ("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ;; rust-x509-parser required 'crypto' and 'x509'
+    ("rust-oid-registry" ,#~'("default" "crypto" "x509"))
+    ("rust-openssl-sys" ,#~'()) ;; avoid the 'vendored' feature
+    ("rust-os-str-bytes" ,#~'("raw"))
+    ("rust-pango" ,#~'("v1_46")) ; "dox" feature requires non-stable
+    ("rust-pango-sys" ,#~'("v1_46")) ; likewise
+    ;; The 'backtrace' and 'petgraph' dependency has been removed.
+    ;; (including petgraph causes a cycle between rust-ahash and rust-hashbrown,
+    ;; but it's ‘only’ required for deadlock detection).
+    ("rust-parking-lot-core" ,#~'())
+    ;; "quickcheck" features requires removed crate "quickcheck"
+    ("rust-partial-io" ,#~'("futures03" "tokio1"))
+    ;; Required by 'sniffglue'
+    ("rust-pktparse" ,#~'("serde"))
+    ("rust-plotters-svg" ,#~'()) ; "debug" feature causes a build failure
+    ;; Required by rust-unicode-normalization
+    ("rust-proc-macro2"
+     ;; Required by rust-serde-bytes via rust-syn.  If
+     ;; absent, this causes errors like
+     ;; <<https://github.com/google/cargo-raze/issues/159>.
+     ,#~'("proc-macro"))
+    ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
+    ;; small_rngs is required by rust-phf-generator.
+    ("rust-rand"
+     ,#~'("std" "std_rng" "getrandom"
+	  "alloc" "small_rng"))
+    ("rust-reqwest" ,#~'("default" "blocking")) ; tealdeer@1.4.1 requires "blocking" to build
+    ;; The 'inline-asm' feature requires non-stable
+    ("rust-riscv" ,#~'())
+    ;; Some features required rust-rand when using the getrandom feature,
+    ;; serde for rust-rand-isaac@0.3.0 ... (now building with all features)
+    ;; ("rust-rand-core" #~'("std" "getrandom"))
+    ("rust-rust-hawktracer-normal-macro" ,#~'()) ; for now, don't enable the profiling feature which requires a currently non-building package rust-hawktracer-sys (which also bundles things!)
+    ("rust-rust-hawktracer-proc-macro" ,#~'()) ; likewise!
+    ;; asm! syntax not supported anymore, and "capture"
+    ;; requires non-existent io::set_panic
+    ("rust-rustc-test" ,#~'())
+    ;; rust-cargo-metadata requires the serialisation
+    ;; / deserialisation traits.
+    ("rust-semver" ,#~'("default" "serde"))
+    ;; 'derive' is needed by rust-ron
+    ("rust-serde" ,#~'("std" "alloc" "derive"))
+    ("rust-servo-fontconfig-sys" ,#~'("force_system_lib")) ; be extra sure the bundled copy isn't used
+    ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
+    ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
+    ("rust-similar" ,#~'("default" "text" "inline"))
+    ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
+    ("rust-slog" ,#~'("default" "nested-values"))
+    ("rust-smallvec" ,#~'()) ; default features require non-stable
+    ;; Default serde1_lib requires unpackaged rust-serde1-lib
+    ("rust-sval" ,#~'("alloc" "arbitrary-depth" "derive" "fmt" "std"))
+    ;; "paw" required by sniffglue
+    ("rust-structopt" ,#~'("default" "paw"))
+    ;; TODO: use default features from Cargo.toml
+    ;; rust-serde-bytes requires the 'parsing' feature.
+    ;; visit is required by rust-synstructure.
+    ;; visit-mut is used by rust-tracing-attributes.
+    ("rust-syn"
+     ,#~'("derive" "parsing" "printing"
+	  "clone-impls"
+	  "proc-macro" "full"
+	  "visit" "visit-mut"
+	  "fold" ; used by rust-diesel-derives
+	  ;; Used by rust-strum-macros
+	  "extra-traits"))
+    ("rust-tinyvec" ,#~'("alloc"))
+    ("rust-tiny-keccak"
+     ;; By default nothing is build, which seems rather useless.
+     ;; Let's enable everything.
+     ,#~'("cshake" "fips202" "k12" "keccak" "kmac" "parallel_hash" "sha3" "shake" "sp800" "tuple_hash"))
+    ;; rust-cookie requires the non-default "parsing" and "macros" feature. Might as well enable
+    ;; "formatting" as well.
+    ("rust-time" ,#~'("default" "macros" "formatting" "parsing" "local-offset"))
     ;; By default zero features are enabled, which is rather
     ;; minimalistic and often not sufficient.  TODO: teach
     ;; antioxidant about ‘implied’ features.
@@ -2403,70 +2446,28 @@ of operation.")
 	  "sync"
 	  "time"))
     ("rust-tokio-util" ,#~'("full" "codec"))
-    ;; extra-traits is required by rust-nix
-    ("rust-libc" ,#~'("std" "extra_traits"))
-    ;; Enable some features such that "rust-futures" actually builds.
-    ("rust-futures-task"
-     ,#~'("std" "alloc"))
-    ("rust-futures-util"
-     ,#~'("std" "alloc" "sink"
-	  "io" "async-await"
-	  "async-await-macro"
-	  "channel"))
-    ("rust-futures-core"
-     ,#~'("std" "alloc"))
-    ("rust-futures-channel"
-     ,#~'("std" "alloc"))
-    ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
-    ;; small_rngs is required by rust-phf-generator.
-    ("rust-rand"
-     ,#~'("std" "std_rng" "getrandom"
-	  "alloc" "small_rng"))
-    ;; Some features required rust-rand when using the getrandom feature,
-    ;; serde for rust-rand-isaac@0.3.0 ... (now building with all features)
-    ;; ("rust-rand-core" #~'("std" "getrandom"))
-    ;; Required by rust-rand-core.
-    ("rust-getrandom" ,#~'("std"))
-    ("rust-ena" ,#~'())  ;; disable "bench", which fails for stable build
-    ;; Required by rust-env-logger.
-    ;; kv_unstable is required by rust-kv-log-macro.
-    ("rust-log" ,#~'("std" "kv_unstable"))
-    ;; The feature "alloc" is not set by default, causing the
-    ;; build to fail (TODO: maybe report upstream?)
-    ("rust-bitvec"
-     ,#~'("std" "atomic" "alloc"))
-    ;; Likewise.
-    ("rust-chrono" ,#~'("default" "alloc"))
-    ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
-    ("rust-nom"
-     ,#~'("std" "lexical" "alloc"))
-    ;; This addresses the build failure
-    ;; ‘could not find `collector` in the crate root’
-    ;; and ‘cannot find function `pin` in crate `epoch`’
-    ("rust-crossbeam-epoch"
-     ,#~'("std" "alloc"))
-    ;; Required by rust-unicode-normalization
-    ("rust-tinyvec" ,#~'("alloc"))
-    ;; TODO: use default features from Cargo.toml
-    ;; rust-serde-bytes requires the 'parsing' feature.
-    ;; visit is required by rust-synstructure.
-    ;; visit-mut is used by rust-tracing-attributes.
-    ("rust-syn"
-     ,#~'("derive" "parsing" "printing"
-	  "clone-impls"
-	  "proc-macro" "full"
-	  "visit" "visit-mut"
-	  "fold" ; used by rust-diesel-derives
-	  ;; Used by rust-strum-macros
-	  "extra-traits"))
-    ("rust-proc-macro2"
-     ;; Required by rust-serde-bytes via rust-syn.  If
-     ;; absent, this causes errors like
-     ;; <<https://github.com/google/cargo-raze/issues/159>.
-     ,#~'("proc-macro"))
-    ;; TODO: move into Guix proper?
-    ("rust-hashbrown" ,#~'("default" "raw")) ; default "ahash" is required by rust-lru@0.7
-    ("rust-os-str-bytes" ,#~'("raw"))))
+    ;; early-data is required by rust-trust-dns-proto
+    ("rust-tokio-rustls" ,#~'("default" "early-data"))
+    ;; dns-over-openssl is required by rust-trust-dns-openssl.
+    ;; dns-over-native-tls is required by rust-trust-dns-native-tls.
+    ;; dns-over-rustls is required by rust-trust-dns-rustls.
+    ;; dns-over-https is required by rust-trust-dns-https.
+    ("rust-trust-dns-proto"
+     ,#~'("default" "dns-over-openssl" "dns-over-native-tls" "dns-over-rustls"
+	  "dns-over-https"))
+    ;; For now avoid optional dependencies
+    ("rust-typenum" ,#~'())
+    ("rust-value-bag" ,#~'("std"))
+    ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
+    ("rust-webpki" ,#~'("std" "alloc"))
+    ("rust-xz2" ,#~'("futures")) ; ???
+    ;; rust-rcgen requires "time". While at it, enable other
+    ;; features as well.
+    ("rust-yasna" ,#~'("default" "time" "bit-vec" "bigint" "std"))
+    ;; rust-num-bigint-dig's zeroize feature requires the "derive"
+    ;; feature of rust-zeroize
+    ("rust-zeroize" ,#~'("default" "derive"))
+    ("rust-zstd-safe" ,#~'("default" "std")))) ; std is reaquired by rust-zstd@0.9.0
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
