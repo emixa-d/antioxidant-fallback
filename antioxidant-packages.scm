@@ -2482,7 +2482,8 @@ of operation.")
     ("rust-zstd-safe" ,#~'("default" "std")))) ; std is reaquired by rust-zstd@0.9.0
 
 (define %replacements
-  `(("rust-blake2" ,rust-blake2)
+  `(("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
+    ("rust-blake2" ,rust-blake2)
     ("rust-actix-codec" ,rust-actix-codec)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
