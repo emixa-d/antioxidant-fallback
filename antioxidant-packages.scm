@@ -548,6 +548,18 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "0gmnn86ifc2ngmwf3mpiw00kmxm8m2wxxxqnchmpraj6mj97a032"))))))
 
+(define rust-mio ; new rust-tokio is incompatible with rust-mio@0.8.0
+  (package
+    (inherit (p rust-mio-0.8))
+    (name "rust-mio")
+    (version "0.8.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "mio" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "168pqd9v7llhhal1jy5l1k0k8qp0g8hsddv6w1s93n24kc6magbi"))))))
 
 ;; The old tokio doesn't build against recent rust-futures
 #; ; currently removed
@@ -613,6 +625,19 @@ an unique string, which can be useful for resolving symbol conflicts."
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "17iqy9a8x0d8ydl5r28w8z9akhnwp74wyjxks055b617ryhgsla1"))))))
+
+(define rust-tokio ; old tokio doesn't build against new rust-mio
+  (package
+    (inherit (p rust-tokio-1))
+    (name "rust-tokio")
+    (version "1.18.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "tokio" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "158klcakw40y37kgbafg9z1y12vgflh35ad6bbfxss6g4w2by0s9"))))))
 
 ;; rust-tokio-util needs a slab with 'compact'
 (define rust-slab
@@ -2169,6 +2194,7 @@ of operation.")
     "rust-defmt" ; accidentally requires unstable-test?
     "rust-heapsize-plugin" ; makes use of removed features
     "rust-rustc-test" ; doesn't build against recent rust-time
+    "rust-mio-uds" ; doesn't build against new rust-mio, now included in new rust-mio
     "rust-speculate" ; @0.1.2 doesn't build against recent rust-syn
     "rust-skeptic" ; @0.13.4 doesn't build
     "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
@@ -2608,6 +2634,7 @@ of operation.")
      #:for-dependent
      ,(lambda (dependent)
 	(string=? "swayhide" (package-name dependent))))
+    ("rust-mio" ,rust-mio)
     ("rust-smol" ,(p rust-smol-1)) ; @0.1 or its dependencies don't build
     ("rust-actix-rt" ,rust-actix-rt)
     ("rust-async-process" ,rust-async-process) ; @1.0.1 doesn't build against new rust-signal-hookx
@@ -2655,6 +2682,7 @@ of operation.")
     ;; The old rust-tokio-openssl@0.4 doesn't build
     ("rust-tokio-openssl" ,(p rust-tokio-openssl-0.6))
     ("rust-tokio-native-tls" ,(p rust-tokio-native-tls-0.3)) ; @0.1 doesn't build
+    ("rust-tokio" ,rust-tokio) ; rust-tokio@1 in Guix doesn't build against new rust-mio
     ("rust-bindgen"
      ;; In the old version 'runtime' cannot be
      ;; disabled.
@@ -2879,7 +2907,7 @@ of operation.")
      (("rust-local-waker" ,rust-local-waker)
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
     ("rust-actix-server" ;new dependencies for new version
-     (("rust-mio" ,(p rust-mio-0.8))))
+     (("rust-mio" ,rust-mio)))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
@@ -2921,6 +2949,8 @@ of operation.")
      (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
     ("rust-headers"
      (("rust-httpdate" ,(p rust-httpdate-1)))) ; new dependency
+    ("rust-tokio" ; new dependency for new version
+     (("rust-socket2" ,(p rust-socket2-0.4))))
     ("rust-tokio-sync"
      ;; TODO: remove 'preview' dependencies?
      (("rust-futures-core" ,rust-futures-core-0.3)
