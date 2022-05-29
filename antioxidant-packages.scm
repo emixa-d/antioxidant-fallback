@@ -228,6 +228,10 @@
      ,#~((add-after 'unpack 'delete-bin
 	   (lambda _
 	     (delete-file "src/bin/gen_hash_test.rs")))))
+    ("rust-multipart"
+     ,#~((add-after 'unpack 'remove-uncompilable-example
+	   (lambda _
+	     (delete-file "src/bin/read_file.rs")))))
     ("rust-cpp-demangle"
      ,#~((add-after 'unpack 'delete-bin
 	   (lambda _
