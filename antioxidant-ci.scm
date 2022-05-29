@@ -18,6 +18,7 @@
 (define-module (antioxidant-ci)
   #:use-module ((antioxidant-packages) #:select (vitaminate/auto public-test-package))
   #:use-module ((guix build-system cargo) #:select (cargo-build-system))
+  #:use-module ((guix profiles) #:select (packages->manifest))
   #:use-module ((gnu packages) #:select (fold-packages))
   #:use-module ((rnrs exceptions) #:select (guard))
   #:use-module ((guix packages) #:select (package-build-system package-name))
@@ -41,3 +42,6 @@
   (fold-packages add '() #:select? is-leaf-cargo-rust-package?))
 
 ;; The idea is to build all packages in (all-packages) by the CI infrastructure.
+;; Apparently returning a manifest is convenient for the CI infrastructure, see
+;; see <https://github.com/emixa-d/antioxidant-fallback/pull/1>.
+(packages->manifest (all-packages))
