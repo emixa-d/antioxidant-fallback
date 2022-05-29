@@ -2907,7 +2907,11 @@ of operation.")
      (("rust-local-waker" ,rust-local-waker)
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
     ("rust-actix-server" ;new dependencies for new version
-     (("rust-mio" ,rust-mio)))
+     (("rust-mio" ,rust-mio)
+      ("rust-tokio" ,rust-tokio)
+      ("rust-futures-core" ,rust-futures-core-0.3)
+      ("rust-futures-util" ,rust-futures-util-0.3)
+      ("rust-tracing" ,(p rust-tracing-0.1))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
