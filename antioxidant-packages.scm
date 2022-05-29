@@ -2485,6 +2485,7 @@ of operation.")
   `(("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
+    ("rust-rand-core" ,(p rust-rand-core-0.6)) ; avoid multiple versions
     ("rust-blake2" ,rust-blake2)
     ("rust-actix-codec" ,rust-actix-codec)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
