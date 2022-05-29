@@ -924,6 +924,16 @@ raise an error instead."
   "Compile the Rust binaries described in Cargo.toml"
   (define package (manifest-package *manifest*))
   (define files-visited '())
+  (define (normalize-relative-file-name name)
+    ;; find-files includes a ./ prefix, but infer-binary-source doesn't.
+    ;; Make sure ./src/bin/foo.rs and src/bin/foo.rs are treated equally.
+    (if (string-prefix? "./" name)
+	(string-drop name 2)
+	name))
+  (define (mark-file-visited! file-name)
+    (set! files-visited (cons (normalize-relative-file-name file-name) files-visited)))
+  (define (is-file-visited? file-name)
+    (member (normalize-relative-file-name file-name) files-visited))
   (define extern-crates (manifest-all-dependencies *manifest* '(dependency)))
   (define (binary-location binary)
     (string-append (or (assoc-ref outputs "bin")
@@ -948,28 +958,35 @@ raise an error instead."
 	    (list #:configuration *configuration*))))
   ;; TODO: respect required-features.
   (define (compile-bin-target target)
-    (if (lset<= string=? (target-required-features target) *features*)
-	(let ((source (infer-binary-source target)))
-	  (set! files-visited (cons source files-visited))
-	  (format #t "Compiling ~a~%" source)
-	  (cb source (or (target-name target) (package-name package))
-	      (or (target-edition target) (package-edition package))))
-	(format #t "not compiling ~a, because the following features are missing: ~a~%"
-		target ; we don't care if the source exists when we are not compiling it.
-		(lset-difference string=?
-				 (target-required-features target)
-				 *features*))))
+    (let ((source (infer-binary-source target)))
+      ;; Make sure they won't be compiled after the the 'package-autobins'
+      ;; below if required features are missing.  This is required
+      ;; for building rust-multipart.
+      (mark-file-visited! source)
+      (if (lset<= string=? (target-required-features target) *features*)
+	  (begin
+	    (format #t "Compiling ~a~%" source)
+	    (cb source (or (target-name target) (package-name package))
+		(or (target-edition target) (package-edition package))))
+	  (format #t "not compiling ~a, because the following features are missing: ~a~%"
+		  target ; we don't care if the source exists when we are not compiling it.
+		  (lset-difference string=?
+				   (target-required-features target)
+				   *features*)))))
   (for-each compile-bin-target (manifest-bin *manifest*))
   (when (package-autobins package)
     (when (and (file-exists? "src/main.rs")
-	       (not (member "src/main.rs" files-visited)))
+	       (not (is-file-visited? "src/main.rs")))
+      (mark-file-visited! "src/main.rs")
       (cb "src/main.rs" (package-name package) (package-edition package)))
-    (for-each ;; TODO: support [[bin]]
+    (for-each ;; TODO: support [[bin]] (TODO: resolved?)
      (lambda (file)
        (when (and (string-suffix? ".rs" file)
 		  ;; Possibly the binary was already in [[bin]]
 		  ;; and hence is pointless to compile again.
-		  (not (member file files-visited)))
+		  ;; Might also be impossible due to missing
+		  ;; features (see 'compile-bin-target').
+		  (not (is-file-visited? file)))
 	 (cb file (string-drop-right (basename file)
 				     (string-length ".rs"))
 	     (package-edition package))))
