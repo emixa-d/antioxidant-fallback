@@ -1921,6 +1921,19 @@ of operation.")
         (sha256
          (base32 "096q1hj88kgzfk6zv251sn57dlswh65r8ds6pdvv18cycn74z8qd"))))))
 
+(define rust-actix-service ; new rust-actix-service doesn't build @1
+  (package
+    (inherit (p rust-actix-service-1))
+    (name "rust-actix-service")
+    (version "2.0.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-service" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0fipjcc5kma7j47jfrw55qm09dakgvx617jbriydrkqqz10lk29v"))))))
+
 (define rust-avif-serialize ; @0.6 doesn't build against new rust-arrayvec
   (package
     (inherit (@ (gnu packages crates-graphics) rust-avif-serialize-0.6))
@@ -2599,6 +2612,7 @@ of operation.")
     ("rust-blake2" ,rust-blake2)
     ("rust-actix-codec" ,rust-actix-codec)
     ("rust-actix-utils" ,rust-actix-utils)
+    ("rust-actix-service" ,rust-actix-service)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
@@ -2912,6 +2926,10 @@ of operation.")
       ("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-futures-util" ,rust-futures-util-0.3)
       ("rust-tracing" ,(p rust-tracing-0.1))))
+    ("rust-actix-service" ;likewise
+     (("rust-futures-core" ,rust-futures-core-0.3)
+      ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))
+      ("rust-paste" ,(p rust-paste-1))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
