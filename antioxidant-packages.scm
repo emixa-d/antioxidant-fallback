@@ -1381,6 +1381,18 @@ an unique string, which can be useful for resolving symbol conflicts."
      (sha256
       (base32 "19rp2xcwqf5p4q5h6xxzb44xsfgpvvnnsis3l0dngnffw7zbhi3d"))))))
 
+(define rust-actix-codec ; @0.3 doesn't build against new rust-bytes@1
+  (package
+    (inherit (p rust-actix-codec-0.3))
+    (name "rust-actix-codec")
+    (version "0.5.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-codec" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1zm7nk8irjgkf08a6x632niwd9iprq43rdda4wqmgwx70ja5b9sp"))))))
 
 ;;Not yet inGuix,requiredby rust-cipher
 (define rust-inout
@@ -2471,6 +2483,7 @@ of operation.")
 
 (define %replacements
   `(("rust-blake2" ,rust-blake2)
+    ("rust-actix-codec" ,rust-actix-codec)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
@@ -2763,6 +2776,9 @@ of operation.")
       ("rust-openssl" ,(p rust-openssl-0.10))
       ("rust-regex" ,(p rust-regex-1))
       ("rust-textwrap" ,(p rust-textwrap-0.12))))
+    ("rust-actix-codec" ; new inputs of new version
+     (("rust-memchr" ,(p rust-memchr-2))
+      ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
