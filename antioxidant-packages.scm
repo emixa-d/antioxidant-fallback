@@ -1423,6 +1423,19 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "1zm7nk8irjgkf08a6x632niwd9iprq43rdda4wqmgwx70ja5b9sp"))))))
 
+(define rust-actix-tls
+  (package
+    (inherit (p rust-actix-tls-2))
+    (name "rust-actix-tls")
+    (version "3.0.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-tls" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "15rj6gn83fzv5w2b2y0s690q80awsjhbjg40f3qcgkgpjbr0rplz"))))))
+
 (define rust-actix-utils ; @2 doesn't build against new rust-actix-rt
   (package
     (inherit (p rust-actix-utils-2))
@@ -2212,6 +2225,7 @@ of operation.")
     "rust-skeptic" ; @0.13.4 doesn't build
     "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
     "rust-macrotest"
+    "rust-tokio-tls" ; @0.3.1 doesn't build
     "rust-rust-hawktracer-sys" ; only for tracing (debugging-only), so maybe the build failure can be avoided?
     "rust-ntest" "rust-ntest-test-cases" ; test-only, and @0.3.4 tries using non-exported syn::export
     "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
@@ -2652,6 +2666,7 @@ of operation.")
     ("rust-mio" ,rust-mio)
     ("rust-smol" ,(p rust-smol-1)) ; @0.1 or its dependencies don't build
     ("rust-actix-rt" ,rust-actix-rt)
+    ("rust-actix-tls" ,rust-actix-tls)
     ("rust-async-process" ,rust-async-process) ; @1.0.1 doesn't build against new rust-signal-hookx
     ("rust-blocking" ,(p rust-blocking-1)) ; @0.4 doesn't build
     ("rust-inotify" ,(p rust-inotify-0.9)) ; @0.8 doesn't build
@@ -2931,6 +2946,11 @@ of operation.")
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))
       ("rust-paste" ,(p rust-paste-1))))
+    ("rust-actix-tls" ;likewise
+     (("rust-futures-core" ,rust-futures-core-0.3)
+      ("rust-actix-rt" ,rust-actix-rt)
+      ("rust-log" ,(p rust-log-0.4))
+      ("rust-tokio-util" ,(p rust-tokio-util-0.3))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
