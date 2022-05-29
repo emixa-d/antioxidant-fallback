@@ -2082,6 +2082,19 @@ of operation.")
          ("rust-tempfile" ,(p rust-tempfile-3))
          ("rust-vcpkg" ,(p rust-vcpkg-0.2)))))))
 
+(define rust-headers ; @0.3.3 doesn't build against new rust-time
+  (package
+    (inherit (p rust-headers-0.3))
+    (name "rust-headers")
+    (version "0.3.7")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "headers" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0pd5i8aywnmx9q7wfzn9bs0jq2fm5rmk0kdhcnmy1qcbg3jpizsc"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2203,6 +2216,7 @@ of operation.")
     ("rust-tracing-attributes" -> "rust-async-trait")
     ("rust-tracing-attributes" -> "rust-tracing-futures")
     ("rust-tracing" -> "rust-tokio")
+    ("rust-headers" -> "rust-time") ; dependency removed in new version
     ("rust-hashbrown" -> "rust-bumpalo") ; todo: remove from #:cargo-inputs?, unused?
     ("rust-fastrand" -> "rust-getrandom")
     ("rust-fastrand" -> "rust-instant")
@@ -2571,6 +2585,7 @@ of operation.")
      ;; In the old version 'runtime' cannot be
      ;; disabled.
      ,(p rust-bindgen-0.59))
+    ("rust-headers" ,rust-headers)
     ("rust-heck" ,(p rust-heck-0.4)) ; 0.3 too old for rust-strum-macros@0.24
     ("rust-peg" ,(p rust-peg-0.6)) ; 0.5 misses dependency information
     ;; Avoid potential incompatibilities.
@@ -2822,6 +2837,8 @@ of operation.")
      (("rust-futures-core" ,rust-futures-core-0.3)))
     ("rust-http-body" ; at least for 0.4
      (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
+    ("rust-headers"
+     (("rust-httpdate" ,(p rust-httpdate-1)))) ; new dependency
     ("rust-tokio-sync"
      ;; TODO: remove 'preview' dependencies?
      (("rust-futures-core" ,rust-futures-core-0.3)
