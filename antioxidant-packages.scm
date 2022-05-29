@@ -2125,6 +2125,8 @@ of operation.")
     "rust-femme" ; some dependencies fail to build
     "rust-proptest" "rust-proptest-derive"
     "rust-futures-util-preview" ; futures-util has been updated?
+    "rust-iron" ; its dependency rust-hyper-native-tls fails to build
+    "rust-rocket" ; its dependency rust-hyper-sync-rustls fails to build
     "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
     ;; TODO: how do the three following crates even work?
     "rust-rustc-std-workspace-std"
@@ -2378,6 +2380,9 @@ of operation.")
     ;; TODO remove os-poll, as implied features are implemented.
     ("rust-mio"
      ,#~'("net" "os-ext" "os-poll"))
+    ("rust-multipart"
+     ;; default "iron" feature requires rust-iron which currently fails to build.
+     ,#~'("client" "hyper" "mock" "nickel" "server" "tiny_http"))
     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
     ("rust-nom"
      ,#~'("std" "lexical" "alloc"))
