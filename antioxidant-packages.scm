@@ -1839,6 +1839,19 @@ of operation.")
         (sha256
           (base32 "1qmpqnwlcvp7xpi1f6l63icaafpsak6hv7s326snffhs6rj1rc0g"))))))
 
+(define rust-actix-rt ; @1.1.1 doesn't build against new rust-tokio
+  (package
+    (inherit (p rust-actix-rt-1))
+    (name "rust-actix-rt")
+    (version "2.7.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-rt" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "000hxsbaxgd8jdmnw4dnlff4xdhggprnw2lk67pmiscqa4lnr8by"))))))
+
 (define rust-avif-serialize ; @0.6 doesn't build against new rust-arrayvec
   (package
     (inherit (@ (gnu packages crates-graphics) rust-avif-serialize-0.6))
@@ -2551,6 +2564,7 @@ of operation.")
      ,(lambda (dependent)
 	(string=? "swayhide" (package-name dependent))))
     ("rust-smol" ,(p rust-smol-1)) ; @0.1 or its dependencies don't build
+    ("rust-actix-rt" ,rust-actix-rt)
     ("rust-async-process" ,rust-async-process) ; @1.0.1 doesn't build against new rust-signal-hookx
     ("rust-blocking" ,(p rust-blocking-1)) ; @0.4 doesn't build
     ("rust-inotify" ,(p rust-inotify-0.9)) ; @0.8 doesn't build
@@ -2811,6 +2825,8 @@ of operation.")
     ("rust-actix-codec" ; new inputs of new version
      (("rust-memchr" ,(p rust-memchr-2))
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
+    ("rust-actix-rt" ;new dependencies for new version
+     (("rust-futures-core" ,(p rust-futures-core-0.3))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
