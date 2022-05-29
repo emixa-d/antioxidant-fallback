@@ -1398,6 +1398,37 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "1zm7nk8irjgkf08a6x632niwd9iprq43rdda4wqmgwx70ja5b9sp"))))))
 
+(define rust-actix-utils ; @2 doesn't build against new rust-actix-rt
+  (package
+    (inherit (p rust-actix-utils-2))
+    (name "rust-actix-utils")
+    (version "3.0.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-utils" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "155aj87z8634mfmggfixyqy3pqhpyf7g97zrzy6piz77qamcp4g4"))))))
+
+(define rust-local-waker
+  (package
+    (name "rust-local-waker")
+    (version "0.1.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "local-waker" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1w9zqlh18mymvb82ya0sailiy5d3wsjamaakgl70x50i6vmpckz3"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (home-page "https://github.com/actix/actix-net.git")
+    (synopsis "A synchronization primitive for thread-local task wakeup")
+    (description
+      "This package provides a synchronization primitive for thread-local task wakeup")
+    (license (list license:expat license:asl2.0))))
+
 ;;Not yet inGuix,requiredby rust-cipher
 (define rust-inout
   (package
@@ -2528,6 +2559,7 @@ of operation.")
     ("rust-rand-core" ,(p rust-rand-core-0.6)) ; avoid multiple versions
     ("rust-blake2" ,rust-blake2)
     ("rust-actix-codec" ,rust-actix-codec)
+    ("rust-actix-utils" ,rust-actix-utils)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
@@ -2829,6 +2861,9 @@ of operation.")
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
     ("rust-actix-rt" ;new dependencies for new version
      (("rust-futures-core" ,(p rust-futures-core-0.3))))
+    ("rust-actix-utils" ;new dependencies for new version
+     (("rust-local-waker" ,rust-local-waker)
+      ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
@@ -3057,6 +3092,8 @@ of operation.")
   (public-test-package (vitaminate/auto (p rust-bindgen-0.59)))) ; fragile w.r.t. changes to code for linking to C libraries, avoid breaking it
 (define-public antioxidated-agate
   (public-test-package (vitaminate/auto agate)))
+(define-public antioxidated-alfis
+  (public-test-package (vitaminate/auto alfis)))
 (define-public antioxidated-castor
   (public-test-package (vitaminate/auto castor)))
 (define-public antioxidated-diffr
