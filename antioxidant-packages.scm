@@ -2483,6 +2483,7 @@ of operation.")
 
 (define %replacements
   `(("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
+    ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-blake2" ,rust-blake2)
     ("rust-actix-codec" ,rust-actix-codec)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
