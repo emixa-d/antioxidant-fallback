@@ -1591,6 +1591,24 @@ of operation.")
      (sha256
       (base32 "1zy60cdqrccd9kc8w4hvk1q584b4gjr4d48n3dff42xn6alapljr"))))))
 
+(define rust-warp ; @0.2 doesn't build
+  (package
+    (inherit (p rust-warp-0.2))
+    (name "rust-warp")
+    (version "0.3.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "warp" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+         (base32 "0zjqbg2j1fdpqq74bi80hmvyakf1f771d7vrmkqvg90lj4g4xvrw"))
+	(patches (list (local-file "warp-Update-tokio-rustls-to-v0.23.patch")
+		       (local-file "warp-Update-tungstenite-to-0.17.2.patch")))
+	(snippet #~(begin
+		     (delete-file "Cargo.toml")
+		     (rename-file "Cargo.toml.orig" "Cargo.toml")))))))
+
 (define rust-as-slice ; 0.1 uses multiple generic-array version which antioxidant doesn't support (TODO?)
   (package
     (name "rust-as-slice")
@@ -2513,7 +2531,7 @@ of operation.")
     ("rust-futures-core"
      ,#~'("std" "alloc"))
     ("rust-futures-channel"
-     ,#~'("std" "alloc"))
+     ,#~'("std" "alloc" "sink")) ; sink is required by rust-warp@0.3
     ;; Enable some features such that "rust-futures" actually builds.
     ("rust-futures-task"
      ,#~'("std" "alloc"))
@@ -2892,6 +2910,7 @@ of operation.")
      ,rust-rustls-0.20)
     ("rust-tokio-rustls" ;0.10.3 doesn't build
      ,rust-tokio-rustls-0.23)
+    ("rust-warp" ,rust-warp)
     ;; TODO: respect SSL_CERT_DIR instead of hardcoding trusting
     ;; whoever Mozilla trusts.
     ;; TODO: build from source
@@ -3084,7 +3103,13 @@ of operation.")
       ("rust-futures-sink" ,rust-futures-sink-0.3)
       ("rust-futures-util" ,rust-futures-util-0.3)))
     ("rust-tokio-util"
-     (("rust-tracing" ,(p rust-tracing-0.1)))))) ; missing dependency
+     (("rust-tracing" ,(p rust-tracing-0.1)))) ; missing dependency
+    ("rust-warp" ; new dependencies for new version
+     (("rust-futures-channel" ,(p rust-futures-channel-0.3))
+      ("rust-futures-util" ,(p rust-futures-util-0.3))
+      ("rust-tokio-util" ,rust-tokio-util-0.7)
+      ("rust-rustls-pemfile" ,(p rust-rustls-pemfile-0.2))
+      ("rust-percent-encoding" ,(p rust-percent-encoding-2))))))
 
 (define (find-replacement dependent dependency)
   (define test-replacement

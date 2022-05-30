@@ -1,0 +1,32 @@
+From 7a5bd7585d39632aa320e475467a48ea414cb9d6 Mon Sep 17 00:00:00 2001
+From: Maxime Devos <maximedevos@telenet.be>
+Date: Mon, 30 May 2022 17:39:17 +0000
+Subject: [PATCH] Update tungstenite to 0.17.2
+
+The build system I use hasn't implemented tests yet
+and uses a different dependency resolving system,
+so best double-check.
+
+Submitted upstream at <https://github.com/seanmonstar/warp/pull/973>.
+Cargo.toml changes don't apply cleanly so they have been removed
+from the patch in Guix.
+
+---
+ src/filters/ws.rs | 1 +
+ 1 file changed, 1 insertions(+), no deletions
+
+diff --git a/src/filters/ws.rs b/src/filters/ws.rs
+index dd3b9d4..14a8d8a 100644
+--- a/src/filters/ws.rs
++++ b/src/filters/ws.rs
+@@ -373,6 +373,7 @@ impl Message {
+             protocol::Message::Ping(ref v) => v,
+             protocol::Message::Pong(ref v) => v,
+             protocol::Message::Close(_) => &[],
++            protocol::Message::Frame(ref frame) => frame.payload(),
+         }
+     }
+ 
+-- 
+2.30.2
+
