@@ -1196,6 +1196,19 @@ an unique string, which can be useful for resolving symbol conflicts."
      (modify-inputs (package-inputs (@ (gnu packages crates-io) rust-block-padding-0.2))
 		    (append (@ (gnu packages crates-io) rust-generic-array-0.14))))))
 
+(define rust-chacha20poly1305 ; @0.9 doesn't build against rust-cipher@0.4
+  (package
+    (inherit (p rust-chacha20poly1305-0.9))
+    (name "rust-chacha20poly1305")
+    (version "0.10.0-pre")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "chacha20poly1305" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1skr6v12mlaccsxd1hjgr1bvk1hs9d412g29rymnjr76f47l6v3l"))))))
+
 (define rust-block-modes ; 0.8.1 uses removed NewBlockCipher
   (package
     (inherit (@ (gnu packages crates-io) rust-block-modes-0.8))
@@ -2628,6 +2641,7 @@ of operation.")
     ("rust-actix-codec" ,rust-actix-codec)
     ("rust-actix-utils" ,rust-actix-utils)
     ("rust-actix-service" ,rust-actix-service)
+    ("rust-chacha20poly1305" ,rust-chacha20poly1305)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
