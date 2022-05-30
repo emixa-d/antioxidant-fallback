@@ -2238,6 +2238,19 @@ of operation.")
         (sha256
           (base32 "0pd5i8aywnmx9q7wfzn9bs0jq2fm5rmk0kdhcnmy1qcbg3jpizsc"))))))
 
+(define rust-tungstenite ; @0.11 doesn't build
+  (package
+    (inherit (p rust-tungstenite-0.11))
+    (name "rust-tungstenite")
+    (version "0.17.2")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "tungstenite" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1x848392ihy5mh098sns0lcmb5rdwkxpmdcfya108mz783m2ssnr"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2682,6 +2695,7 @@ of operation.")
     ("rust-trust-dns-rustls" ,rust-trust-dns-rustls)
     ("rust-trust-dns-https" ,rust-trust-dns-https)
     ("rust-trust-dns-resolver" ,rust-trust-dns-resolver)
+    ("rust-tungstenite" ,rust-tungstenite)
     ("rust-pulse" ,(package-with-extra-patches
 		    (p rust-pulse-0.5)
 		    ;; For compatibility with new rust-time
@@ -3024,6 +3038,8 @@ of operation.")
      (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
     ("rust-headers"
      (("rust-httpdate" ,(p rust-httpdate-1)))) ; new dependency
+    ("rust-tungstenite"
+     (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tokio" ; new dependency for new version
      (("rust-socket2" ,(p rust-socket2-0.4))))
     ("rust-tokio-sync"
