@@ -2251,6 +2251,19 @@ of operation.")
         (sha256
           (base32 "1x848392ihy5mh098sns0lcmb5rdwkxpmdcfya108mz783m2ssnr"))))))
 
+(define rust-tokio-tungstenite ; @0.11 doesn't build
+  (package
+    (inherit (p rust-tokio-tungstenite-0.11))
+    (name "rust-tokio-tungstenite")
+    (version "0.17.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "tokio-tungstenite" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1bi1z1l8392v20mg24gryw5jrm0166wxa155z138qma958is3k86"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2759,6 +2772,7 @@ of operation.")
     ("rust-tokio-openssl" ,(p rust-tokio-openssl-0.6))
     ("rust-tokio-native-tls" ,(p rust-tokio-native-tls-0.3)) ; @0.1 doesn't build
     ("rust-tokio" ,rust-tokio) ; rust-tokio@1 in Guix doesn't build against new rust-mio
+    ("rust-tokio-tungstenite" ,rust-tokio-tungstenite) ; @0.11 doesn't build
     ("rust-bindgen"
      ;; In the old version 'runtime' cannot be
      ;; disabled.
