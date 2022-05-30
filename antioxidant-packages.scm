@@ -1939,6 +1939,19 @@ of operation.")
         (sha256
           (base32 "1qmpqnwlcvp7xpi1f6l63icaafpsak6hv7s326snffhs6rj1rc0g"))))))
 
+(define rust-actix ; @0.10 doesn't build
+  (package
+    (inherit (p rust-actix-0.10))
+    (name "rust-actix")
+    (version "0.13.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1mdy5i7f1px5kfyv3s5li985xry9zby4zc2bpy2qac8wr950ca7p"))))))
+
 (define rust-actix-rt ; @1.1.1 doesn't build against new rust-tokio
   (package
     (inherit (p rust-actix-rt-1))
@@ -2682,6 +2695,7 @@ of operation.")
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
     ("rust-rand-core" ,(p rust-rand-core-0.6)) ; avoid multiple versions
     ("rust-blake2" ,rust-blake2)
+    ("rust-actix" ,rust-actix)
     ("rust-actix-codec" ,rust-actix-codec)
     ("rust-actix-utils" ,rust-actix-utils)
     ("rust-actix-service" ,rust-actix-service)
@@ -2795,7 +2809,7 @@ of operation.")
     ("rust-syscallz" ,rust-syscallz)
     ("rust-strum" ,rust-strum)
     ("rust-strum-macros" ,rust-strum-macros)
-    ("rust-actix" ,(p rust-actix-0.10))
+    ("rust-actix" ,rust-actix) ; @0.10 doesn't build
     ("rust-backtrace" ,rust-backtrace) ; old backtrace doesn't build with the new rust-object
     ("rust-gimli" ,rust-gimli)
     ;; rust-pkcs5@0.5.0-pre.1 requires new_unwrap
@@ -3013,6 +3027,12 @@ of operation.")
       ("rust-actix-rt" ,rust-actix-rt)
       ("rust-log" ,(p rust-log-0.4))
       ("rust-tokio-util" ,(p rust-tokio-util-0.3))))
+    ("rust-actix" ; likewise
+     (("rust-futures-core" ,rust-futures-core-0.3)
+      ("rust-futures-sink" ,rust-futures-sink-0.3)
+      ("rust-futures-task" ,rust-futures-task-0.3)
+      ("rust-futures-util" ,rust-futures-util-0.3)
+      ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
