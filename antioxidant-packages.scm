@@ -92,6 +92,24 @@
      ,#~((add-after 'unpack 'unbundle
 	   (lambda _ ; TODO: move to origin snippet (& upstream Guix?)
 	     (delete-file-recursively "freetype2")))))
+    ("rust-ed25519-dalek"
+     ;; TODO: upstream
+     ,#~((add-after 'unpack 'fix-uses
+	   (lambda _
+	     (substitute* "src/secret.rs"
+	       (("use curve25519_dalek::digest::Digest;")
+		"use curve25519_dalek::digest::{Digest,Update};")
+	       ;; Resolve the resulting ambiguity
+	       (("h\\.update\\(secret_key\\.as_bytes\\(\\)\\)")
+		"Digest::update(&mut h, secret_key.as_bytes())")
+	       (("h\\.update\\(&self.nonce\\)")
+		"Digest::update(&mut h, &self.nonce)")
+	       (("h\\.update\\(&message\\)")
+		"Digest::update(&mut h, &self.nonce)")
+	       (("h\\.update\\(R\\.as_bytes\\(\\)\\)")
+		"Digest::update(&mut h, R.as_bytes())")
+	       (("h\\.update\\(public_key\\.as_bytes\\(\\)\\)")
+		"Digest::update(&mut h, public_key.as_bytes())"))))))
     ;; TODO: in upstream Guix, replace
     ;; (delete-file-recursively "jemalloc")
     ;; by (delete-file-recursively "rep")
