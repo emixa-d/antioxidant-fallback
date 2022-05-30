@@ -2759,6 +2759,7 @@ of operation.")
     ("rust-aes-gcm" ,rust-aes-gcm)
     ("rust-chacha20" ,rust-chacha20)
     ("rust-unicase" ,(p rust-unicase-2)) ; @1 doesn't build because of removed features
+    ("rust-url" ,(p rust-url-2)) ; @1 doesn't build
     ("rust-hkdf" ,rust-hkdf)
     ("rust-as-slice" ,rust-as-slice)
     ("rust-jetscii" ,(p rust-jetscii-0.5)) ; use recent version of jetscii that actually builds
