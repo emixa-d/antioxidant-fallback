@@ -1,5 +1,3 @@
-TODO goals/status/...
-
 Goals:
 
   * Reduce rift between Guix and Rust by making Rust packages work
@@ -22,7 +20,7 @@ Side-goals: (not the main goal, but partially solved along the way)
   * Having multiple versions of the same dependency is inconvenient for
     antioxidant, so often only the latest version is preserved.
     Less package variants -> less space usage, less compilation time, less
-    opportunities for sneaking malware through.
+    opportunities for sneaking malware through, less old buggy versions.
   * As part of resolving build failures caused by using antioxidant,
     some crates were updated or added.
 
@@ -59,3 +57,46 @@ Pros/cons of antioxidant:
   * pro: antioxidant just uses inputs/native-inputs, so "guix graph", "guix refresh -l"
     will be useful after transforming existing package definitions.
   * cons: probably not everything of Cargo.toml is implemented yet
+
+Status:
+  * Unless they have been broken, the following packages are known to build:
+
+    antioxidated-castor
+    antioxidated-dutree
+    antioxidated-diffr
+    antioxidated-git-absorb
+    antioxidated-hex
+    antioxidated-hexyl
+    antioxidated-ripgrep
+    antioxidated-rtss
+    antioxidated-sniffglue
+    antioxidated-swayhide
+    antioxidated-tealdeer
+
+ * I wouldn't know how many fail to build
+
+Next steps :
+
+(a) The antioxidant channel has information on how to transform
+    package definitions using cargo-build-sstem to antioxidant-build-system.
+    Maybe "guix style" could be taught to perform these changes to
+    the source code?
+
+(b) To get a good grasp on what builds/what not, it would be useful
+    to build the channel at ci.guix.gnu.org or such.  More concretely,
+    the CI would grab all cargo-build-system rust apps from (gnu packages ...),
+    feed them to the package transformation procedure 'vitaminate/auto',
+    and build the results.  Then we can have a look at a dashboard like
+    <https://ci.guix.gnu.org/eval/361030/dashboard>
+
+(c) Maybe there could be some kind of transition period, where
+    'antioxidant.scm' and 'antioxidant-packages.scm' is added
+    to the Guix repo, known-to-build packages are replaced by
+    their antioxidated variant (using vitaminate/auto) and gradually
+    all rust apps are becoming supported by antioxidant.  Finally,
+    when all are supported, the "guix style" from (a) could be run
+    to clean up the source code?
+
+    Though for now, I would prefer to do something like (b) first.
+
+(d) Implement support for "cdylib" such that things like librsvg can be built.
