@@ -1,0 +1,9 @@
+[package]
+authors = []
+name = "sharedlib"
+[lib]
+name = "sharedlib"
+crate-type = "cdylib"
+path = "lib.rs"
+rustflags = [ "-C", "link-args=-Wl,-export-dynamic" ]
+#%exception #<&invoke-error program: "rustc" arguments: ("--verbose" "--target=x86_64-unknown-linux-gnu" "--extern=proc_macro" "--cap-lints" "warn" "-C" "prefer-dynamic" "-C" "metadata=" "lib.rs" "-o" "/gnu/store/jmv3430242gf02289yss7422f722fdbl-test-sharedlib-0.0/lib/guixcrate/libsharedlib.so" "--cfg" "feature=\"default\"" "--crate-name=sharedlib" "--crate-type=cdylib" "--edition=2015" "-Lnative=/tmp/guix-build-test-sharedlib-0.0.drv-0/source") exit-status: 1 term-signal: #f stop-signal: #f> 
