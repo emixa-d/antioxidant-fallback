@@ -6,8 +6,8 @@ Goals:
     by not re-compiling dependencies and by reusing compiled dependencies
     in dependents.  (solved)
   * Allow crates to be shared libraries, such that grafting can work
-    and maybe for space usage. (not solved)
-  * regular inputs/native-inputs
+    and maybe for space usage. (not solved yet)
+  * regular inputs/native-inputs (solved)
 
 Non-goals:
 
@@ -87,7 +87,7 @@ Next steps :
     the CI would grab all cargo-build-system rust apps from (gnu packages ...),
     feed them to the package transformation procedure 'vitaminate/auto',
     and build the results.  Then we can have a look at a dashboard like
-    <https://ci.guix.gnu.org/eval/361030/dashboard>
+    <https://ci.guix.gnu.org/eval/361030/dashboard>.
 
 (c) Maybe there could be some kind of transition period, where
     'antioxidant.scm' and 'antioxidant-packages.scm' is added
@@ -100,3 +100,5 @@ Next steps :
     Though for now, I would prefer to do something like (b) first.
 
 (d) Implement support for "cdylib" such that things like librsvg can be built.
+
+(e) Make sure the optimisation settings are reasonable (LTO, -Os etc)
