@@ -9,6 +9,7 @@ Goals:
     in dependents.  (solved)
   * Allow crates to be shared libraries, such that grafting can work
     and maybe for space usage. (not solved)
+  * regular inputs/native-inputs
 
 Non-goals:
 
@@ -48,3 +49,13 @@ Avoided issues:
     ‘Cargo-build-system guix-vendor does not provide packages correctly 2 levels down’
   * <https://issues.guix.gnu.org/40413>
     ‘Handling source-only dependencies in a generic way’
+
+Pros/cons of antioxidant:
+  * pro: less compilation time: when rust-foo is compiled, antioxidant
+    only compiles rust-foo and not its dependencies rust-bar0 ... rust-bar200.
+  * pro: theoretically less space usage (source code is not copied to the #$output
+    and build results of dependencies are linked to).  However: not measured,
+    and we're not setting LTO and -Os compilation flags yet.
+  * pro: antioxidant just uses inputs/native-inputs, so "guix graph", "guix refresh -l"
+    will be useful after transforming existing package definitions.
+  * cons: probably not everything of Cargo.toml is implemented yet
