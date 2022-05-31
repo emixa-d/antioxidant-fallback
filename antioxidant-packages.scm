@@ -311,6 +311,8 @@
       (#false #~()))))
 
 (define* (antioxidant-build name inputs #:key
+			    (phases #~%standard-antioxidant-phases)
+			    (rust-dynamic-library-arguments #false)
 			    modules ; what to do about 'modules'
 			    install-source? ; not used by antioxidant-build-system
 			    system target source search-paths outputs
@@ -348,7 +350,9 @@
 		     #:optimisation-level '#$optimisation-level
 		     #:cargo-env-variables #$cargo-env-variables
 		     #:rust-metadata #$rust-metadata
-		     #:phases (modify-phases %standard-antioxidant-phases
+		     #:rust-dynamic-library-arguments #$rust-dynamic-library-arguments
+		     #:strip-binaries? #false ; TODO exported symbols are removed
+		     #:phases (modify-phases #$phases
 				#$@(custom-phases name)))))))
   ;; TODO graft stuff, package->derivation guile-for-build
   (gexp->derivation name builder #:system system #:target target #:graft? #f))
@@ -356,6 +360,7 @@
 (define* (lower name #:key system source inputs native-inputs outputs target
 		(features #~'("default"))
 		(rust-metadata #~"")
+		#:allow-other-keys
 		#:rest arguments)
   (define private-keywords
     '(#:inputs #:native-inputs #:outputs))
@@ -3315,6 +3320,31 @@ of operation.")
 (define-public antioxidated-tealdeer
   (public-test-package (vitaminate/auto tealdeer)))
 
+;; Make a shared library and link to it
+(define-public test-lib
+  (package
+   (source (local-file "shared-lib" #:recursive? #true))
+   (name "test-sharedlib")
+   (version "0.0")
+   (build-system antioxidant-build-system)
+   (home-page #f)
+   (synopsis "Basic example of C-style shared libraries implemented in Rust")
+   (arguments
+    (list #:rust-dynamic-library-arguments
+	  #~'("-C" "link-args=-rdynamic")
+	  #:phases
+	  #~(modify-phases %standard-antioxidant-phases
+	      (replace 'build-binaries
+		(lambda _
+		  (mkdir (string-append #$output "/bin"))
+		  (invoke "gcc" "-L" (string-append #$output "/lib")
+			  "-lsharedlib"
+			  "example.c"
+			  "-o" (string-append #$output "/bin/test")))))))
+   ;; /gnu/store/[...]/bin/test  || echo $? ---> 42
+   (description #f)
+   (license #f)))
+
 ;; For local development
 (list antioxidated-rust-bindgen
       antioxidated-agate
@@ -3328,4 +3358,5 @@ of operation.")
       antioxidated-rtss
       antioxidated-sniffglue
       antioxidated-swayhide
-      antioxidated-tealdeer)
+      antioxidated-tealdeer
+      test-lib)

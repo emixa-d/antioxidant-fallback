@@ -121,7 +121,7 @@
   (proc_macro %target-proc_macro)
   (harness %target-harness)
   (edition target-edition "edition" or-false*)
-  (crate-type %target-crate-type)
+  (crate-type target-crate-type)
   ;; NA for [lib]
   (required-features target-required-features "required-features"
 		     (or-empty vector->list)))
@@ -364,12 +364,18 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 (define (crate-directory store-item)
   (string-append store-item "/lib/guixcrate"))
 
-(define* (library-destination crate-name type #:key outputs #:allow-other-keys)
+(define* (crate-library-destination crate-name type #:key outputs #:allow-other-keys)
   (string-append
    (crate-directory (or (assoc-ref outputs "lib")
 			(assoc-ref outputs "out")))
    "/lib" crate-name "." type))
-  
+
+(define* (c-library-destination crate-name type #:key outputs #:allow-other-keys)
+  (string-append
+   (or (assoc-ref outputs "lib")
+       (assoc-ref outputs "out"))
+   "/lib/lib" crate-name "." type)) ; type = ".a" / ".so"
+
 (define (find-crates inputs)
   (append-map (lambda (store-item)
 		(if (file-exists? (crate-directory store-item))
@@ -498,12 +504,17 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 
 (define* (compile-rust-library source destination crate-name extra-arguments
 			       #:key (crate-type "rlib")
+			       (rust-dynamic-library-arguments #f)
 			       #:allow-other-keys
 			       #:rest arguments)
   ;; TODO: why rlib?  Because that works.  Maybe dylib works too?
   (apply compile-rust source destination
 	 (append (list (string-append "--crate-name=" crate-name)
 		       (string-append "--crate-type=" crate-type))
+		 (if (string=? crate-type "cdylib")
+		     (or rust-dynamic-library-arguments
+			 (error "I don't know what symbols to export or the version of the library, please set #:rust-dynamic-library-arguments"))
+		     '())
 		 extra-arguments)
 	 arguments))
 
@@ -872,13 +883,20 @@ by %excluded-keys."
 		       (and (file-exists? "src/lib.rs") "src/lib.rs")))
 	 ;; TODO: which one is it?  (For rust-derive-arbitrary,
 	 ;; it is proc_macro)
-	 (lib-procedural-macro? (and=> lib target-proc-macro)))
+	 (lib-procedural-macro? (and=> lib target-proc-macro))
+	 ;; TODO: can theoretically be a list
+	 (c-shared-library? (equal? "cdylib" (target-crate-type lib))))
+    (when (and lib-procedural-macro? c-shared-library?)
+      (error "only proc-macro or cdylib, not both!"))
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (when lib-path
       (set! *library-destination*
-	(apply library-destination crate-name
-	       (if lib-procedural-macro?
+	(apply (if c-shared-library?
+		   c-library-destination
+		   crate-library-destination)
+	       crate-name
+	       (if (or lib-procedural-macro? c-shared-library?)
 		   "so"
 		   "rlib")
 	       arguments)) ;; TODO: less impure
@@ -894,9 +912,9 @@ by %excluded-keys."
 		   ;; TODO: is this still necessary, now we interpret
 		   ;; rustc-link-search and such?
 		   (string-append "-Lnative=" (getcwd)))
-	     #:crate-type (if lib-procedural-macro?
-			      "proc-macro"
-			      "rlib")
+	     #:crate-type (cond (lib-procedural-macro? "proc-macro")
+				(c-shared-library? "cdylib")
+				(#true "rlib"))
 	     #:available-crates (find-directly-available-crates inputs)
 	     #:crate-mappings crate-mappings
 	     ;; TODO: does the order matter?
