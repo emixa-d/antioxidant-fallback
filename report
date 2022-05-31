@@ -1,0 +1,22 @@
+TODO
+
+Solves:
+
+  * <https://issues.guix.gnu.org/25327>
+    ‘cargo build-system should be able to filter out target.cfg(windows) dependencies’
+  * <https://issues.guix.gnu.org/53127>
+    ‘[PATCH RFC] Turning Rust/Cargo inputs into “regular” inputs?’
+  * <https://issues.guix.gnu.org/40412>
+    ‘cargo-build-system hides the package dependency graph’
+  * <https://issues.guix.gnu.org/50015>
+    ‘Rust packages are not reproducible’
+
+    (at least, "guix build --check" hasn't failed for me yet)
+
+Avoids:
+  * <https://issues.guix.gnu.org/42049>
+    ‘[PATCH 0/4] build-system/cargo: Propagations across the crate closure.’
+  * <https://issues.guix.gnu.org/36470>
+    ‘Cargo-build-system guix-vendor does not provide packages correctly 2 levels down’
+  * <https://issues.guix.gnu.org/40413>
+    ‘Handling source-only dependencies in a generic way’
