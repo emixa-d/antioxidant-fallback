@@ -1,6 +1,31 @@
-TODO
+TODO goals/status/...
 
-Solves:
+Goals:
+
+  * Reduce rift between Guix and Rust by making Rust packages work
+    nicely in Guix.
+  * Eliminating #:skip-build? and making compile time faster,
+    by not re-compiling dependencies and by reusing compiled dependencies
+    in dependents.  (solved)
+  * Allow crates to be shared libraries, such that grafting can work
+    and maybe for space usage. (not solved)
+
+Non-goals:
+
+  * Produce exactly the same binaries with exactly the same dependencies as with
+    Cargo.  If you want to reproduce a binary produced with Cargo, use Cargo.
+  * Cross-compilation is left for later.
+
+Side-goals: (not the main goal, but partially solved along the way)
+
+  * Having multiple versions of the same dependency is inconvenient for
+    antioxidant, so often only the latest version is preserved.
+    Less package variants -> less space usage, less compilation time, less
+    opportunities for sneaking malware through.
+  * As part of resolving build failures caused by using antioxidant,
+    some crates were updated or added.
+
+Solved issues:
 
   * <https://issues.guix.gnu.org/25327>
     ‘cargo build-system should be able to filter out target.cfg(windows) dependencies’
@@ -8,12 +33,15 @@ Solves:
     ‘[PATCH RFC] Turning Rust/Cargo inputs into “regular” inputs?’
   * <https://issues.guix.gnu.org/40412>
     ‘cargo-build-system hides the package dependency graph’
+
+    (at least, after transforming the packages appropriately)
+
   * <https://issues.guix.gnu.org/50015>
     ‘Rust packages are not reproducible’
 
     (at least, "guix build --check" hasn't failed for me yet)
 
-Avoids:
+Avoided issues:
   * <https://issues.guix.gnu.org/42049>
     ‘[PATCH 0/4] build-system/cargo: Propagations across the crate closure.’
   * <https://issues.guix.gnu.org/36470>
