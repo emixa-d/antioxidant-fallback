@@ -2313,7 +2313,13 @@ of operation.")
   `("rust-blakeout" ; doesn't build and no new version available, let's avoid for now.
     "rust-derive-error-chain" ; doesn't build (even when updated) and unmaintained, avoid it for now
     "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
-    "rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
+    ("rust-quickcheck"
+     ;; Usually only required for tests.
+     ;; Avoid (quickcheck env-logger humantime chrono bincode) cycle.
+     ;; Apparently sequoia-sq requires rust-quickcheck.
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (string=? (package-name dependent) "sequoia-sq"))))
     "rust-pear" "rust-pear-codegen" ; current version in Guix requires non-stable
     "rust-mesalink" ; doesn't build against recent rust-rustls
     "rust-defmt" ; accidentally requires unstable-test?
@@ -3288,7 +3294,7 @@ of operation.")
 	 (throw 'oops)))
       (((? string? dependency-name) #:for-dependent context?)
        (when (member dependency-name %removed-dependencies)
-	 (pk left "a #:for-dependent context? entry in %removed-dependencies and a in %removed-dependencies (redundant")
+	 (pk dependency-name "a #:for-dependent context? entry in %removed-dependencies and a in %removed-dependencies (redundant")
 	 (throw 'oops)))
       (a (pk 'a a)
 	 (error "bogus entry in %removed-dependencies"))))
