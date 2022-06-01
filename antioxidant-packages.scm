@@ -2303,8 +2303,14 @@ of operation.")
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
+;;
+;; "rust-foo": remove all dependencies named "rust-foo"
+;; ("rust-foo" -> "rust-bar"): remove the dependency "rust-bar" when used by rust-foo
+;; ("rust-foo" #:for-dependent ,p): remove the dependency "rust-foo when used by a package for which the predicate p returns 'true'
+
 (define %removed-dependencies
-  '("rust-blakeout" ; doesn't build and no new version available, let's avoid for now.
+  ;; Unconditional dependencies
+  `("rust-blakeout" ; doesn't build and no new version available, let's avoid for now.
     "rust-derive-error-chain" ; doesn't build (even when updated) and unmaintained, avoid it for now
     "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
     "rust-quickcheck" ; (quickcheck env-logger humantime chrono bincode) cycle
@@ -2377,13 +2383,10 @@ of operation.")
     "rust-actix-testing" ; doesn't build
     "rust-wasm-bindgen" "rust-wasi"
     "rust-wasm-bindgen-futures" ; ECMAScript-only and doesn't build
-    "rust-wasm-bindgen-test"))
+    "rust-wasm-bindgen-test"
 
-;; Like %removed-dependencies, but only remove the dependency right of the '->'
-;; when used by the dependent left of the '<-'.
-(define %removed-dependencies->
-  ;; Maybe a test or example cycle?
-  '(("rust-bytemuck-derive" -> "rust-bytemuck")
+    ;; Maybe a test or example cycle?
+    ("rust-bytemuck-derive" -> "rust-bytemuck")
     ("rust-nasm-rs" -> "rust-arrayvec") ; not required anymore due to package update
     ("rust-diesel-derives" -> "rust-diesel")
     ("rust-colored" -> "rust-rspec")
@@ -2476,7 +2479,30 @@ of operation.")
     ("rust-spmc" -> "rust-loom")
     ;; ("rust-tokio-test" -> "rust-tokio") ; currently rust-tokio-test is removed
     ;; Break dev-dependencies cycle
-    ("rust-regex-automata" -> "rust-bstr")))
+    ("rust-regex-automata" -> "rust-bstr")
+
+    ;; TODO: quickcheck with an exception for sequoia-pg
+    ))
+
+(define (remove-dependency? dependent dependency)
+  "Should DEPENDENCY be removed from the dependencies of DEPENDENT (both are package objects)?"
+  (unless (package? dependent)
+    (error "first argument must be a package"))
+  (unless (package? dependency)
+    (error "second argument must be a package"))
+  (define dependent* (package-name dependent))
+  (define dependency* (package-name dependency))
+  (define remove-dependency*?
+    (match-lambda
+      ((? string? unconditional-removal) (string=? dependency* unconditional-removal))
+      (((? string? context) '-> (? string? conditional-removal))
+       (and (string=? dependent* context)
+	    (string=? dependency* conditional-removal)))
+      (((? string? conditional-removal?) '#:for-dependent (? procedure? context?))
+       (and (string=? dependency* conditional-removal?)
+	    (context? dependent)))
+      (a (pk 'a a) (error "bogus entry in %removed-dependencies"))))
+  (any remove-dependency*? %removed-dependencies))
 
 ;; Try keeping things sorted, to avoid rebase/merge conflicts.
 (define %features
@@ -3147,11 +3173,7 @@ of operation.")
 	 (define fix-input
 	   (match-lambda
 	     ((label dependency . maybe-output)
-	      (and (not (member (package-name dependency) %removed-dependencies))
-		   (not (member (list (package-name pack)
-				      '->
-				      (package-name dependency))
-				%removed-dependencies->))
+	      (and (not (remove-dependency? pack dependency))
 		   ;; These are actually test inputs! (TODO guix)
 		   ;; (TODO: this isn't build from source)
 		   ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
@@ -3248,22 +3270,28 @@ of operation.")
 ;; Self-checks
 (define (check-removed-extra-inputs)
   "Verify that %extra-inputs is not in contradiction with
-%removed-dependencies or %removed-dependencies->"
+%removed-dependencies"
   ;; List packages in %removed-dependencies which have an entry in
   ;; %extra-inputs defined (useless, unless it's a leaf package)
-  (define (check-removed-dependency name)
-    (when (assoc name %extra-inputs)
-      (pk name "in %removed-dependencies and %extra-inputs (probably useless)")
-      (throw 'oops)))
-  (define (check-removed-dependency-> entry)
+  (define (check-removed-dependency entry)
     (match entry
+      ((? string? name)
+       (when (assoc name %extra-inputs)
+	 (pk name "in %removed-dependencies and %extra-inputs (probably useless)")
+	 (throw 'oops)))
       (((? string? left) '-> (? string? right))
        (when (member right %removed-dependencies)
-	 (pk right "after %removed-dependencies-> and in %removed-dependencies (useless)")
+	 (pk right "(a -> b) entry in %removed-dependencies and b in %removed-dependencies (redundant)")
 	 (throw 'oops))
        (when (member left %removed-dependencies)
-	 (pk left "left in %removed-dependencies-> and in %removed-dependencies (redundant)")
-	 (throw 'oops)))))
+	 (pk left "(a -> b) entry in %removed-dependencies and a in %removed-dependencies (useless)")
+	 (throw 'oops)))
+      (((? string? dependency-name) #:for-dependent context?)
+       (when (member dependency-name %removed-dependencies)
+	 (pk left "a #:for-dependent context? entry in %removed-dependencies and a in %removed-dependencies (redundant")
+	 (throw 'oops)))
+      (a (pk 'a a)
+	 (error "bogus entry in %removed-dependencies"))))
   ;; list names listed as an extra-input for some package and also in
   ;; %removed-dependencies (confusing, because they would have to be both
   ;; added and removed).
@@ -3274,10 +3302,12 @@ of operation.")
 	      (match-lambda ((dependency-name _)
 			     (when (member dependency-name %removed-dependencies)
 			       (pk "extra-input " dependency-name " of " name "in %removed-dependencies (contradictory)")
+			       (throw 'oops))
+			     (when (member (list name '-> dependency-name) %removed-dependencies)
+			       (pk name "->" dependency-name "both in %removed-dependencies and %extra-inputs (contradictory)")
 			       (throw 'oops))))))
 	 (for-each check-dependency dependencies)))))
   (for-each check-removed-dependency %removed-dependencies)
-  (for-each check-removed-dependency-> %removed-dependencies->)
   (for-each check-extra-input %extra-inputs))
 (check-removed-extra-inputs)
 
