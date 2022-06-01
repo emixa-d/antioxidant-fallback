@@ -885,7 +885,7 @@ by %excluded-keys."
 	 ;; it is proc_macro)
 	 (lib-procedural-macro? (and=> lib target-proc-macro))
 	 ;; TODO: can theoretically be a list
-	 (c-shared-library? (equal? "cdylib" (target-crate-type lib))))
+	 (c-shared-library? (and lib (equal? "cdylib" (target-crate-type lib)))))
     (when (and lib-procedural-macro? c-shared-library?)
       (error "only proc-macro or cdylib, not both!"))
     ;; TODO: implement proper library/binary autodiscovery as described in
