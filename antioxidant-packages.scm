@@ -15,7 +15,8 @@
 ;;;
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
-(define-module (antioxidant-packages))
+(define-module (antioxidant-packages)
+  #:export (vitaminate/auto public-test-package))
 
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
@@ -3269,7 +3270,8 @@ of operation.")
 	 (pk 'cyclic-vitamines)
 	 (pk #:begin (reverse (map package-name before)))
 	 (pk #:cycle (reverse (cons '... (map package-name (cons pack cycle)))))))
-     (error "oops, a cycle?"))
+     (pk "oops, a cycle?")
+     (throw 'antioxidant-cycle)) ; caught in antioxidant-ci.scm
    (parameterize ((vitamination-stack (cons pack (vitamination-stack))))
      (vitaminate/auto* pack))))
 
