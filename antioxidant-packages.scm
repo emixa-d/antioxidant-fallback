@@ -1526,6 +1526,20 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "0ykrwybs3ssi9ifn5p2gddi4909adjxs3gk450r0sk8d3aw5r255"))))))
 
+(define rust-awc ; @2 doesn't build
+  ;; TODO: some build failures remain
+  (package
+    (inherit (p rust-awc-2))
+    (name "rust-awc")
+    (version "3.0.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "awc" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "16l8zvzx522vnhvn9cgfqhrvf4z50vbrfsz8cpiwxj7kzd20rik5"))))))
+
 (define rust-local-waker
   (package
     (name "rust-local-waker")
@@ -2601,7 +2615,8 @@ futures-aware, FIFO queue")
   ;; rust-swayipcs requires 'spawn_blocking' which is only
   ;; public if "unstable" is enabled.
   `(("rust-async-std" ,#~'("default" "unstable"))
-    ("rust-actix-http" ,#~'("default" "ws" "http2")) ; ws, http2: required by rust-awc
+    ("rust-actix-http" ,#~'("default" "ws" "http2" "compress-gzip" "compress-zstd")) ; ws, http2, compress-gzip, compress-zstd: required by rust-awc
+    ("rust-awc" ,#~'("compress-gzip" "compress-zstd" "cookies")) ; default "compress-brotli" feature requires the "compress-brotli" feature in rust-actix-http but that doesn't build
     ;; The "dox" feature requires non-stable.
     ("rust-atk" ,#~'("v2_34"))
     ("rust-atk-sys" ,#~'("v2_34"))
@@ -2842,6 +2857,7 @@ futures-aware, FIFO queue")
     ("rust-actix-http" ,rust-actix-http)
     ("rust-actix-utils" ,rust-actix-utils)
     ("rust-actix-service" ,rust-actix-service)
+    ("rust-awc" ,rust-awc)
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
@@ -3154,6 +3170,7 @@ futures-aware, FIFO queue")
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
     ("rust-actix-http"
      (("rust-ahash" ,(p rust-ahash-0.7))
+      ("rust-zstd" ,(p rust-zstd-0.9))
       ("rust-bytestring" ,(p rust-bytestring-0.1))
       ("rust-local-channel" ,rust-local-channel) ; for ws feature
       ("rust-futures-core" ,rust-futures-core-0.3) ; for ws feature
@@ -3186,6 +3203,17 @@ futures-aware, FIFO queue")
       ("rust-futures-task" ,rust-futures-task-0.3)
       ("rust-futures-util" ,rust-futures-util-0.3)
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
+    ("rust-awc" ; new dependencies for new version
+     (("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))
+      ("rust-actix-tls" ,rust-actix-tls)
+      ("rust-actix-utils" ,rust-actix-utils)
+      ("rust-ahash" ,(p rust-ahash-0.7))
+      ("rust-cookie" ,(p rust-cookie-0.15))
+      ("rust-futures-util" ,rust-futures-util-0.3)
+      ("rust-h2" ,(p rust-h2-0.3))
+      ("rust-itoa" ,(p rust-itoa-1))
+      ("rust-http" ,(p rust-http-0.2))
+      ("rust-tokio" ,rust-tokio)))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
