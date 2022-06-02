@@ -2615,6 +2615,7 @@ futures-aware, FIFO queue")
   ;; rust-swayipcs requires 'spawn_blocking' which is only
   ;; public if "unstable" is enabled.
   `(("rust-async-std" ,#~'("default" "unstable"))
+    ("rust-actix-tls" ,#~'("default" "uri")) ; rust-awc@3.0.0 requires non-default "uri" feature
     ("rust-actix-http" ,#~'("default" "ws" "http2" "compress-gzip" "compress-zstd")) ; ws, http2, compress-gzip, compress-zstd: required by rust-awc
     ("rust-awc" ,#~'("compress-gzip" "compress-zstd" "cookies")) ; default "compress-brotli" feature requires the "compress-brotli" feature in rust-actix-http but that doesn't build
     ;; The "dox" feature requires non-stable.
@@ -3194,6 +3195,7 @@ futures-aware, FIFO queue")
       ("rust-paste" ,(p rust-paste-1))))
     ("rust-actix-tls" ;likewise
      (("rust-futures-core" ,rust-futures-core-0.3)
+      ("rust-http" ,rust-http) ; for "uri" feature
       ("rust-actix-rt" ,rust-actix-rt)
       ("rust-log" ,(p rust-log-0.4))
       ("rust-tokio-util" ,(p rust-tokio-util-0.3))))
