@@ -692,6 +692,19 @@ an unique string, which can be useful for resolving symbol conflicts."
    (inputs (modify-inputs (package-inputs (p rust-hyper-rustls-0.22))
 	     (prepend (p rust-http-0.2))))))
 
+(define rust-http ; new rust-actix-http doesn't compile against old rust-http
+  (package
+    (inherit (p rust-http-0.2))
+    (name "rust-http")
+    (version "0.2.7")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "http" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1fxzyvspr6g8znc6i0kif0bhpih8ibhy7xc6k984j8pm19bp11pz"))))))
+
 ;; Old versions don't support the new rustls
 (define rust-boxxy
   (package
@@ -1354,6 +1367,20 @@ an unique string, which can be useful for resolving symbol conflicts."
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0qggp0d8pbw5vfnpm0r7lrn6wmh5yjiz4yc4bzynb8l26i2pv88i"))))))
+
+(define rust-bytestring ; rust-actix-http@3 requires into_bytes
+  (package
+    (inherit (p rust-bytestring-0.1))
+    (name "rust-bytestring")
+    (version "1.0.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "bytestring" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0ka9gkn2rrxms0d5s32ckpchh06qmgidbh4xw630gfcpkshnnw4h"))))))
+
 (define rust-gimli ;; new rust-backtrace doesn't build against old rust-gimli
   (package
    (inherit (p rust-gimli-0.23))
@@ -1485,6 +1512,19 @@ an unique string, which can be useful for resolving symbol conflicts."
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
           (base32 "155aj87z8634mfmggfixyqy3pqhpyf7g97zrzy6piz77qamcp4g4"))))))
+
+(define rust-actix-http ; @2 has non-building dependency rust-actix-connect@2
+  (package
+    (inherit (p rust-actix-http-2))
+    (name "rust-actix-http")
+    (version "3.0.4")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-http" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0ykrwybs3ssi9ifn5p2gddi4909adjxs3gk450r0sk8d3aw5r255"))))))
 
 (define rust-local-waker
   (package
@@ -2388,6 +2428,7 @@ of operation.")
     "rust-rand-xorshift"
     "rust-serde-test"
     "rust-actix-testing" ; doesn't build
+    "rust-actix-connect" ; doesn't build and no update available
     "rust-wasm-bindgen" "rust-wasi"
     "rust-wasm-bindgen-futures" ; ECMAScript-only and doesn't build
     "rust-wasm-bindgen-test"
@@ -2753,12 +2794,14 @@ of operation.")
     ("rust-blake2" ,rust-blake2)
     ("rust-actix" ,rust-actix)
     ("rust-actix-codec" ,rust-actix-codec)
+    ("rust-actix-http" ,rust-actix-http)
     ("rust-actix-utils" ,rust-actix-utils)
     ("rust-actix-service" ,rust-actix-service)
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
+    ("rust-bytestring" ,rust-bytestring)
     ("rust-avif-serialize" ,rust-avif-serialize)
     ("rust-nasm-rs" ,rust-nasm-rs)
     ("rust-ivf" ,rust-ivf)
@@ -2971,8 +3014,8 @@ of operation.")
     ("rust-futures-sink" ,rust-futures-sink-0.3)
     ("rust-futures-task" ,rust-futures-task-0.3)
     ("rust-futures-util" ,rust-futures-util-0.3)
-    ("rust-http" ; 0.1 doesn't build
-     ,(p rust-http-0.2))
+    ("rust-http" ; 0.1 doesn't build and @0.2.1 doesn't have a const HeaderValue from_static
+     ,rust-http)
     ;; rust-http-body@0.1.0's dependency rust-tokio-buf doesn't
     ;; build anymore.  (TODO remove from Guix)
     ("rust-http-body" ,(p rust-http-body-0.4))
@@ -3064,6 +3107,12 @@ of operation.")
     ("rust-actix-codec" ; new inputs of new version
      (("rust-memchr" ,(p rust-memchr-2))
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))))
+    ("rust-actix-http"
+     (("rust-ahash" ,(p rust-ahash-0.7))
+      ("rust-bytestring" ,(p rust-bytestring-0.1))
+      ("rust-httpdate" ,(p rust-httpdate-1))
+      ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))
+      ("rust-smallvec" ,(p rust-smallvec-1))))
     ("rust-actix-rt" ;new dependencies for new version
      (("rust-futures-core" ,(p rust-futures-core-0.3))))
     ("rust-actix-utils" ;new dependencies for new version
