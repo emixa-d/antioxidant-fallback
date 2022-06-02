@@ -1526,6 +1526,19 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "0ykrwybs3ssi9ifn5p2gddi4909adjxs3gk450r0sk8d3aw5r255"))))))
 
+(define rust-actix-web ; @3 doesn't build against updated actix dependencies
+  (package
+    (inherit (p rust-actix-web-3))
+    (name "rust-actix-web")
+    (version "4.0.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-web" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "0cadlzb6syha1jwx0pghasj0qd47jkjy03dfldbdyl0xspzyprgl"))))))
+
 (define rust-awc ; @2 doesn't build
   ;; TODO: some build failures remain
   (package
@@ -2517,7 +2530,7 @@ futures-aware, FIFO queue")
     ;; build anymore?
     ("rust-serde-derive" -> "rust-serde")
     ;; (Test?) cycle
-    ("rust-actix-web" -> "rust-actix-web-codegen")
+    ("rust-actix-web-codegen" -> "rust-actix-web")
     ("rust-actix-macros" -> "rust-actix-rt")
     ;; Test cycle (rust-paw <-> rust-paw-structopt).
     ("rust-paw" -> "rust-paw-structopt")
@@ -2957,11 +2970,8 @@ futures-aware, FIFO queue")
     ("rust-headers" ,rust-headers)
     ("rust-heck" ,(p rust-heck-0.4)) ; 0.3 too old for rust-strum-macros@0.24
     ("rust-peg" ,(p rust-peg-0.6)) ; 0.5 misses dependency information
-    ;; Avoid potential incompatibilities.
-    ;; TODO: package rust-actix-web@0.4, then the new version of
-    ;; rust-actix-web-codegen can be used instead.
-    #;("rust-actix-web-codegen" ,(p rust-actix-web-codegen-0.3)) ; doesn't exist?
-    ("rust-actix-web" ,(p rust-actix-web-3)) ; TODO: why was this 0.3?
+    ("rust-actix-web-codegen" ,(p rust-actix-web-codegen-0.4))
+    ("rust-actix-web" ,rust-actix-web) ; @0.3 doesn't build
     ;; rust-atcix-derive@0.4.0,0.5.0 don't build against new
     ;; rust-syn@1.0.82 (Literal has been renamed to Lit)
     ("rust-actix-derive" ,rust-actix-derive)
@@ -3199,6 +3209,17 @@ futures-aware, FIFO queue")
       ("rust-actix-rt" ,rust-actix-rt)
       ("rust-log" ,(p rust-log-0.4))
       ("rust-tokio-util" ,(p rust-tokio-util-0.3))))
+    ("rust-actix-web" ;likewise (TODO doesn't build yet)
+     (("rust-actix-router" ,(p rust-actix-router-0.2))
+      ("rust-bytestring" ,(p rust-bytestring-0.1))
+      ("rust-smallvec" ,(p rust-smallvec-1))
+      ("rust-actix-web-codegen" ,(p rust-actix-web-codegen-0.4))
+      ("rust-cfg-if" ,(p rust-cfg-if-1))
+      ("rust-language-tags" ,(p rust-language-tags-0.2))
+      ("rust-once-cell" ,(p rust-once-cell-1))
+      ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))
+      ("rust-cookie" ,(p rust-cookie-0.15))
+      ("rust-ahash" ,(p rust-ahash-0.7))))
     ("rust-actix" ; likewise
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-futures-sink" ,rust-futures-sink-0.3)
