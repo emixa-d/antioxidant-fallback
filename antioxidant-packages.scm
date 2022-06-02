@@ -2601,7 +2601,7 @@ futures-aware, FIFO queue")
   ;; rust-swayipcs requires 'spawn_blocking' which is only
   ;; public if "unstable" is enabled.
   `(("rust-async-std" ,#~'("default" "unstable"))
-    ("rust-actix-http" ,#~'("default" "ws")) ; ws: required by rust-awc
+    ("rust-actix-http" ,#~'("default" "ws" "http2")) ; ws, http2: required by rust-awc
     ;; The "dox" feature requires non-stable.
     ("rust-atk" ,#~'("v2_34"))
     ("rust-atk-sys" ,#~'("v2_34"))
