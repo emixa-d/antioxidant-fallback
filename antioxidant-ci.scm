@@ -41,4 +41,3 @@
   (fold-packages add '() #:select? is-leaf-cargo-rust-package?))
 
 ;; The idea is to build all packages in (all-packages) by the CI infrastructure.
-(display (all-packages))
