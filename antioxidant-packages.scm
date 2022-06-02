@@ -2284,6 +2284,32 @@ of operation.")
       "This package provides a synchronization primitive for thread-local task wakeup")
     (license (list license:expat license:asl2.0))))
 
+(define rust-local-channel
+  (package
+    (name "rust-local-channel")
+    (version "0.1.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "local-channel" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "177wqgadrlw6m7r6xxafkj58asgpgbpv1ww4gx258v2cx703wc3z"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+      `(#:cargo-inputs
+        (("rust-futures-core" ,rust-futures-core-0.3)
+         ("rust-futures-sink" ,rust-futures-sink-0.3)
+         ("rust-futures-util" ,rust-futures-util-0.3)
+         ("rust-local-waker" ,rust-local-waker))))
+    (home-page "https://github.com/actix/actix-net.git")
+    (synopsis
+      "A non-threadsafe multi-producer, single-consumer, futures-aware, FIFO queue")
+    (description
+      "This package provides a non-threadsafe multi-producer, single-consumer,
+futures-aware, FIFO queue")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-nettle-7 ; old rust-nettle doesn't build
   (package
     (inherit (p rust-nettle-7))
