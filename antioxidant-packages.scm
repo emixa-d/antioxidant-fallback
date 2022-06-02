@@ -2266,6 +2266,24 @@ of operation.")
         (base32
          "08yqsp93vijrhskarrlxb16bbbyyakzhlm34z9vg460f3cs5a15k"))))))
 
+(define rust-local-waker ; used by rust-local-channel, which is used by rust-actix-http
+  (package
+    (name "rust-local-waker")
+    (version "0.1.3")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "local-waker" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1w9zqlh18mymvb82ya0sailiy5d3wsjamaakgl70x50i6vmpckz3"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (home-page "https://github.com/actix/actix-net.git")
+    (synopsis "A synchronization primitive for thread-local task wakeup")
+    (description
+      "This package provides a synchronization primitive for thread-local task wakeup")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-nettle-7 ; old rust-nettle doesn't build
   (package
     (inherit (p rust-nettle-7))
