@@ -2504,6 +2504,7 @@ futures-aware, FIFO queue")
     "rust-wasm-bindgen-futures" ; ECMAScript-only and doesn't build
     "rust-wasm-bindgen-test"
 
+    ("rust-average" -> "rust-rand-distr") ; test cycle?
     ("rust-cxxbridge-macro" -> "rust-cxx") ; test cycle?
     ;; Maybe a test or example cycle?
     ("rust-bytemuck-derive" -> "rust-bytemuck")
@@ -2863,6 +2864,7 @@ futures-aware, FIFO queue")
 
 (define %replacements
   `(("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
+    ("rust-average" ,(p rust-average-0.13)) ; avoid complication due to multiple versions
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
     ("rust-rand-core" ,(p rust-rand-core-0.6)) ; avoid multiple versions
@@ -2887,6 +2889,7 @@ futures-aware, FIFO queue")
     ("rust-askama-shared" ,rust-askama-shared)
     ("rust-askama-derive" ,rust-askama-derive)
     ("rust-zstd" ,(p rust-zstd-0.9)) ; @0.6 doesn't build a dependency failing to build
+    ("rust-rand-distr" ,(p rust-rand-distr-0.4)) ; avoid complications due to multiple versions
     ("rust-reqwest" ,(p rust-reqwest-0.11)) ; @0.10 has
     ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
     ("rust-cookie-store-15" ,rust-cookie-store)
