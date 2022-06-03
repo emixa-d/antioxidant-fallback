@@ -1539,6 +1539,19 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "0cadlzb6syha1jwx0pghasj0qd47jkjy03dfldbdyl0xspzyprgl"))))))
 
+(define rust-actix-web-codegen ; rust-actix-web@4 is incompatible with rust-actix-web-codegen@0.4
+  (package
+    (inherit (p rust-actix-web-codegen-0.4))
+    (name "rust-actix-web-codegen")
+    (version "4.0.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-web-codegen" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "1g4imsr56b82lp76k2krg0vzfv92x7kxg24y8qfvnjkhakgvw9bm"))))))
+
 (define rust-awc ; @2 doesn't build
   ;; TODO: some build failures remain
   (package
@@ -2974,7 +2987,7 @@ futures-aware, FIFO queue")
     ("rust-headers" ,rust-headers)
     ("rust-heck" ,(p rust-heck-0.4)) ; 0.3 too old for rust-strum-macros@0.24
     ("rust-peg" ,(p rust-peg-0.6)) ; 0.5 misses dependency information
-    ("rust-actix-web-codegen" ,(p rust-actix-web-codegen-0.4))
+    ("rust-actix-web-codegen" ,rust-actix-web-codegen)
     ("rust-actix-web" ,rust-actix-web) ; @0.3 doesn't build
     ;; rust-atcix-derive@0.4.0,0.5.0 don't build against new
     ;; rust-syn@1.0.82 (Literal has been renamed to Lit)
@@ -3217,7 +3230,7 @@ futures-aware, FIFO queue")
      (("rust-actix-router" ,(p rust-actix-router-0.2))
       ("rust-bytestring" ,(p rust-bytestring-0.1))
       ("rust-smallvec" ,(p rust-smallvec-1))
-      ("rust-actix-web-codegen" ,(p rust-actix-web-codegen-0.4))
+      ("rust-actix-web-codegen" ,rust-actix-web-codegen)
       ("rust-cfg-if" ,(p rust-cfg-if-1))
       ("rust-itoa" ,(p rust-itoa-1))
       ("rust-language-tags" ,(p rust-language-tags-0.2))
@@ -3225,6 +3238,8 @@ futures-aware, FIFO queue")
       ("rust-pin-project-lite" ,(p rust-pin-project-lite-0.2))
       ("rust-cookie" ,(p rust-cookie-0.15))
       ("rust-ahash" ,(p rust-ahash-0.7))))
+    ("rust-actix-web-codegen" ; likewise
+     (("rust-actix-router" ,(p rust-actix-router-0.2))))
     ("rust-actix" ; likewise
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-futures-sink" ,rust-futures-sink-0.3)
