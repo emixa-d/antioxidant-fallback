@@ -82,7 +82,20 @@
 	     ;; on crate-cc, breaking a cycle
 	     (delete-file "build.rs")
 	     (substitute* "Cargo.toml"
-	       (("^build =(.*)$") ""))))))
+			  (("^build =(.*)$") ""))))))
+    ("rust-blakeout"
+     ,#~((add-after 'unpack 'update-blake2
+	   ;; Resolve build failure.
+	   ;; TODO: upstream (is this correct?)
+	   (lambda _
+	     (substitute* "src/lib.rs"
+	       (("use digest::Digest;") ; suggested by compiler
+		"use digest::{Digest,Update,VariableOutput};")
+	       (("Blake2s") "Blake2sVar")
+	       (("Blake2sVar::default\\(\\)") "Blake2sVar::new(DEFAULT_HASH_SIZE).expect(\"incorrect output size\")")
+	       (("let buf = Digest::finalize\\(digest\\);")
+		"digest.finalize_variable(slice).expect(\"incorrect output size\");")
+	       ((" slice.copy_from_slice\\(&buf\\[..\\]\\);") ""))))))
     ("rust-libssh2-sys"
      ;; Otherwise, build.rs fails to find libssh2, causing
      ;; a build failure.
@@ -2451,8 +2464,7 @@ futures-aware, FIFO queue")
 
 (define %removed-dependencies
   ;; Unconditional dependencies
-  `("rust-blakeout" ; doesn't build and no new version available, let's avoid for now.
-    "rust-derive-error-chain" ; doesn't build (even when updated) and unmaintained, avoid it for now
+  `("rust-derive-error-chain" ; doesn't build (even when updated) and unmaintained, avoid it for now
     "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
     ("rust-quickcheck"
      ;; Usually only required for tests.
