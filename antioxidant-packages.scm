@@ -1552,6 +1552,19 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "1g4imsr56b82lp76k2krg0vzfv92x7kxg24y8qfvnjkhakgvw9bm"))))))
 
+(define rust-actix-router
+  (package
+    (inherit (p rust-actix-router-0.2)) ; new rust-actix-web doesn't build against old @0.2
+    (name "rust-actix-router")
+    (version "0.5.0")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "actix-router" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "107s475ghxl1sliqcjdji7272hi71a491k2n9bqg4661a9mq8q7b"))))))
+
 (define rust-awc ; @2 doesn't build
   ;; TODO: some build failures remain
   (package
@@ -2905,6 +2918,7 @@ futures-aware, FIFO queue")
     ("rust-actix-codec" ,rust-actix-codec)
     ("rust-actix-http" ,rust-actix-http)
     ("rust-actix-utils" ,rust-actix-utils)
+    ("rust-actix-router" ,rust-actix-router)
     ("rust-actix-service" ,rust-actix-service)
     ("rust-awc" ,rust-awc)
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
@@ -3245,6 +3259,8 @@ futures-aware, FIFO queue")
       ("rust-actix-rt" ,rust-actix-rt)
       ("rust-log" ,(p rust-log-0.4))
       ("rust-tokio-util" ,(p rust-tokio-util-0.3))))
+    ("rust-actix-router" ; likewise
+     (("rust-firestorm" ,rust-firestorm)))
     ("rust-actix-web" ;likewise (TODO doesn't build yet)
      (("rust-actix-router" ,(p rust-actix-router-0.2))
       ("rust-bytestring" ,(p rust-bytestring-0.1))
