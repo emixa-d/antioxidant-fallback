@@ -31,6 +31,14 @@
 
 (define (all-packages)
   "Return a list of all antioxidated leaf packages (not guaranteed to build yet)"
+  (define (manually-antioxidated-variant package)
+    ;; Some leaf package are updated or patched.  In that case, vitaminate/auto
+    ;; will _not_ choose the updated or patched version.  However, a ‘manually’
+    ;; antioxidated will be defined in (antioxidant-packages).
+    (and=> (module-variable
+	    (resolve-interface '(antioxidant-packages))
+	    (string->symbol (string-append "antioxidated-" (package-name package))))
+	   variable-ref))
   (define (add foo list)
     (guard (c ((eq? (exception-kind c) 'antioxidant-cycle)
 	       (warning (G_ "skipping ~a for now because of cycle~%") (package-name foo))
@@ -38,7 +46,8 @@
 	      ((eq? (exception-kind c) 'keyword-argument-error)
 	       (warning (G_ "skipping ~a for now because of ~a~%") (package-name foo) c)
 	       list))
-      (cons (public-test-package (vitaminate/auto foo)) list)))
+      (cons (or (manually-antioxidated-variant foo)
+		(public-test-package (vitaminate/auto foo))) list)))
   (fold-packages add '() #:select? is-leaf-cargo-rust-package?))
 
 ;; The idea is to build all packages in (all-packages) by the CI infrastructure.
