@@ -2386,6 +2386,24 @@ futures-aware, FIFO queue")
          ("rust-tempfile" ,(p rust-tempfile-3))
          ("rust-vcpkg" ,(p rust-vcpkg-0.2)))))))
 
+(define rust-firestorm ; not yet in Guix, required by new rust-actix-router
+  (package
+    (name "rust-firestorm")
+    (version "0.5.1")
+    (source
+      (origin
+        (method url-fetch)
+        (uri (crate-uri "firestorm" version))
+        (file-name (string-append name "-" version ".tar.gz"))
+        (sha256
+          (base32 "162zjw9skavhmcfsjzsywwa6yj492i98ljx8m8m7x99djhn6qprc"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (home-page "https://github.com/That3Percent/firestorm")
+    (synopsis "A low overhead intrusive flamegraph profiler.")
+    (description
+      "This package provides a low overhead intrusive flamegraph profiler.")
+    (license license:expat)))
+
 (define rust-headers ; @0.3.3 doesn't build against new rust-time
   (package
     (inherit (p rust-headers-0.3))
@@ -2693,6 +2711,7 @@ futures-aware, FIFO queue")
     ("rust-ena" ,#~'())  ;; disable "bench", which fails for stable build
     ("rust-encoding-rs" ,#~'()) ; "simd-accel" requires unstable "packed_simd"
     ("rust-fern" ,#~'("syslog-6")) ; avoid having to include multiple versions of syslog
+    ("rust-firestorm" ,#~'()) ; avoid optional dependencies for probably unused profiling for now
     ;; Avoid extra dependencies by using the C library that
     ;; is used elsewhere anyway.
     ("rust-flate2" ,#~'("zlib"))
