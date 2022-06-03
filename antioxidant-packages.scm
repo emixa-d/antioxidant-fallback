@@ -3317,6 +3317,7 @@ futures-aware, FIFO queue")
 		 (phases '%standard-phases)
 		 ;; TODO: cargo test flags
 		 skip-build? cargo-test-flags tests?
+		 vendor-dir ; not needed in antioxidant
 		 (rust-metadata "")
 		 modules ; TODO: handle #:modules
 		 install-source? ; not used by antioxidant-build-system
