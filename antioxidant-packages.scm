@@ -2504,6 +2504,7 @@ futures-aware, FIFO queue")
     "rust-wasm-bindgen-futures" ; ECMAScript-only and doesn't build
     "rust-wasm-bindgen-test"
 
+    ("rust-cxxbridge-macro" -> "rust-cxx") ; test cycle?
     ;; Maybe a test or example cycle?
     ("rust-bytemuck-derive" -> "rust-bytemuck")
     ("rust-nasm-rs" -> "rust-arrayvec") ; not required anymore due to package update
