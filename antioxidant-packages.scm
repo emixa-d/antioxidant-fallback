@@ -1767,21 +1767,6 @@ of operation.")
         (sha256
           (base32 "021g1917r0jzpvgah76667nzk0p3p9kj7ka5zqns1rxrqp3qkz67"))))))
 
-(define rust-aead ; rust-aes-gcm@0.10 needs new version
-  (package
-    (inherit (p rust-aead-0.3))
-    (name "rust-aead")
-    (version "0.4.3")
-    (source
-      (origin
-        (method url-fetch)
-        (uri (crate-uri "aead" version))
-        (file-name (string-append name "-" version ".tar.gz"))
-        (sha256
-         (base32 "0xw8kp9j1whfdxhgmr2qf9xgslkg52zh6gzmhsh13y9w3s73nq8b"))))
-    (inputs (modify-inputs (package-inputs (p rust-aead-0.3))
-	      (append (p rust-rand-core-0.6)))))) ; new dependency
-
 (define rust-aes-gcm ; @0.8 doesn't build against old rust-cipher
   (package
     (inherit (p rust-aes-gcm-0.8))
@@ -2992,7 +2977,8 @@ futures-aware, FIFO queue")
     ("rust-input-buffer" ,rust-input-buffer)
     ("rust-enum-to-u8-slice-derive" ,rust-enum-to-u8-slice-derive)
     ("rust-cookie" ,rust-cookie)
-    ("rust-aead" ,rust-aead)
+    ("rust-aead" ,(p rust-aead-0.4)) ; resolve ‘found two different crates with name `aead`’ errors
+    ("rust-aead-4" ,(p rust-aead-0.4)) ; likewise
     ("rust-actix-threadpool" ,(p rust-actix-threadpool-0.3)) ; old rust-actix-threadpool requires old rust-futures
     ("rust-aes-gcm" ,rust-aes-gcm)
     ("rust-chacha20" ,rust-chacha20)
