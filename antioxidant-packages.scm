@@ -254,13 +254,6 @@
 	   (lambda* (#:key inputs #:allow-other-keys)
 	     (setenv "LIBCLANG_PATH"
 		     (dirname (search-input-file inputs "lib/libclang.so")))))))
-    ;; TODO: when deciding what binaries to build,
-    ;; respect [[bin]]/required-features, then this
-    ;; phase can be removed.
-    ("rust-phf-generator"
-     ,#~((add-after 'unpack 'delete-bin
-	   (lambda _
-	     (delete-file "src/bin/gen_hash_test.rs")))))
     ("rust-multipart"
      ,#~((add-after 'unpack 'remove-uncompilable-example
 	   (lambda _
