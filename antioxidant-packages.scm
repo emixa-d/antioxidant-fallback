@@ -2778,6 +2778,7 @@ futures-aware, FIFO queue")
     ("rust-lazycell" ,#~'()) ;; avoid nightly things
     ;; extra-traits is required by rust-nix
     ("rust-libc" ,#~'("std" "extra_traits"))
+    ("rust-libnghttp2-sys" ,#~'()) ; don't enable the "vendored" feature
     ;; Required by rust-env-logger.
     ;; kv_unstable is required by rust-kv-log-macro.
     ("rust-log" ,#~'("std" "kv_unstable"))
@@ -3416,6 +3417,15 @@ futures-aware, FIFO queue")
 	  (inherit (vitaminate-library/no-inputs pack))
 	  (source
 	   (match (package-name pack)
+	     ("rust-libnghttp2-sys"
+	      (origin
+	       (inherit (package-source pack))
+	       ;; original unbundling code doesn't work for antioxidant
+	       ;; (the library directory -L is not recorded, only -l was).
+	       (patches (list (local-file "rust-libnghttp2-unbundle.patch")))
+	       (snippet #~(begin
+			    (delete-file-recursively "nghttp2")
+			    (rename-file "Cargo.toml.orig" "Cargo.toml")))))
 	     ("rust-itoa"
 	      (origin
 	       (inherit (package-source pack))

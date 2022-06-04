@@ -1,0 +1,127 @@
+From a11e85e9de2d16b1aa0a0d1265d4d01dee8a2f70 Mon Sep 17 00:00:00 2001
+From: Maxime Devos <maximedevos@telenet.be>
+Date: Sat, 4 Jun 2022 19:00:54 +0000
+Subject: [PATCH] Support using the system's libnghttp2 instead of the bundled
+ copy.
+
+- Cargo.toml: Add pkg-config build dependency, make cc optional,
+  add "vendored" feature, for backwards compatibility default to
+  enabling the "vendored" feature.  Add modification information
+  as seems to be required by the Apache license.
+- README.md: add information on how to unbundle.
+- build.rs: Implement using the system copy instead of the local
+  copy, while keeping support for vendoring intact.
+- LICENSE-MIT: Update copyright information.
+
+Modified in Guix to backport to version packaged in Guix
+and because of crates.io's rewriting of Cargo.toml.
+
+Submitted upstream at <https://github.com/alexcrichton/nghttp2-rs/pull/5>.
+---
+ Cargo.toml  |  8 +++++++-
+ LICENSE-MIT |  1 +
+ README.md   |  5 ++++-
+ build.rs    | 24 +++++++++++++++++++++++-
+ 4 files changed, 35 insertions(+), 3 deletions(-)
+
+diff --git a/Cargo.toml.orig b/Cargo.toml.orig
+index 6a42a7f..bb096b5 100644
+--- a/Cargo.toml.orig
++++ b/Cargo.toml.orig
+@@ -1,3 +1,4 @@
++# modified by Maxime Devos (2022) (see 4(b) in LICENSE-APACHE)
+ [package]
+ name = "libnghttp2-sys"
+ version = "0.1.7+1.45.0"
+@@ -21,4 +22,9 @@ members = ['systest']
+ libc = '0.2'
+ 
+ [build-dependencies]
+-cc = "1.0.24"
++cc = { version = "1.0.24", optional = true }
++pkg-config = { version = "0.3.19" }
++
++[features]
++vendored = ["cc"]
++default = ["vendored"] # for backwards compatibility
+\ No newline at end of file
+diff --git a/LICENSE-MIT b/LICENSE-MIT
+index 39e0ed6..d46b385 100644
+--- a/LICENSE-MIT
++++ b/LICENSE-MIT
+@@ -1,4 +1,5 @@
+ Copyright (c) 2014 Alex Crichton
++Copyright (c) 2022 Maxime Devos
+ 
+ Permission is hereby granted, free of charge, to any
+ person obtaining a copy of this software and associated
+diff --git a/README.md b/README.md
+index 6bc558a..01a0013 100644
+--- a/README.md
++++ b/README.md
+@@ -1,7 +1,9 @@
+ # nghttp2-sys
+ 
+ A common library for linking `nghttp2` to rust programs (also known as
+-libnghttp2).
++libnghttp2).  By default, it uses a bundled copy of `libnghttp2`.  If that
++is not desired, you can use the system's `libnghttp2` instead by not enabling
++the default `vendored` feature.
+ 
+ ## Generating bindings
+ 
+@@ -42,6 +44,7 @@ This project is licensed under either of
+ 
+ at your option.
+ 
++Modified by Maxime Devos (2022) (see 4(b) in LICENSE-APACHE) (TODO: is there a less intrusive way to do this?)
+ ### Contribution
+ 
+ Unless you explicitly state otherwise, any contribution intentionally submitted
+diff --git a/build.rs b/build.rs
+index 3b20efc..8018ebe 100644
+--- a/build.rs
++++ b/build.rs
+@@ -1,12 +1,26 @@
++// modified by Maxime Devos (2022) (see 4(b) in LICENSE-APACHE)
++
++#[cfg(feature = "vendored")]
+ extern crate cc;
+ 
+ use std::env;
+ use std::fs;
+ use std::path::PathBuf;
+ 
+ const VERSION: &str = "1.33.90";
+ 
+-fn main() {
++#[cfg(not(feature = "vendored"))]
++extern crate pkg_config;
++
++// use system copy of nghttp2
++#[cfg(not(feature = "vendored"))]
++fn main_system() {
++    pkg_config::Config::new().atleast_version("1.44.0").probe("libnghttp2").unwrap();
++}
++
++// use bundled copy of nghttp2
++#[cfg(feature = "vendored")]
++fn main_vendored() {
+     let target = env::var("TARGET").unwrap();
+     let out_dir = PathBuf::from(env::var_os("OUT_DIR").unwrap());
+     let lib_version = env::var("CARGO_PKG_VERSION")
+@@ -112,3 +126,11 @@ fn main() {
+     )
+     .unwrap();
+ }
++
++fn main() {
++    #[cfg(not(feature = "vendored"))]
++    main_system();
++
++    #[cfg(feature = "vendored")]
++    main_vendored();
++}
+-- 
+2.36.0
+
