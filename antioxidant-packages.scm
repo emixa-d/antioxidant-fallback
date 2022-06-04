@@ -2690,8 +2690,8 @@ futures-aware, FIFO queue")
     ;; which is currently uncompilable.
     ("rust-bytecount" ,#~'())
     ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
-    ;; "alloc" is required by some crates.
-    ("rust-chrono" ,#~'("default" "alloc"))
+    ;; "alloc" is required by some crates. serde is required by alfis
+    ("rust-chrono" ,#~'("default" "alloc" "serde"))
     ;; zeroize required by rust-ctr
     ("rust-cipher" ,#~'("alloc" "std" "block-padding" "rand_core" "dev" "zeroize"))
     ;; Don't just support libclang 3.5, also include
