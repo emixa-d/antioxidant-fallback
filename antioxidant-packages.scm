@@ -2466,6 +2466,7 @@ futures-aware, FIFO queue")
   ;; Unconditional dependencies
   `("rust-derive-error-chain" ; doesn't build (even when updated) and unmaintained, avoid it for now
     "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
+    "rust-objc" "rust-objc-exception" "rust-objc-foundation" "rust-objc-id" "rust-objc-test-utils" ; requires gcc-objc, but gcc-objc doesn't seem to be used by any Rust crate, so it looks like these objc crates have never worked in the first place in Guix.
     ("rust-quickcheck"
      ;; Usually only required for tests.
      ;; Avoid (quickcheck env-logger humantime chrono bincode) cycle.
