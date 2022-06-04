@@ -3561,6 +3561,51 @@ futures-aware, FIFO queue")
   (public-test-package (vitaminate/auto swayhide)))
 (define-public antioxidated-tealdeer
   (public-test-package (vitaminate/auto tealdeer)))
+(define-public antioxidated-newsboat
+  ;; "newsboat" has a Makefile that uses Cargo and Cargo workspaces,
+  ;; which is currently unsupported by antioxidant.
+  (let* ((base (@ (gnu packages syndication) newsboat))
+	 (base/antioxidant (vitaminate/auto base))
+	 (base/internal ;; TODO: hidden
+	  (package
+	   (inherit base/antioxidant)
+	   (synopsis "Internal library of newsboat")
+	   (description "This is an internal library of newsboat")
+	   (properties '((hidden? . #t)))))
+	 (arguments/chdir
+	  (lambda (dir)
+	    (list #:phases
+		  #~(modify-phases %standard-antioxidant-phases
+		      (add-after 'unpack 'goto-rust-code
+		        (lambda  _
+			  (chdir #$dir))))))))
+    (define rust-newsboat-regex-rs
+      (package
+       (inherit base/internal)
+       (name "rust-newsboat-regex-rs")
+       (arguments (arguments/chdir "rust/regex-rs"))
+       (inputs (modify-inputs
+		(package-inputs base/antioxidant)
+		(prepend rust-newsboat-strprintf)))))
+    (define rust-newsboat-strprintf
+      (package
+       (inherit base/internal)
+       (name "rust-strprintf")
+       (arguments (arguments/chdir "rust/strprintf"))))
+    ;; TODO: gettext-system feature of the gettext crate
+    (define rust-libnewsboat
+      (package
+       (inherit base/internal)
+       (name "rust-libnewsboat")
+       (arguments (arguments/chdir "rust/libnewsboat"))
+       (inputs (modify-inputs
+		(package-inputs base/antioxidant)
+		(prepend rust-newsboat-regex-rs rust-newsboat-strprintf)))))
+    (public-test-package ; TODO solve build failures (cannot find -lnghttp2)
+     (package
+      (inherit base/antioxidant)
+      (inputs (modify-inputs (package-inputs base/antioxidant)
+	         (prepend rust-libnewsboat)))))))
 
 ;; Make a shared library and link to it
 (define-public test-lib
