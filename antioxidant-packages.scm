@@ -2892,6 +2892,7 @@ futures-aware, FIFO queue")
 	  "dns-over-https"))
     ;; For now avoid optional dependencies
     ("rust-typenum" ,#~'())
+    ("rust-uuid" ,#~'("default" "serde" "v4")) ; v4,serde required by alfis
     ("rust-value-bag" ,#~'("std"))
     ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
     ("rust-webpki" ,#~'("std" "alloc"))
