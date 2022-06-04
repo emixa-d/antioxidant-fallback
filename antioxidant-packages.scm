@@ -86,11 +86,12 @@
     ("rust-blakeout"
      ,#~((add-after 'unpack 'update-blake2
 	   ;; Resolve build failure.
-	   ;; TODO: upstream (is this correct?)
+	   ;; Submitted upstream at
+	   ;; <https://github.com/Revertron/Blakeout/pull/1>
 	   (lambda _
 	     (substitute* "src/lib.rs"
 	       (("use digest::Digest;") ; suggested by compiler
-		"use digest::{Digest,Update,VariableOutput};")
+		"use digest::{Update,VariableOutput};")
 	       (("Blake2s") "Blake2sVar")
 	       (("Blake2sVar::default\\(\\)") "Blake2sVar::new(DEFAULT_HASH_SIZE).expect(\"incorrect output size\")")
 	       (("let buf = Digest::finalize\\(digest\\);")
