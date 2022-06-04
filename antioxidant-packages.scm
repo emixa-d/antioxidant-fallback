@@ -2802,12 +2802,6 @@ futures-aware, FIFO queue")
     ;; Required by 'sniffglue'
     ("rust-pktparse" ,#~'("serde"))
     ("rust-plotters-svg" ,#~'()) ; "debug" feature causes a build failure
-    ;; Required by rust-unicode-normalization
-    ("rust-proc-macro2"
-     ;; Required by rust-serde-bytes via rust-syn.  If
-     ;; absent, this causes errors like
-     ;; <<https://github.com/google/cargo-raze/issues/159>.
-     ,#~'("proc-macro"))
     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
     ;; small_rngs is required by rust-phf-generator.
     ("rust-rand"
