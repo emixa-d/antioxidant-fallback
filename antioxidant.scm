@@ -924,7 +924,7 @@ by %excluded-keys."
 ;; for how source locations are inferred.
 (define (infer-binary-source target)
   "Guess the Rust source code location of TARGET, a <target> record.  If not found,
-raise an error instead."
+return false instead."
   (define inferred-source0
     (and (target-name target)
 	 (format #f "src/bin/~a.rs" (target-name target))
@@ -935,8 +935,7 @@ raise an error instead."
   (define inferred-source1 "src/main.rs")
   (or (target-path target) ; explicit
       (and inferred-source0 (file-exists? inferred-source0) inferred-source0)
-      (and (file-exists? inferred-source1) inferred-source1)
-      (error "source code of ~a could not be found." target)))
+      (and (file-exists? inferred-source1) inferred-source1)))
 
 (define* (build-binaries #:key inputs outputs #:allow-other-keys #:rest arguments)
   "Compile the Rust binaries described in Cargo.toml"
@@ -976,21 +975,29 @@ raise an error instead."
 	    (list #:configuration *configuration*))))
   ;; TODO: respect required-features.
   (define (compile-bin-target target)
-    (let ((source (infer-binary-source target)))
-      ;; Make sure they won't be compiled after the the 'package-autobins'
-      ;; below if required features are missing.  This is required
-      ;; for building rust-multipart.
-      (mark-file-visited! source)
-      (if (lset<= string=? (target-required-features target) *features*)
-	  (begin
-	    (format #t "Compiling ~a~%" source)
-	    (cb source (or (target-name target) (package-name package))
-		(or (target-edition target) (package-edition package))))
-	  (format #t "not compiling ~a, because the following features are missing: ~a~%"
-		  target ; we don't care if the source exists when we are not compiling it.
-		  (lset-difference string=?
-				   (target-required-features target)
-				   *features*)))))
+    (define source (infer-binary-source target)) ; can be #false if not found
+    ;; Make sure they won't be compiled after the the 'package-autobins'
+    ;; below if required features are missing.  This is required
+    ;; for building rust-multipart.
+    (when source
+      (mark-file-visited! source))
+    (cond ((not (lset<= string=? (target-required-features target) *features*))
+	   (format #t "not compiling ~a, because the following features are missing: ~a~%"
+		   target ; we don't care if the source exists when we are not compiling it.
+		   (lset-difference string=?
+				    (target-required-features target)
+				    *features*)))
+	  ((not source)
+	   ;; Maybe the file has been removed due to being non-free,
+	   ;; requiring dependencies not packaged in Guix, or requiring
+	   ;; a non-stable rust.  This skipping used to be required for
+	   ;; rust-phf-generator back when required-features wasn't expected
+	   ;; and hence gen_hash_test.rs had to be removed in a phase.
+	   (format #t "warning: source code of ~a could not be found, skipping.~%" target))
+	  (#true
+	   (format #t "Compiling ~a~%" source)
+	   (cb source (or (target-name target) (package-name package))
+	       (or (target-edition target) (package-edition package))))))
   (for-each compile-bin-target (manifest-bin *manifest*))
   (when (package-autobins package)
     (when (and (file-exists? "src/main.rs")
