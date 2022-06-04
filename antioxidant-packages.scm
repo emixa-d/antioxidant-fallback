@@ -2528,6 +2528,7 @@ futures-aware, FIFO queue")
     "rust-version-sync"
     "rust-trybuild"
     "rust-clang-ast-test-suite" ; empty, doesn't build
+    "rust-cxx-test-suite" ; likewise
     "rust-clippy"
     "rust-cargo" "rust-cargo-c" ; rust-cargo doesn't build even when updated to @0.62
     "rust-tokio-mock-task" ; doesn't build
