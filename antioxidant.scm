@@ -962,10 +962,12 @@ return false instead."
 	   (list (string-append "--edition=" edition)
 		 (string-append "-Lnative=" (getcwd)))
 	   ;; A program can use its own crate without declaring it.
-	   ;; At least, hexyl tries to do so.
-	   #:crate-mappings (let ((this-name (package-name package)))
-			      (cons (make-crate-mapping this-name this-name)
-				    extern-crates))
+	   ;; At least, hexyl tries to do so.  For a more complicated
+	   ;; example, see 'rust-xml-rs@0.8.3', which has "xml_rs" as
+	   ;; package name and "xml" as --extern name.
+	   #:crate-mappings (cons (make-crate-mapping (package-name package)
+						      (crate-name-of-manifest *manifest*))
+				  extern-crates)
 	   ;; Binaries can use their own crates!
 	   #:available-crates
 	   (find-directly-available-crates (append outputs inputs))
