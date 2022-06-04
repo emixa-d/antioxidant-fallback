@@ -74,6 +74,12 @@
 			 "COPYING" ; this is for freetype, not rust-servo-freetype-sys which is MPL
 			 ))))))
     ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
+    ("rust-cxx-build"
+     ,#~((add-after 'unpack 'avoid-scratch
+	   (lambda _
+	     (substitute* "src/lib.rs"
+	       (("scratch::path\\(\"cxxbridge\"\\)")
+		"panic!(\"rust-scratch is incompatible with the antioxidant compilation model without shenanigans, please set the output directory!\")"))))))
     ("rust-backtrace-sys"
      ,#~((add-after 'unpack 'break-cycle
 	   (lambda _
@@ -2520,6 +2526,7 @@ futures-aware, FIFO queue")
     "rust-core-arch" ; doesn't build, nowadays part of Rust itself?
     "rust-hermit-abi"
     "rust-model" ;; doesn't build, avoid for now
+    "rust-scratch" ; appears to be incompatible with antioxidant's compilation model without shenanigans
     "rust-tokio-core" ;; doesn't exist in recent tokios
     "rust-tokio-process" ;; doesn't exist in recent tokios
     "rust-tokio-executor" ;; doesn't exist in recent tokios, I think?
