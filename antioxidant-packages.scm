@@ -3619,7 +3619,11 @@ futures-aware, FIFO queue")
       (package
        (inherit base/internal)
        (name "rust-libnewsboat-ffi")
-       (arguments (arguments/chdir "rust/libnewsboat-ffi"))
+       (arguments (append
+		   ;; TODO: investigate contents
+		   (list #:cargo-target-directory
+			 #~(string-append #$output:ffi "/lib/newsboat-ffi-things"))
+		   (arguments/chdir "rust/libnewsboat-ffi")))
        (inputs (modify-inputs
 		(package-inputs base/antioxidant)
 		(prepend rust-libnewsboat)))))
