@@ -1036,7 +1036,8 @@ return false instead."
 ;; When something does not appear in the Cargo.toml or such, according to
 ;; that documentation, the environment variable needs to be set to the empty
 ;; string.
-(define (set-platform-independent-manifest-variables . _)
+(define* (set-platform-independent-manifest-variables
+	  #:key (cargo-target-directory #false) #:allow-other-keys)
   (define package (manifest-package *manifest*))
   ;; Used by rust-cmake.  TODO: actually set the various profile flags,
   ;; optimisation levels, ...
@@ -1067,7 +1068,25 @@ return false instead."
   (setenv "CARGO_PKG_HOMEPAGE" (package-homepage package))
   (setenv "CARGO_PKG_REPOSITORY" (package-repository package))
   (setenv "CARGO_PKG_LICENSE" (package-license package))
-  (setenv "CARGO_PKG_LICENSE_FILE" (package-license-file package)))
+  (setenv "CARGO_PKG_LICENSE_FILE" (package-license-file package))
+  ;; According to Cargo, this is the directory for all ‘generated artifacts
+  ;; and intermediate files’ and defaults to a directory "target" in the working
+  ;; directory.  However, in Guix, we want to install things in /gnu/store.
+  ;; It is also unclear what the file hierarchy is and which artifacts
+  ;; should be preserved in the store item and which should be removed.
+  ;;
+  ;; As such, don't set CARGO_TARGET_DIR by default and instead leave it
+  ;; to the packager to decide whether a cwd / store CARGO_TARGET_DIR is
+  ;; reasonable and what to preserve / remove.
+  ;;
+  ;; As an example, rust-cxx-build and newsboat make use of CARGO_TARGET_DIR.
+  (when cargo-target-directory
+    (let ((cargo-target-directory
+	   (if (absolute-file-name? cargo-target-directory)
+	       cargo-target-dir
+	       (in-vicinity (getcwd) cargo-target-directory))))
+      (mkdir-p cargo-target-directory)
+      (setenv "CARGO_TARGET_DIR" cargo-target-directory))))
 
 (define* (set-platform-dependent-variables #:key cargo-env-variables
 					   #:allow-other-keys)

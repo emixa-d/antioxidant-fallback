@@ -335,6 +335,7 @@
 			    ;; do?)
 			    (optimisation-level 0)
 			    (features #~'("default"))
+			    (cargo-target-directory #false)
 			    (cargo-env-variables
 			     #~'#$(target-environment-variables
 				   (or target
@@ -363,6 +364,7 @@
 		     #:features #$features
 		     #:optimisation-level '#$optimisation-level
 		     #:cargo-env-variables #$cargo-env-variables
+		     #:cargo-target-directory #$cargo-target-directory
 		     #:rust-metadata #$rust-metadata
 		     #:rust-dynamic-library-arguments #$rust-dynamic-library-arguments
 		     #:strip-binaries? #false ; TODO exported symbols are removed
