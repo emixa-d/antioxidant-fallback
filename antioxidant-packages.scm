@@ -3605,6 +3605,8 @@ futures-aware, FIFO queue")
        (name "rust-strprintf")
        (arguments (arguments/chdir "rust/strprintf"))))
     ;; TODO: gettext-system feature of the gettext crate
+    ;; TODO: building this as a static library is sufficient even once antioxidant
+    ;; supports shared libraries
     (define rust-libnewsboat
       (package
        (inherit base/internal)
@@ -3613,11 +3615,30 @@ futures-aware, FIFO queue")
        (inputs (modify-inputs
 		(package-inputs base/antioxidant)
 		(prepend rust-newsboat-regex-rs rust-newsboat-strprintf)))))
+    (define rust-libnewsboat-ffi
+      (package
+       (inherit base/internal)
+       (name "rust-libnewsboat-ffi")
+       (arguments (arguments/chdir "rust/libnewsboat-ffi"))
+       (inputs (modify-inputs
+		(package-inputs base/antioxidant)
+		(prepend rust-libnewsboat)))))
     (public-test-package ; TODO solve build failures (cannot find -lnghttp2)
      (package
       (inherit base/antioxidant)
+      (build-system (@ (guix build-system gnu) gnu-build-system))
+      (arguments
+       (list #:make-flags #~(list (string-append "prefix=" #$output)
+				  (string-append "CARGO=echo 'do not use cargo for:'"))
+	     #:phases
+	     #~(modify-phases %standard-phases
+		 (delete 'configure)
+		 (add-after 'unpack 'replace-cargo
+		   (lambda _ ; TODO: finish
+		     (substitute* "config.sh"
+		       (("fail \"cargo\"") ":")))))))
       (inputs (modify-inputs (package-inputs base/antioxidant)
-	         (prepend rust-libnewsboat)))))))
+			     (append rust-libnewsboat-ffi)))))))
 
 ;; Make a shared library and link to it
 (define-public test-lib
