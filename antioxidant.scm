@@ -1083,7 +1083,7 @@ return false instead."
   (when cargo-target-directory
     (let ((cargo-target-directory
 	   (if (absolute-file-name? cargo-target-directory)
-	       cargo-target-dir
+	       cargo-target-directory
 	       (in-vicinity (getcwd) cargo-target-directory))))
       (mkdir-p cargo-target-directory)
       (setenv "CARGO_TARGET_DIR" cargo-target-directory))))
