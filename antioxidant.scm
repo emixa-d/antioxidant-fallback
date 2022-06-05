@@ -18,6 +18,9 @@
 (define-module (antioxidant)
   #:export (find-crates crate-directory extract-crate-name extern-arguments
 			find-crates
+			L-arguments/non-rustc
+			l-arguments/non-rustc
+			linker-arguments/non-rustc
 			*manifest*
 			L-arguments compile-rust compile-rust-library
 			compile-rust-binary compile-cargo
@@ -494,6 +497,56 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
      (append (map library->argument extra-nonrust-libraries)
 	     (append-map crate->l-arguments used-dependencies))
      string=?)))
+
+;; TODO: untested, for newsboat
+(define* (L-arguments/non-rustc available-crates crate-mappings)
+  "Return a list of -L arguments to be passed to a compiler like gcc to link
+to the crates in CRATE-MAPPINGS."
+  ;; gcc doesn't make a -Lnative / -Ldependency / -Lcrate distinction
+  (let* ((used-dependencies (filter-used-crates available-crates crate-mappings))
+	 (make-L-argument
+	  (lambda (directory)
+	    (string-append "-L" directory)))
+	 (compiled-crate-argument ; for linking to the compiled crate itself (.rlib|so|a|...)
+	  (lambda (crate-information)
+	    (make-L-argument
+	     (dirname (crate-information-location crate-information)))))
+	 (compiled-crate-arguments
+	  (map compiled-crate-argument used-dependencies))
+	 (nonrust-library-arguments*
+	  (lambda (crate-information)
+	    (map make-L-argument
+		 (crate-information-library-directories crate-information))))
+	 (nonrust-library-arguments
+	  ;; Only use crates that are actually (indirectly) requested.
+	  (append-map nonrust-library-arguments* used-dependencie)))
+    ;; Delete duplicates to shrink the invocation of the C compiler a bit.
+    (delete-duplicates (append compiled-crate-arguments nonrust-library-arguments))))
+
+;; TODO: likewise untested!
+(define* (l-arguments/non-rustc available-crates crate-mappings)
+  "Return a list of -l arguments to be passed to a compiler like gcc to link
+to the crates in CRATE-MAPPINGS."
+  (define (derustify argument)
+    (string-append "-l"
+      (string-drop argument
+		   (cond ((string-prefix? "-lstatic=" argument)
+			  (string-length "-lstatic="))
+			 ((string-prefix? "-ldylib=" argument)
+			  (string-length "-ldylib="))
+			 ((string-prefix? "-lframework=" argument)
+			  (error "frameworks not supported"))
+			 ((string-prefix? "-l" argument)
+			  (string-length "-l"))
+			 (#true
+			  (pk 'unrecognised argument)
+			  (error "unrecognised library argument"))))))
+  (delete-duplicates
+   (map derustify (l-arguments available-crates crate-mappings))))
+
+(define (linker-arguments/non-rustc available-crates crate-mappings)
+  (append (L-arguments/non-rustc available-crates crate-mappings)
+	  (l-arguments/non-rustc available-crates crate-mappings)))
 
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs outputs
