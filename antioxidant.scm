@@ -17,6 +17,8 @@
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 (define-module (antioxidant)
   #:export (find-crates crate-directory extract-crate-name extern-arguments
+			find-crates
+			*manifest*
 			L-arguments compile-rust compile-rust-library
 			compile-rust-binary compile-cargo
 			read-dependency-environment-variables
@@ -32,7 +34,8 @@
   #:use-module (ice-9 match)
   #:use-module (ice-9 string-fun)
   #:use-module (ice-9 textual-ports)
-  #:use-module (json))
+  #:use-module (json)
+  #:declarative? #false) ;; allow @@ if required
 
 ;; The default crate type (TODO: switch to dylib?)
 ;; TODO: why rlib?  Because that works.  Maybe dylib works too?
