@@ -121,11 +121,13 @@
   (proc_macro %target-proc_macro)
   (harness %target-harness)
   (edition target-edition "edition" or-false*)
-  (crate-type target-crate-type ((or-constant '("rlib"))
-				 (lambda (x)
-				   (if (string? x)
-				       (list x)
-				       (vector->list x)))))
+  (crate-type target-crate-type
+              "crate-type"
+              ((or-constant '("rlib"))
+		 (lambda (x)
+		  (if (string? x)
+		      (list x)
+		      (vector->list x)))))
   ;; NA for [lib]
   (required-features target-required-features "required-features"
 		     (or-empty vector->list)))
