@@ -3686,12 +3686,16 @@ futures-aware, FIFO queue")
 		     (substitute* "Makefile"
 		       (("\\$\\(relative_cargo_target_dir\\)/cxxbridge")
 			(search-input-directory inputs "lib/newsboat-ffi-things/cxxbridge/include"))
-		       ;; todo: find dependency -lzlib etc.
+		       ;; todo: find dependency -lzlib etc. (--> now solved? to be verified)
 		       (("\\$\\(CARGO_TARGET_DIR\\)/\\$\\(BUILD_TYPE\\)/libnewsboat.a")
 			(search-input-file inputs "lib/guixcrate/libnewsboat.a"))
 		       (("-L\\$\\(CARGO_TARGET_DIR\\)/\\$\\(BUILD_TYPE\\)")
-			(string-append "-L"
-				       (dirname (search-input-file inputs "lib/guixcrate/libnewsboat.a")))))))
+			(let ((crates (find-crates inputs))
+			      (required (list (make-crate-mapping "libnewsboat-ffi" "libnewsboat-ffi"))))
+			  (string-append "-L"
+					 (dirname (search-input-file inputs "lib/guixcrate/libnewsboat.a"))
+					 " "
+					 (string-join (linker-arguments/non-rustc (find-crates inputs) required))))))))
 		 (add-after 'unpack 'replace-cargo
 		   (lambda _ ; TODO: finish
 		     (substitute* "config.sh"
