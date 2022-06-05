@@ -3681,6 +3681,7 @@ futures-aware, FIFO queue")
 	     '((guix build gnu-build-system)
 	       (antioxidant)
 	       (guix build utils))
+	     #:tests? #false ;; fails with ‘Error opening terminal: unknown’.  Also, the unantixidated variant did not run tests’ --> TODO: what
 	     #:phases
 	     #~(modify-phases %standard-phases
 		 ;; required by (antioxidant)
