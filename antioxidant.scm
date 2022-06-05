@@ -524,6 +524,8 @@ to the crates in CRATE-MAPPINGS."
     (delete-duplicates (append compiled-crate-arguments nonrust-library-arguments))))
 
 ;; TODO: likewise untested!
+;; TODO: for cdylib/dylib/staticlib crates, maybe this should include
+;;       the crate itself as well in -l?
 (define* (l-arguments/non-rustc available-crates crate-mappings)
   "Return a list of -l arguments to be passed to a compiler like gcc to link
 to the crates in CRATE-MAPPINGS."
