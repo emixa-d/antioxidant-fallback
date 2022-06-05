@@ -3668,6 +3668,14 @@ futures-aware, FIFO queue")
 	     #:phases
 	     #~(modify-phases %standard-phases
 		 (delete 'configure)
+		 ;; TODO: maybe create a symlink forest of the generated
+		 ;; headers by default (in 'target', where the Makefile
+		 ;; expects it?)
+		 (add-after 'unpack 'find-cxxbridge
+		   (lambda* (#:key inputs #:allow-other-keys)
+		     (substitute* "Makefile"
+		       (("\\$\\(relative_cargo_target_dir\\)/cxxbridge")
+			(search-input-directory inputs "lib/newsboat-ffi-things/cxxbridge/include")))))
 		 (add-after 'unpack 'replace-cargo
 		   (lambda _ ; TODO: finish
 		     (substitute* "config.sh"
