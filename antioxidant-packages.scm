@@ -74,12 +74,27 @@
 			 "COPYING" ; this is for freetype, not rust-servo-freetype-sys which is MPL
 			 ))))))
     ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
+    ;; Make sure the headers will be installed in a proper location.
+    ;; TODO: make sure dependencies actually find the result (newsboat-ffi).
+    ;; TODO: set RUST_CXX_BUILD_OUTPUT in antioxidant.scm.
     ("rust-cxx-build"
      ,#~((add-after 'unpack 'avoid-scratch
+	   ;; not sure if .clone is required
 	   (lambda _
+	     (substitute* "src/target.rs"
+	       (("fn find_target_dir\\(out_dir: &Path) -> TargetDir \\{" line)
+		(string-append line "
+let mut out = out_dir.to_path_buf().clone();
+out.push(\".debugging\");
+return TargetDir::Path(out);
+}
+fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
+			       #;"return TargetDir::Path(out_dir.clone().push(\".debugging\"));}fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {")))
 	     (substitute* "src/lib.rs"
 	       (("scratch::path\\(\"cxxbridge\"\\)")
-		"panic!(\"rust-scratch is incompatible with the antioxidant compilation model without shenanigans, please set the output directory!\")"))))))
+		"panic!(\"rust-scratch is incompatible with the antioxidant compilation model without shenanigans, please set the output directory!\")")
+	       (("paths::out_dir\\(\\)\\?")
+		"Path::new(&env::var_os(\"RUST_CXX_BUILD_OUTPUT\").expect(\"RUST_CXX_BUILD_OUTPUT should be set\")).to_path_buf()"))))))
     ("rust-cxx"
      ,#~((add-after 'unpack 'do-not-install-headers-in-/tmp
 	   (lambda _
@@ -3633,9 +3648,13 @@ futures-aware, FIFO queue")
        (name "rust-libnewsboat-ffi")
        (arguments (append
 		   ;; TODO: investigate contents
-		   (list #:cargo-target-directory
-			 #~(string-append #$output:ffi "/lib/newsboat-ffi-things"))
-		   (arguments/chdir "rust/libnewsboat-ffi")))
+		   (substitute-keyword-arguments (arguments/chdir "rust/libnewsboat-ffi")
+		     ((#:phases old-phases)
+		      #~(modify-phases #$(pk 'o old-phases)
+			  (add-before 'unpack 'set-rust-cxx-output
+			      (lambda _
+				(mkdir-p (string-append #$output "/lib/newsboat-ffi-things"))
+				(setenv "RUST_CXX_BUILD_OUTPUT" (string-append #$output "/lib/newsboat-ffi-things")))))))))
        (inputs (modify-inputs
 		(package-inputs base/antioxidant)
 		(prepend rust-libnewsboat)))))
