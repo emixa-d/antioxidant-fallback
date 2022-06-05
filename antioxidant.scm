@@ -528,6 +528,9 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 		     (or rust-dynamic-library-arguments
 			 (error "I don't know what symbols to export or the version of the library, please set #:rust-dynamic-library-arguments"))
 		     '())
+		 (if (string=? crate-type "dylib") ; TODO: untested!
+		     (or rust-dynamic-library-arguments '())
+		     '())
 		 extra-arguments)
 	 arguments))
 
@@ -924,11 +927,11 @@ by %excluded-keys."
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (when lib-path
       (set! *library-destination*
-	(apply (if (member crate-type '("cdylib"))
+	(apply (if (member crate-type '("cdylib")) ; TODO: maybe also for 'dylib'?
 		   c-library-destination
 		   crate-library-destination)
 	       crate-name
-	       (cond ((member crate-type '("cdylib" "proc-macro"))
+	       (cond ((member crate-type '("cdylib" "dylib" "proc-macro"))
 		      "so")
 		     ((member crate-type '("staticlib")) ; used by newsboat-ffi
 		      "a")
