@@ -19,6 +19,7 @@
   #:export (vitaminate/auto public-test-package))
 
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
+	     ((guix build-system gnu) #:select (%gnu-build-system-modules))
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1) (srfi srfi-71)
 	     (gnu packages rust-apps) (guix utils) (srfi srfi-26)
