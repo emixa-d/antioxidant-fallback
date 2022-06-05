@@ -27,7 +27,12 @@
 			read-dependency-environment-variables
 			determine-crate-type
 			%standard-antioxidant-phases
-			%default-crate-type)
+			%default-crate-type
+
+			crate-mapping?
+			make-crate-mapping
+			crate-mapping-dependency-name
+			crate-mapping-local-name)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
   #:use-module (rnrs records syntactic)
