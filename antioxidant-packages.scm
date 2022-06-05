@@ -2988,6 +2988,7 @@ futures-aware, FIFO queue")
 		    ;; For compatibility with new rust-time
 		    (list (local-file "0001-use-std-time-bump-to-0.5.4.patch"))))
     ("rust-partial-io" ,rust-partial-io)
+    ("rust-regex-syntax" ,(p rust-regex-syntax-0.6)) ; multiple version
     ;; swayhide requires non-async to build
     ("rust-swayipc" ,(package-with-rust-features (p rust-swayipc-2)
 						 #~'()
