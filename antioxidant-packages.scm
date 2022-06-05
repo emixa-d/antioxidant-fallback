@@ -3675,7 +3675,7 @@ futures-aware, FIFO queue")
       (arguments
        (list #:make-flags #~(list (string-append "prefix=" #$output)
 				  (string-append "CARGO=echo 'do not use cargo for:'"))
-	     #:imported-modules (cons (antioxidant) %gnu-build-system-modules)
+	     #:imported-modules (cons '(antioxidant) %gnu-build-system-modules)
 	     #:modules
 	     '((guix build gnu-build-system)
 	       (antioxidant)
