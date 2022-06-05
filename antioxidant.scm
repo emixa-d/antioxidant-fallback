@@ -121,7 +121,11 @@
   (proc_macro %target-proc_macro)
   (harness %target-harness)
   (edition target-edition "edition" or-false*)
-  (crate-type target-crate-type)
+  (crate-type target-crate-type ((or-constant '("rlib"))
+				 (lambda (x)
+				   (if (string? x)
+				       (list x)
+				       (vector->list x)))))
   ;; NA for [lib]
   (required-features target-required-features "required-features"
 		     (or-empty vector->list)))
@@ -873,13 +877,6 @@ by %excluded-keys."
 	     arguments)))
   (format #t "Building with configuration options: ~a~%" *configuration*))
 
-(define (maybe-list->list l)
-  (match l
-    (*unspecified* '("rlib"))
-    (() '("rlib"))
-    ((? list? list) list)
-    ((? string? s) (list s))))
-
 (define *library-destination* #f)
 (define* (build #:key inputs #:allow-other-keys #:rest arguments)
   "Build the Rust crates (library) described in Cargo.toml."
@@ -899,7 +896,7 @@ by %excluded-keys."
 	 (lib-procedural-macro? (and=> lib target-proc-macro))
 	 ;; TODO: can theoretically be a list of multiple different crate types
 	 (crate-types (if lib
-			  (maybe-list->list (target-crate-type lib))
+			  (target-crate-type lib)
 			  '("rlib")))
 	 (c-shared-library? (member "cdylib" crate-types))
 	 (static-library? (member "staticlib" crate-types)))
