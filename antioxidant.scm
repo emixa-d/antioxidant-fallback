@@ -524,7 +524,7 @@ to the crates in CRATE-MAPPINGS."
 		 (crate-information-library-directories crate-information))))
 	 (nonrust-library-arguments
 	  ;; Only use crates that are actually (indirectly) requested.
-	  (append-map nonrust-library-arguments* used-dependencie)))
+	  (append-map nonrust-library-arguments* used-dependencies)))
     ;; Delete duplicates to shrink the invocation of the C compiler a bit.
     (delete-duplicates (append compiled-crate-arguments nonrust-library-arguments))))
 
