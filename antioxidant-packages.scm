@@ -363,6 +363,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 			    (optimisation-level 0)
 			    (features #~'("default"))
 			    (cargo-target-directory #false)
+			    (rust-crate-type #false)
 			    (cargo-env-variables
 			     #~'#$(target-environment-variables
 				   (or target
@@ -391,7 +392,8 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		     #:features #$features
 		     #:optimisation-level '#$optimisation-level
 		     #:cargo-env-variables #$cargo-env-variables
-		     #:cargo-target-directory #$cargo-target-directory
+		     #:cargo-target-directory #$cargo-target-directory ; <-- TODO: unused, maybe remove?
+		     #:rust-crate-type #$rust-crate-type
 		     #:rust-metadata #$rust-metadata
 		     #:rust-dynamic-library-arguments #$rust-dynamic-library-arguments
 		     #:strip-binaries? #false ; TODO exported symbols are removed
@@ -2699,6 +2701,9 @@ futures-aware, FIFO queue")
       (a (pk 'a a) (error "bogus entry in %removed-dependencies"))))
   (any remove-dependency*? %removed-dependencies))
 
+(define %crate-types
+  `(("rust-hyper" ,#~"rlib")))
+
 ;; Try keeping things sorted, to avoid rebase/merge conflicts.
 (define %features
   ;; rust-swayipcs requires 'spawn_blocking' which is only
@@ -3462,6 +3467,10 @@ futures-aware, FIFO queue")
 	       (patches (list (local-file "rust-itoa-Reintroduce-fmt.patch")))))
 	     (_ (package-source pack))))
 	  (arguments (list #:rust-metadata rust-metadata
+			   #:rust-crate-type
+			   (match (assoc (package-name pack) %crate-types)
+			     ((_ value) value)
+			     (#false #~#false)) ; use Cargo.toml
 			   #:features
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?  And maybe the features can be moved

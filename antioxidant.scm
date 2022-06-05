@@ -20,6 +20,7 @@
 			L-arguments compile-rust compile-rust-library
 			compile-rust-binary compile-cargo
 			read-dependency-environment-variables
+			determine-crate-type
 			%standard-antioxidant-phases)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
@@ -880,7 +881,25 @@ by %excluded-keys."
   (format #t "Building with configuration options: ~a~%" *configuration*))
 
 (define *library-destination* #f)
-(define* (build #:key inputs #:allow-other-keys #:rest arguments)
+
+(define* (determine-crate-type manifest #:key rust-crate-type #:allow-other-keys #:rest arguments)
+  "Return the crate type to build this rust crate as."
+  (define lib (manifest-lib manifest))
+  (cond (rust-crate-type rust-crate-type) ; override
+	((not lib) "rlib")
+	;; TODO: which one is it?  (For rust-derive-arbitrary,
+	;; it is proc_macro)
+	((target-proc-macro lib) ; proc-macro
+	 "proc-macro")
+	(#true
+	 (match (target-crate-type lib)
+	   (() (error "There must be at least one crate type."))
+	   ((x) x)
+	   ((? list? rest)
+	    (pk 'types rest 'in manifest)
+	    (error "antioxidant only supports a single crate type, override Cargo.toml with #:rust-crate-type"))))))
+
+(define* (build #:key rust-crate-type inputs #:allow-other-keys #:rest arguments)
   "Build the Rust crates (library) described in Cargo.toml."
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
@@ -893,30 +912,25 @@ by %excluded-keys."
 	 ;; the code elsewhere.
 	 (lib-path (or (and=> lib target-path)
 		       (and (file-exists? "src/lib.rs") "src/lib.rs")))
-	 ;; TODO: which one is it?  (For rust-derive-arbitrary,
-	 ;; it is proc_macro)
-	 (lib-procedural-macro? (and=> lib target-proc-macro))
-	 ;; TODO: can theoretically be a list of multiple different crate types
-	 (crate-types (if lib
-			  (target-crate-type lib)
-			  '("rlib")))
-	 (c-shared-library? (member "cdylib" crate-types))
-	 (static-library? (member "staticlib" crate-types)))
-    (when (and lib-procedural-macro? (or c-shared-library? static-library?))
-      (error "only proc-macro or cdylib, not both!"))
-    (when (and c-shared-library? static-library?)
-      (error "only static or shared, not both!"))
+	 (crate-type (apply determine-crate-type *manifest* arguments)))
+    (unless (member crate-type '("bin" "lib" "rlib" "dylib" "cdylib" "staticlib" "proc-macro"))
+      ;; Note: not all of these crate types have been tested.
+      (pk 'c crate-type)
+      (error  "unrecognised crate type"))
+    (when (and (string=? crate-type "staticlib")
+	       (not rust-crate-type))
+      (error "The Cargo.toml has asked for a staticlib, but Rust staticlibs include all their dependencies (in contrast to C static libraries) and hence don't play well with grafts, so this needs to be confirmed by setting #:rust-crate-type explicitly"))
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (when lib-path
       (set! *library-destination*
-	(apply (if c-shared-library?
+	(apply (if (member crate-type '("cdylib"))
 		   c-library-destination
 		   crate-library-destination)
 	       crate-name
-	       (cond ((or lib-procedural-macro? c-shared-library?)
+	       (cond ((member crate-type '("cdylib" "proc-macro"))
 		      "so")
-		     (static-library? ; used by newsboat-ffi
+		     ((member crate-type '("staticlib")) ; used by newsboat-ffi
 		      "a")
 		     (#true "rlib"))
 	       arguments)) ;; TODO: less impure
@@ -932,10 +946,7 @@ by %excluded-keys."
 		   ;; TODO: is this still necessary, now we interpret
 		   ;; rustc-link-search and such?
 		   (string-append "-Lnative=" (getcwd)))
-	     #:crate-type (cond (lib-procedural-macro? "proc-macro")
-				(c-shared-library? "cdylib")
-				(static-library? "staticlib")
-				(#true "rlib"))
+	     #:crate-type crate-type
 	     #:available-crates (find-directly-available-crates inputs)
 	     #:crate-mappings crate-mappings
 	     ;; TODO: does the order matter?
