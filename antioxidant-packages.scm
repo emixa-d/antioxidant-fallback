@@ -3683,6 +3683,8 @@ futures-aware, FIFO queue")
 	       (guix build utils))
 	     #:phases
 	     #~(modify-phases %standard-phases
+		 ;; required by (antioxidant)
+		 #$@(with-extensions (list guile-json-4) #~())
 		 (delete 'configure)
 		 ;; TODO: maybe create a symlink forest of the generated
 		 ;; headers by default (in 'target', where the Makefile
