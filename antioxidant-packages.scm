@@ -3656,6 +3656,7 @@ futures-aware, FIFO queue")
        (inherit base/internal)
        (name "rust-libnewsboat-ffi")
        (arguments (append
+		   (list #:rust-crate-type "staticlib") ; TODO: non-static, for grafts.  Also huge (77.4 MiB)!  Is there a mechanism for static libraries that _doesn't_ include copies of the dependencies?
 		   ;; TODO: investigate contents
 		   (substitute-keyword-arguments (arguments/chdir "rust/libnewsboat-ffi")
 		     ((#:phases old-phases)
@@ -3680,11 +3681,17 @@ futures-aware, FIFO queue")
 		 ;; TODO: maybe create a symlink forest of the generated
 		 ;; headers by default (in 'target', where the Makefile
 		 ;; expects it?)
-		 (add-after 'unpack 'find-cxxbridge
+		 (add-after 'unpack 'find-ffi-things
 		   (lambda* (#:key inputs #:allow-other-keys)
 		     (substitute* "Makefile"
 		       (("\\$\\(relative_cargo_target_dir\\)/cxxbridge")
-			(search-input-directory inputs "lib/newsboat-ffi-things/cxxbridge/include")))))
+			(search-input-directory inputs "lib/newsboat-ffi-things/cxxbridge/include"))
+		       ;; todo: find dependency -lzlib etc.
+		       (("\\$\\(CARGO_TARGET_DIR\\)/\\$\\(BUILD_TYPE\\)/libnewsboat.a")
+			(search-input-file inputs "lib/guixcrate/libnewsboat.a"))
+		       (("-L\\$\\(CARGO_TARGET_DIR\\)/\\$\\(BUILD_TYPE\\)")
+			(string-append "-L"
+				       (dirname (search-input-file inputs "lib/guixcrate/libnewsboat.a")))))))
 		 (add-after 'unpack 'replace-cargo
 		   (lambda _ ; TODO: finish
 		     (substitute* "config.sh"
