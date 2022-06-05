@@ -21,7 +21,8 @@
 			compile-rust-binary compile-cargo
 			read-dependency-environment-variables
 			determine-crate-type
-			%standard-antioxidant-phases)
+			%standard-antioxidant-phases
+			%default-crate-type)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
   #:use-module (rnrs records syntactic)
@@ -32,6 +33,10 @@
   #:use-module (ice-9 string-fun)
   #:use-module (ice-9 textual-ports)
   #:use-module (json))
+
+;; The default crate type (TODO: switch to dylib?)
+;; TODO: why rlib?  Because that works.  Maybe dylib works too?
+(define %default-crate-type "rlib")
 
 ;;;
 ;;; Reading Cargo.toml files.
@@ -124,7 +129,7 @@
   (edition target-edition "edition" or-false*)
   (crate-type target-crate-type
               "crate-type"
-              ((or-constant '("rlib"))
+              ((or-constant (list %default-crate-type))
 		 (lambda (x)
 		  (if (string? x)
 		      (list x)
@@ -389,7 +394,7 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 (define (find-crates inputs)
   (append-map (lambda (store-item)
 		(if (file-exists? (crate-directory store-item))
-		    ;; rlib: Rust's static library format, currently the default
+		    ;; rlib: Rust's static library format
 		    ;; so: shared library, used for proc-macro
 		    ;; a: static library, used by e.g. newsboat-ffi
 		    (find-files (crate-directory store-item) "\\.(rlib|so|a)$")
@@ -516,11 +521,10 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 		 extra-arguments)))
 
 (define* (compile-rust-library source destination crate-name extra-arguments
-			       #:key (crate-type "rlib")
+			       #:key (crate-type %default-crate-type)
 			       (rust-dynamic-library-arguments #f)
 			       #:allow-other-keys
 			       #:rest arguments)
-  ;; TODO: why rlib?  Because that works.  Maybe dylib works too?
   (apply compile-rust source destination
 	 (append (list (string-append "--crate-name=" crate-name)
 		       (string-append "--crate-type=" crate-type))
@@ -889,7 +893,7 @@ by %excluded-keys."
   "Return the crate type to build this rust crate as."
   (define lib (manifest-lib manifest))
   (cond (rust-crate-type rust-crate-type) ; override
-	((not lib) "rlib")
+	((not lib) %default-crate-type)
 	;; TODO: which one is it?  (For rust-derive-arbitrary,
 	;; it is proc_macro)
 	((target-proc-macro lib) ; proc-macro
@@ -935,7 +939,11 @@ by %excluded-keys."
 		      "so")
 		     ((member crate-type '("staticlib")) ; used by newsboat-ffi
 		      "a")
-		     (#true "rlib"))
+		     ((member crate-type '("rlib" "lib"))
+		      "rlib")
+		     (#true
+		      (pk 'c crate-type)
+		      (error "bogus crate type -- should be unreachable")))
 	       arguments)) ;; TODO: less impure
       (*save* *library-destination*)
       (apply compile-rust-library lib-path *library-destination*
