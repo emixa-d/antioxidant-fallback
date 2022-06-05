@@ -80,6 +80,18 @@
 	     (substitute* "src/lib.rs"
 	       (("scratch::path\\(\"cxxbridge\"\\)")
 		"panic!(\"rust-scratch is incompatible with the antioxidant compilation model without shenanigans, please set the output directory!\")"))))))
+    ("rust-cxx"
+     ,#~((add-after 'unpack 'do-not-install-headers-in-/tmp
+	   (lambda _
+	     ;; By default, this header is located in the unpacked source
+	     ;; and rust-cxx will (when used by dependencies in their build.rs)
+	     ;; try to refer to that location, in /tmp/guix-build-rust-cxx...,
+	     ;; which cannot work, so properly install the header instead.
+	     (install-file "include/cxx.h"
+			   (string-append #$output "/include/rust-cxx"))
+	     (substitute* "build.rs"
+	       (("cxx_h.to_string_lossy\\(\\)")
+		(string-append "\"" #$output "/include/rust-cxx/cxx.h\"")))))))
     ("rust-backtrace-sys"
      ,#~((add-after 'unpack 'break-cycle
 	   (lambda _
