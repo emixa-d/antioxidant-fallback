@@ -3698,12 +3698,14 @@ futures-aware, FIFO queue")
 		       (("\\$\\(CARGO_TARGET_DIR\\)/\\$\\(BUILD_TYPE\\)/libnewsboat.a")
 			(search-input-file inputs "lib/guixcrate/libnewsboat.a"))
 		       (("-L\\$\\(CARGO_TARGET_DIR\\)/\\$\\(BUILD_TYPE\\)")
-			(let ((crates (find-crates inputs))
+			;; TODO: export find-directly-available-crates,
+			;; remove unused find-crates.
+			(let ((crates ((@@ (antioxidant) find-directly-available-crates) inputs))
 			      (required (list (make-crate-mapping "libnewsboat-ffi" "libnewsboat-ffi"))))
 			  (string-append "-L"
 					 (dirname (search-input-file inputs "lib/guixcrate/libnewsboat.a"))
 					 " "
-					 (string-join (linker-arguments/non-rustc (find-crates inputs) required))))))))
+					 (string-join (linker-arguments/non-rustc crates required))))))))
 		 (add-after 'unpack 'replace-cargo
 		   (lambda _ ; TODO: finish
 		     (substitute* "config.sh"
