@@ -220,6 +220,9 @@ equivalent of adding \"-lLIBRARY ...\" to the invocation of \"gcc\"."
 	 (cond ((string-suffix? ".so" library) ; happens for rust-jemalloc-sys@0.3
 		(format #t "note: the build script explicitly included a .so suffix (~a) for the shared library. We cannot pass that to the linker, so the suffix is removed.~%" library)
 		(string-drop-right library (string-length ".so")))
+	       ((string-suffix? ".a" library) ; not yet encountered in practice
+		(format #t "note: the build script explicitly included a .a suffix (~a) for the shared library. We cannot pass that to the linker, so the suffix is removed.~%" library)
+		(string-drop-right library (string-length ".a")))
 	       ;; TODO: .a case?
 	       (#true library))))
     (set! *c-libraries* (cons corrected-library *c-libraries*))))
@@ -381,7 +384,8 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 		(if (file-exists? (crate-directory store-item))
 		    ;; rlib: Rust's static library format, currently the default
 		    ;; so: shared library, used for proc-macro
-		    (find-files (crate-directory store-item) "\\.(rlib|so)$")
+		    ;; a: static library, used by e.g. newsboat-ffi
+		    (find-files (crate-directory store-item) "\\.(rlib|so|a)$")
 		    '()))
 	      ;; Delete duplicates that can happen when compiling natively, to avoid
 	      ;; E0519.
@@ -394,6 +398,8 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
 			     (string-length ".rlib"))
 			    ((string-suffix? ".so" lib)
 			     (string-length ".so"))
+			    ((string-suffix? ".a" lib)
+			     (string-length ".a"))
 			    (#true
 			     (format #t "Unrecognised: ~a~%" lib))))
    (string-length "lib")))
@@ -867,6 +873,13 @@ by %excluded-keys."
 	     arguments)))
   (format #t "Building with configuration options: ~a~%" *configuration*))
 
+(define (maybe-list->list l)
+  (match l
+    (*unspecified* '("rlib"))
+    (() '("rlib"))
+    ((? list? list) list)
+    ((? string? s) (list s))))
+
 (define *library-destination* #f)
 (define* (build #:key inputs #:allow-other-keys #:rest arguments)
   "Build the Rust crates (library) described in Cargo.toml."
@@ -884,10 +897,16 @@ by %excluded-keys."
 	 ;; TODO: which one is it?  (For rust-derive-arbitrary,
 	 ;; it is proc_macro)
 	 (lib-procedural-macro? (and=> lib target-proc-macro))
-	 ;; TODO: can theoretically be a list
-	 (c-shared-library? (and lib (equal? "cdylib" (target-crate-type lib)))))
-    (when (and lib-procedural-macro? c-shared-library?)
+	 ;; TODO: can theoretically be a list of multiple different crate types
+	 (crate-types (if lib
+			  (maybe-list->list (target-crate-type lib))
+			  '("rlib")))
+	 (c-shared-library? (member "cdylib" crate-types))
+	 (static-library? (member "staticlib" crate-types)))
+    (when (and lib-procedural-macro? (or c-shared-library? static-library?))
       (error "only proc-macro or cdylib, not both!"))
+    (when (and c-shared-library? static-library?)
+      (error "only static or shared, not both!"))
     ;; TODO: implement proper library/binary autodiscovery as described in
     ;; <https://doc.rust-lang.org/cargo/reference/cargo-targets.html#target-auto-discovery>.
     (when lib-path
@@ -896,9 +915,11 @@ by %excluded-keys."
 		   c-library-destination
 		   crate-library-destination)
 	       crate-name
-	       (if (or lib-procedural-macro? c-shared-library?)
-		   "so"
-		   "rlib")
+	       (cond ((or lib-procedural-macro? c-shared-library?)
+		      "so")
+		     (static-library? ; used by newsboat-ffi
+		      "a")
+		     (#true "rlib"))
 	       arguments)) ;; TODO: less impure
       (*save* *library-destination*)
       (apply compile-rust-library lib-path *library-destination*
@@ -914,6 +935,7 @@ by %excluded-keys."
 		   (string-append "-Lnative=" (getcwd)))
 	     #:crate-type (cond (lib-procedural-macro? "proc-macro")
 				(c-shared-library? "cdylib")
+				(static-library? "staticlib")
 				(#true "rlib"))
 	     #:available-crates (find-directly-available-crates inputs)
 	     #:crate-mappings crate-mappings
