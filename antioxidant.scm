@@ -16,23 +16,23 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 (define-module (antioxidant)
-  #:export (find-crates crate-directory extract-crate-name extern-arguments
-			find-crates
-			L-arguments/non-rustc
-			l-arguments/non-rustc
-			linker-arguments/non-rustc
-			*manifest*
-			L-arguments compile-rust compile-rust-library
-			compile-rust-binary compile-cargo
-			read-dependency-environment-variables
-			determine-crate-type
-			%standard-antioxidant-phases
-			%default-crate-type
+  #:export (find-directly-available-crates
+	    crate-directory extract-crate-name extern-arguments
+	    L-arguments/non-rustc
+	    l-arguments/non-rustc
+	    linker-arguments/non-rustc
+	    *manifest*
+	    L-arguments compile-rust compile-rust-library
+	    compile-rust-binary compile-cargo
+	    read-dependency-environment-variables
+	    determine-crate-type
+	    %standard-antioxidant-phases
+	    %default-crate-type
 
-			crate-mapping?
-			make-crate-mapping
-			crate-mapping-dependency-name
-			crate-mapping-local-name)
+	    crate-mapping?
+	    make-crate-mapping
+	    crate-mapping-dependency-name
+	    crate-mapping-local-name)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
   #:use-module (rnrs records syntactic)
@@ -401,18 +401,6 @@ equivalent of adding \"-LLIBRARY_DIRECTORY\" to the invocation of \"gcc\"."
    (or (assoc-ref outputs "lib")
        (assoc-ref outputs "out"))
    "/lib/lib" crate-name "." type)) ; type = ".a" / ".so"
-
-(define (find-crates inputs)
-  (append-map (lambda (store-item)
-		(if (file-exists? (crate-directory store-item))
-		    ;; rlib: Rust's static library format
-		    ;; so: shared library, used for proc-macro
-		    ;; a: static library, used by e.g. newsboat-ffi
-		    (find-files (crate-directory store-item) "\\.(rlib|so|a)$")
-		    '()))
-	      ;; Delete duplicates that can happen when compiling natively, to avoid
-	      ;; E0519.
-	      (delete-duplicates (map cdr inputs) string=?)))
 
 (define (extract-crate-name lib)
   (string-drop
