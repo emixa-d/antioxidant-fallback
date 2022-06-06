@@ -1,0 +1,122 @@
+From 12efcc691c4e1fa50b276658be66e20be16d7af1 Mon Sep 17 00:00:00 2001
+From: Maxime Devos <maximedevos@telenet.be>
+Date: Mon, 6 Jun 2022 16:47:13 +0000
+Subject: [PATCH] Update dependencies.
+
+Warning:
+  * I don't use the Cargo package manager, I use the Guix package
+    manager and the antioxidant build system.
+  * This package manager has a different dependency resolving
+    algorithm from Guix.
+  * The antioxidant-build-system hasn't implemented running tests yet.
+  * On first sight, the changes for the tokio update seem to have
+    slightly different semantics.  Maybe buggy.
+
+Because the crate is downloaded for crates.io, Cargo.toml had to be
+changed to Cargo.toml.orig.
+
+Upstream PR: <https://github.com/fcsonline/drill/pull/133>.
+---
+ Cargo.toml           | 24 ++++++++++++------------
+ src/actions/delay.rs |  4 ++--
+ src/benchmark.rs     |  7 ++++---
+ 3 files changed, 18 insertions(+), 17 deletions(-)
+
+diff --git a/Cargo.toml.orig b/Cargo.toml.orig
+index e411b9d..86e1190 100644
+--- a/Cargo.toml.orig
++++ b/Cargo.toml.orig
+@@ -9,19 +9,19 @@ license = "GPL-3.0"
+ edition = "2018"
+ 
+ [dependencies]
+-clap = "2.32.0"
+-colored = "1.7.0"
+-csv = "1.0.5"
+-regex = "1.1.2"
++clap = "2.34.0"
++colored = "1.9.3"
++csv = "1.1.5"
++regex = "1.5.4"
+ serde = { version = "1.0", features = ["derive"] }
+-serde_json = "1.0.39"
+-yaml-rust = "0.4.3"
+-url = "2.1.1"
++serde_json = "1.0.74"
++yaml-rust = "0.4.5"
++url = "2.2.2"
+ linked-hash-map = "0.5.3"
+-tokio = { version = "0.2.20", features = ["rt-core", "rt-threaded", "time", "net", "io-driver"] }
+-reqwest = { version = "0.10.4", features = ["cookies", "trust-dns"] }
+-async-trait = "0.1.30"
+-futures = "0.3.5"
++tokio = { version = "1.18.2", features = ["rt-core", "rt-threaded", "time", "net", "io-driver"] }
++reqwest = { version = "0.11.10", features = ["cookies", "trust-dns"] }
++async-trait = "0.1.42"
++futures = "0.3.21"
+ lazy_static = "1.4.0"
+ num_cpus = "1.13.0"
+-rand = "0.7.3"
++rand = "0.8.4"
+diff --git a/src/actions/delay.rs b/src/actions/delay.rs
+index d53e99b..8ef4c71 100644
+--- a/src/actions/delay.rs
++++ b/src/actions/delay.rs
+@@ -1,6 +1,6 @@
+ use async_trait::async_trait;
+ use colored::*;
+-use tokio::time::delay_for;
++use tokio::time::sleep;
+ use yaml_rust::Yaml;
+ 
+ use crate::actions::extract;
+@@ -36,7 +36,7 @@ impl Delay {
+ #[async_trait]
+ impl Runnable for Delay {
+   async fn execute(&self, _context: &mut Context, _reports: &mut Reports, _pool: &Pool, config: &Config) {
+-    delay_for(Duration::from_secs(self.seconds as u64)).await;
++    sleep(Duration::from_secs(self.seconds as u64)).await;
+ 
+     if !config.quiet {
+       println!("{:width$} {}{}", self.name.green(), self.seconds.to_string().cyan().bold(), "s".magenta(), width = 25);
+diff --git a/src/benchmark.rs b/src/benchmark.rs
+index 94f6fee..7ee7956 100644
+--- a/src/benchmark.rs
++++ b/src/benchmark.rs
+@@ -1,3 +1,4 @@
++// Modified by Maxime Devos (2022) (see 5(a) in LICENSE)
+ use std::collections::HashMap;
+ use std::sync::{Arc, Mutex};
+ use std::time::{Duration, Instant};
+@@ -5,7 +6,7 @@ use std::time::{Duration, Instant};
+ use futures::stream::{self, StreamExt};
+ 
+ use serde_json::{json, Value};
+-use tokio::{runtime, time::delay_for};
++use tokio::{runtime, time::sleep};
+ 
+ use crate::actions::{Report, Runnable};
+ use crate::config::Config;
+@@ -30,7 +31,7 @@ pub struct BenchmarkResult {
+ async fn run_iteration(benchmark: Arc<Benchmark>, pool: Pool, config: Arc<Config>, iteration: i64) -> Vec<Report> {
+   if config.rampup > 0 {
+     let delay = config.rampup / config.iterations;
+-    delay_for(Duration::new((delay * iteration) as u64, 0)).await;
++    sleep(Duration::new((delay * iteration) as u64, 0)).await;
+   }
+ 
+   let mut context: Context = Context::new();
+@@ -68,7 +69,7 @@ pub fn execute(benchmark_path: &str, report_path_option: Option<&str>, relaxed_i
+   println!();
+ 
+   let threads = std::cmp::min(num_cpus::get(), config.concurrency as usize);
+-  let mut rt = runtime::Builder::new().threaded_scheduler().enable_all().core_threads(threads).max_threads(threads).build().unwrap();
++  let rt = runtime::Builder::new_multi_thread().enable_all().worker_threads(threads).max_blocking_threads(threads).build().unwrap();
+   rt.block_on(async {
+     let mut benchmark: Benchmark = Benchmark::new();
+     let pool_store: PoolStore = PoolStore::new();
+
+base-commit: ce5ba790b3b28eafe6717104d4df3816ef2cbe1e
+-- 
+2.30.2
+

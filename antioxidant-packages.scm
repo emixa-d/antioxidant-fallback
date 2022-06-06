@@ -3636,6 +3636,14 @@ futures-aware, FIFO queue")
   (public-test-package (vitaminate/auto castor)))
 (define-public antioxidated-diffr
   (public-test-package (vitaminate/auto (@ (gnu packages rust-apps) diffr))))
+(define-public antioxidated-drill
+  (package
+   (inherit (public-test-package (vitaminate/auto drill)))
+   (source
+    (origin
+     (inherit (package-source drill))
+     (patches (list (local-file "drill-update-dependencies.patch")))
+     (snippet #~(rename-file "Cargo.toml.orig" "Cargo.toml"))))))
 (define-public antioxidated-dutree
   (public-test-package (vitaminate/auto dutree)))
 (define-public antioxidated-git-absorb
