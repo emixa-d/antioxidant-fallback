@@ -3010,6 +3010,7 @@ futures-aware, FIFO queue")
     ("rust-nasm-rs" ,rust-nasm-rs)
     ("rust-ivf" ,rust-ivf)
     ("rust-idna" ,(p rust-idna-0.2)) ; avoid multiple versions
+    ("rust-siphasher" ,(p rust-siphasher-0.3)) ; avoid multiple versions
     ("rust-syslog" ,rust-syslog)
     ("rust-clap-derive" ,rust-clap-derive)
     ("rust-askama-shared" ,rust-askama-shared)
