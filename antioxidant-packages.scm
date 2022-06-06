@@ -2473,6 +2473,19 @@ futures-aware, FIFO queue")
         (sha256
           (base32 "0pd5i8aywnmx9q7wfzn9bs0jq2fm5rmk0kdhcnmy1qcbg3jpizsc"))))))
 
+(define rust-reqwest ; @0.11.4 fails to build and uses deprecated functions from cookie_store
+  (package
+   (inherit (p rust-reqwest-0.11))
+   (name "rust-reqwest")
+   (version "0.11.10")
+   (source (origin
+            (method url-fetch)
+            (uri (crate-uri "reqwest" version))
+            (file-name (string-append name "-" version ".tar.gz"))
+            (sha256
+             (base32
+              "1ss1ijakw48dgpxaj5a38pk0r3vmzhdgaj842ssfir9m9ymgg8a6"))))))
+
 (define rust-tungstenite ; @0.11 doesn't build
   (package
     (inherit (p rust-tungstenite-0.11))
@@ -2998,7 +3011,7 @@ futures-aware, FIFO queue")
     ("rust-askama-derive" ,rust-askama-derive)
     ("rust-zstd" ,(p rust-zstd-0.9)) ; @0.6 doesn't build a dependency failing to build
     ("rust-rand-distr" ,(p rust-rand-distr-0.4)) ; avoid complications due to multiple versions
-    ("rust-reqwest" ,(p rust-reqwest-0.11)) ; @0.10 has
+    ("rust-reqwest" ,rust-reqwest) ; @0.10 has
     ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
     ("rust-cookie-store-15" ,rust-cookie-store)
     ("rust-structopt" ,(p rust-structopt-0.3))
@@ -3377,6 +3390,8 @@ futures-aware, FIFO queue")
     ("rust-pkcs5"
      (("rust-cbc" ,rust-cbc)
       ("rust-sha1" ,rust-sha1))) ; missing dep (for pbes2)
+    ("rust-reqwest" ; new inputs for new version
+     (("rust-h2" ,rust-h2)))
     ("rust-sha1" (("rust-digest" ,rust-digest)
 		  ("rust-cfg-if" ,(p rust-cfg-if-1)) ;missing dep
 		  ("rust-cpufeatures" ,(p rust-cpufeatures-0.2))))
