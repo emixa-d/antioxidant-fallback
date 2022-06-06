@@ -2486,6 +2486,19 @@ futures-aware, FIFO queue")
         (sha256
           (base32 "1bi1z1l8392v20mg24gryw5jrm0166wxa155z138qma958is3k86"))))))
 
+(define rust-totp-lite ; @1.0 doesn't build against new rust-digest
+  (package
+    (inherit (p rust-totp-lite-1))
+    (name "rust-totp-lite")
+    (version "2.0.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "totp-lite" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1yi9s6firixay11rahqshdv07ih8i27fxqqrrshfk3wwbn3rdi2w"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2976,6 +2989,7 @@ futures-aware, FIFO queue")
     ("rust-cookie-store-15" ,rust-cookie-store)
     ("rust-structopt" ,(p rust-structopt-0.3))
     ("rust-structopt-derive" ,(p rust-structopt-derive-0.4)) ; @0.2.18 doesn't build
+    ("rust-totp-lite" ,rust-totp-lite)
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
     ("rust-trust-dns-native-tls" ,rust-trust-dns-native-tls)
