@@ -2151,6 +2151,19 @@ of operation.")
         (sha256
           (base32 "1fb9ld4iq8d5q5i9nr60hsdvdpjw4zb65kagv7xp08gphycwqy0f"))))))
 
+(define rust-h2
+  (package
+    (inherit (p rust-h2-0.3)) ; new version required by new rust-reqwest
+    (name "rust-h2")
+    (version "0.3.13")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "h2" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0msasdyv0n7avs5i1csjrs0rvdsp4k5z3fwl8rd53jbzcdnjra1p"))))))
+
 (define rust-nasm-rs ; likewise
   (package
     (inherit (p rust-nasm-rs-0.2))
@@ -2960,6 +2973,7 @@ futures-aware, FIFO queue")
     ("rust-average" ,(p rust-average-0.13)) ; avoid complication due to multiple versions
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
+    ("rust-h2" ,rust-h2)
     ("rust-rand-core" ,(p rust-rand-core-0.6)) ; avoid multiple versions
     ("rust-blake2" ,rust-blake2)
     ("rust-actix" ,rust-actix)
