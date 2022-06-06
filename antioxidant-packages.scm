@@ -2788,6 +2788,7 @@ futures-aware, FIFO queue")
      ,#~'("std" "alloc"))
     ;; rust-cipher requires non-default rand_core
     ("rust-crypto-common" ,#~'("std" "rand_core"))
+    ("rust-cssparser" ,#~'()) ; don't enable the non-stable "bench" feature
     ;; Don't accidentally enable multiple encoding features, even
     ;; though rust-fmt only supports one at the time.  An encoding
     ;; will automatically be chosen.
