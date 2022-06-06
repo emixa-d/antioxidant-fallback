@@ -2887,6 +2887,7 @@ futures-aware, FIFO queue")
     ("rust-parking-lot-core" ,#~'())
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
+    ("rust-phf" ,#~'("default" "macros")) ; "macros" is required by rust-cssparser@0.28
     ;; Required by 'sniffglue'
     ("rust-pktparse" ,#~'("serde"))
     ("rust-plotters-svg" ,#~'()) ; "debug" feature causes a build failure
