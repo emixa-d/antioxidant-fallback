@@ -3135,6 +3135,7 @@ futures-aware, FIFO queue")
     ("rust-h2" ,(p rust-h2-0.3)) ; @0.2 doesn't build
     ("rust-scrypt" ,rust-scrypt)
     ("rust-password-hash" ,rust-password-hash)
+    ("rust-phf" ,(p rust-phf-0.10)) ; a dependency of @0.7 fails to build against new rust-syn
     ("rust-block-modes" ,rust-block-modes)
     ("rust-ctr" ,rust-ctr)
     ("rust-salsa20" ,rust-salsa20)
