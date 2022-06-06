@@ -2856,7 +2856,7 @@ futures-aware, FIFO queue")
     ("rust-rand"
      ,#~'("std" "std_rng" "getrandom"
 	  "alloc" "small_rng"))
-    ("rust-reqwest" ,#~'("default" "blocking")) ; tealdeer@1.4.1 requires "blocking" to build
+    ("rust-reqwest" ,#~'("default" "blocking" "cookies")) ; tealdeer@1.4.1 requires "blocking" to build, drill requires cookies
     ;; The 'inline-asm' feature requires non-stable
     ("rust-riscv" ,#~'())
     ;; Some features required rust-rand when using the getrandom feature,
