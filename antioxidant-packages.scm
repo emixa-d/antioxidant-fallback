@@ -3128,6 +3128,7 @@ futures-aware, FIFO queue")
     ("rust-der" ,rust-der)
     ("rust-sha-1" ,(p rust-sha-1-0.10))
     ("rust-sha2" ,(p rust-sha2-0.10))
+    ("rust-string-cache-codegen" ,(p rust-string-cache-codegen-0.5)) ; @0.4 doesn't build against new rust-phf-... crates.
     ("rust-time" ; resolve version conflict
      ,(p rust-time-0.3))
     ("rust-instant" ; 0.1.4 doesn't build against rust-time@0.3
