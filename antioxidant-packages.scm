@@ -3396,6 +3396,8 @@ futures-aware, FIFO queue")
     ;; for "pem" feature
     ("rust-der"
      (("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
+    ("rust-embed-resource"
+     (("rust-cc" ,(p rust-cc-1)))) ;; TODO: native-input
     ;; for "pem" and "alloc" feature
     ("rust-pkcs1"
      (("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
