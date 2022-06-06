@@ -3139,6 +3139,8 @@ futures-aware, FIFO queue")
     ("rust-scrypt" ,rust-scrypt)
     ("rust-password-hash" ,rust-password-hash)
     ("rust-phf" ,(p rust-phf-0.10)) ; a dependency of @0.7 fails to build against new rust-syn
+    ("rust-phf-shared" ,(p rust-phf-shared-0.10)) ; avoid multiple conflicting versions
+    ("rust-phf-generator" ,(p rust-phf-generator-0.10)) ; avoid multiple conflicting versions
     ("rust-block-modes" ,rust-block-modes)
     ("rust-ctr" ,rust-ctr)
     ("rust-salsa20" ,rust-salsa20)
