@@ -3002,6 +3002,7 @@ futures-aware, FIFO queue")
     ("rust-actix-service" ,rust-actix-service)
     ("rust-awc" ,rust-awc)
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
+    ("rust-markup5ever" ,(p rust-markup5ever-0.10)) ; @0.9 doesn't build against new rust-phf-...
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
