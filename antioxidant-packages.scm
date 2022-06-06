@@ -1371,7 +1371,8 @@ an unique string, which can be useful for resolving symbol conflicts."
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
       (base32 "0q8n1zsa73130hxa2w88qw36g8nprz21j52abpva3khm59a26bkj"))))))
-;; Old rust-sha1 doesn't implement CoreProxy while required by rust-pkcs5
+;; Old rust-sha1 doesn't implement CoreProxy while required by rust-pkcs5.
+;; To avoid a collision with rust-sha-1, give it a different name.
 (define rust-sha1
   (package
    (inherit (@ (gnu packages crates-io) rust-sha1-0.6))
@@ -1383,7 +1384,9 @@ an unique string, which can be useful for resolving symbol conflicts."
      (uri (crate-uri "sha1" version))
      (file-name (string-append name "-" version ".tar.gz"))
      (sha256
-      (base32 "0bw56hxajrgb3pjg0cr5xrvmx0jna39564iw2p14ama5cmzlwzy7"))))))
+      (base32 "0bw56hxajrgb3pjg0cr5xrvmx0jna39564iw2p14ama5cmzlwzy7"))))
+   (arguments (append (list #:rust-metadata "guix-variant=rust-sha1")
+		      (package-arguments (p rust-sha1-0.6))))))
 (define rust-rsa ;; rust-rsa@0.5 doesn't build against new rust-pkcs1
   (package
    (inherit (@ (gnu packages crates-io) rust-rsa-0.5))
