@@ -2895,7 +2895,7 @@ futures-aware, FIFO queue")
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ("rust-phf-shared" ,#~'("default" "uncased")) ; uncased required by rust-phf's uncased feature
-    ("rust-phf" ,#~'("default" "macros")) ; "macros" is required by rust-cssparser@0.28
+    ("rust-phf" ,#~'("default" "macros" "uncased")) ; "macros" is required by rust-cssparser@0.28, "uncased" is required by a dependency of "tokei"
     ;; Required by 'sniffglue'
     ("rust-pktparse" ,#~'("serde"))
     ("rust-plotters-svg" ,#~'()) ; "debug" feature causes a build failure
