@@ -2784,6 +2784,7 @@ futures-aware, FIFO queue")
     ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
     ;; "alloc" is required by some crates. serde is required by alfis
     ("rust-chrono" ,#~'("default" "alloc" "serde"))
+    ("rust-chrono-tz" ,#~'("default" "case-insensitive")) ; doesn't build without "case-insensitive"
     ;; zeroize required by rust-ctr
     ("rust-cipher" ,#~'("alloc" "std" "block-padding" "rand_core" "dev" "zeroize"))
     ;; Don't just support libclang 3.5, also include
@@ -3401,6 +3402,8 @@ futures-aware, FIFO queue")
     ;; No need to avoid Rust dependencies.
     ("rust-flate2"
      ,(list (list "zlib" (@ (gnu packages compression) zlib))))
+    ("rust-chrono-tz" ; missing input
+     (("rust-uncased" ,(p rust-uncased-0.9))))
     ("rust-cmake"
      ,(list (list "cmake" (@ (gnu packages cmake) cmake-minimal))))
     ("rust-clang-sys"
