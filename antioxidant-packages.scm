@@ -279,6 +279,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   (lambda _
 	     (substitute* '("src/channel.rs" "src/timer.rs")
 	       (("::\\{Evented,") "::{event::Evented,"))))))
+    ("rust-num-format" ;; TODO: upstream
+     ,#~((add-after 'unpack 'rust-arrayvec@0.7-compatibility
+	   (lambda _
+	     (substitute* "src/strings.rs"
+	       (("ArrayString<\\[u8; \\$max_len\\]>")
+		"ArrayString<$max_len>"))))))
     ;; TODO: change in Guix upstream.
     ;; TODO: adjust README.md? Make sure LICENSE-APACHE
     ;; is installed?
