@@ -268,6 +268,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     ;; Already upstream: <https://github.com/RustCrypto/formats/blob/fbf4334be7717e1f393c3f7b9b4c85c584ce8395/pkcs1/src/lib.rs#L49>, but not yet in any release.
 	     (substitute* "src/lib.rs"
 	       (("ObjectIdentifier::new") "ObjectIdentifier::new_unwrap"))))))
+    ("rust-markup5ever" ; for rust-markup5ever@0.9, not needed by newever versions
+     ,#~((add-after 'unpack 'new-phf-compatibility
+	   (lambda _
+	     (substitute* "build.rs"
+	       (("phf_map\\.build\\(&mut file\\)\\.unwrap\\(\\)")
+		"write!(&mut file, \"{}\", phf_map.build())"))))))
     ("rust-mio-extras"
      ,#~((add-after 'unpack 'mio@0.6.21-compatibility
 	   (lambda _
@@ -3002,7 +3008,7 @@ futures-aware, FIFO queue")
     ("rust-actix-service" ,rust-actix-service)
     ("rust-awc" ,rust-awc)
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
-    ("rust-markup5ever" ,(p rust-markup5ever-0.10)) ; @0.9 doesn't build against new rust-phf-...
+    ("rust-markup5ever" ,(p rust-markup5ever-0.9)) ; @0.9 doesn't build against new rust-phf-... without patches, but we still need it because monolith doesn't support the new rust-markup5ever@0.10 yet
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
