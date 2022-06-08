@@ -2874,6 +2874,7 @@ futures-aware, FIFO queue")
     ;; Avoid removed feature(custom_derive)
     ("rust-language-tags" ,#~'())
     ("rust-lazycell" ,#~'()) ;; avoid nightly things
+    ("rust-lexical-util" ,#~'("default" "parse-integers" "write-integers" "floats")) ;; enable features required by various rust-lexical-... crates
     ;; extra-traits is required by rust-nix
     ("rust-libc" ,#~'("std" "extra_traits"))
     ("rust-libnghttp2-sys" ,#~'()) ; don't enable the "vendored" feature
