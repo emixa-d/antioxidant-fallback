@@ -3205,6 +3205,7 @@ futures-aware, FIFO queue")
     ("rust-itoa" ,(p rust-itoa-1))
     ("rust-sct" ,(p rust-sct-0.7))
     ("rust-quote" ,(p rust-quote-1))
+    ("rust-lexical-core" ,(p rust-lexical-core-0.8)) ; @0.7 doesn't build
     ;; 0.3.0 fails to build against new rust-serde
     ("rust-linked-hash-map"
      ,(p rust-linked-hash-map-0.5))
