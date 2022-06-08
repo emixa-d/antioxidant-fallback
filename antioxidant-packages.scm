@@ -3195,7 +3195,18 @@ futures-aware, FIFO queue")
     ("rust-socket2" ,(p rust-socket2-0.4))
     ("rust-insta" ,(p rust-insta-1))
     ("rust-nom" ; avoid version conflicts
-     ,(p rust-nom-7))
+     ,(p rust-nom-7)
+     #:for-dependent
+     ,(lambda (p)
+	(not (member (package-name p) '("rust-terminfo"))))) ; needs old rust-nom@5 and no update available
+    ("rust-nom"
+     ,(package (inherit (p rust-nom-5))
+               (arguments
+		(append (list #:rust-metadata "version=5")
+			(package-arguments (p rust-nom-5)))))
+     #:for-dependent
+     ,(lambda (p)
+	(member (package-name p) '("rust-terminfo")))) ; needs old rust-nom@5 and no update available
     ;; rust-pktparse@0.5 doesn't build against nom@7
     ("rust-pktparse" ,rust-pktparse)
     ("rust-rusticata-macros" ; old version doesn't build against nom@7
