@@ -2588,7 +2588,7 @@ futures-aware, FIFO queue")
     "rust-iron" ; its dependency rust-hyper-native-tls fails to build
     "rust-rocket" ; its dependency rust-hyper-sync-rustls fails to build
     "rust-nickel" ; fails to build
-    "rust-errno-dragonfly" ;; TODO: DragonflyBSD not supported
+    "rust-kqueue-sys" "rust-kqueue" "rust-errno-dragonfly" ;; TODO: BSD not supported
     ;; TODO: how do the three following crates even work?
     "rust-rustc-std-workspace-std"
     "rust-rustc-std-workspace-core"
