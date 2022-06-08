@@ -2338,6 +2338,28 @@ of operation.")
        (sha256
         (base32 "04hjf319s6hswfmy0llv3c0bfc6yidic0nij5r8f4sr5pkbxkv98"))))))
 
+(define rust-miette-derive ; required by rust-miette
+  (package
+    (name "rust-miette-derive")
+    (version "4.7.1")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "miette-derive" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0k0ph38lxzqamaabind8463j2k5qjg6jhhbcdrg1pkqvfrdw8nvb"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-proc-macro2" ,(p rust-proc-macro2-1))
+		       ("rust-quote" ,(p rust-quote-1))
+                       ("rust-syn" ,(p rust-syn-1)))))
+    (home-page "https://github.com/zkat/miette")
+    (synopsis "Derive macros for miette. Like `thiserror` for Diagnostics.")
+    (description
+     "Derive macros for miette.  Like `thiserror` for Diagnostics.")
+    (license license:asl2.0)))
+
 (define rust-pico-args
   (package
     (name "rust-pico-args")
