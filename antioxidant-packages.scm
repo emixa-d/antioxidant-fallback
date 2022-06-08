@@ -321,6 +321,11 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	       (("signal_hook::register") "signal_hook::low_level::register"))
 	     (substitute* "src/main.rs"
 	       (("signal_hook::SIGPIPE") "signal_hook::consts::signal::SIGPIPE"))))))
+    ("rust-tectonic-bridge-flate"
+     ,#~((add-after 'unpack 'fix-cbindgen
+	   (lambda _ ; TODO: probably an unexpected difference between Cargo and antioxidant?
+	     (substitute* "build.rs"
+	       (("\\.with_crate\\(&manifest_dir\\)") ""))))))
     ("rust-tuikit"
      ;; TODO: upstream
      ,#~((add-after 'unpack 'fix-unresolved+deprecated
