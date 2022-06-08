@@ -3045,6 +3045,7 @@ futures-aware, FIFO queue")
     ("rust-cookie-store-15" ,rust-cookie-store)
     ("rust-structopt" ,(p rust-structopt-0.3))
     ("rust-structopt-derive" ,(p rust-structopt-derive-0.4)) ; @0.2.18 doesn't build
+    ("rust-tectonic-errors" ,(p rust-tectonic-errors-0.2)) ; resolve version conflict
     ("rust-totp-lite" ,rust-totp-lite)
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
