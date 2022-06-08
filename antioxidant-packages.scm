@@ -2558,6 +2558,29 @@ futures-aware, FIFO queue")
              (base32
               "0jfr2w2qijm0f4bz8k2kzlxmggjavh0w2sqz4z63iqdx8d965dqp"))))))
 
+(define rust-command-group
+  (package
+    (name "rust-command-group")
+    (version "1.0.8")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "command-group" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0b7d9gy9dhw4jqx5x8njzmaifgxqw0nywjry7bgmjjlv81psia7p"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-async-trait" ,(p rust-async-trait-0.1))
+		       ("rust-nix" ,(p rust-nix-0.22))
+                       ("rust-tokio" ,(p rust-tokio-1)))
+       #:cargo-development-inputs
+       (("rust-tokio" ,(p rust-tokio-1)))))
+    (home-page "https://github.com/watchexec/command-group")
+    (synopsis "Extension to Command to spawn in a process group")
+    (description "Extension to Command to spawn in a process group")
+    (license (list license:asl2.0 license:expat))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -2813,6 +2836,7 @@ futures-aware, FIFO queue")
     ;; to be found.  Don't include the "static" feature for
     ;; the standard reasons against static linking in Guix.
     ("rust-clang-sys" ,#~'("clang_10_0")) ; Guix by default does dynamic linking, not static linking, which would use the "static" feature IIUC
+    ("rust-command-group" ,#~'("default" "with-tokio")) ;; with-tokio required by rust-watchexec
     ;; This addresses the build failure
     ;; ‘could not find `collector` in the crate root’
     ;; and ‘cannot find function `pin` in crate `epoch`’
@@ -3502,7 +3526,7 @@ futures-aware, FIFO queue")
       ("rust-tracing" ,(p rust-tracing-0.1))
       ("rust-futures" ,(p rust-futures-0.3))
       ("rust-once-cell" ,(p rust-once-cell-1))
-      ;; ("rust-command-group" ,_) TODO
+      ("rust-command-group" ,rust-command-group)
       ("rust-ignore" ,(p rust-ignore-0.4))
       ("rust-dunce" ,(p rust-dunce-1))
       ("rust-unicase" ,(p rust-unicase-2))
