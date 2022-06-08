@@ -2338,6 +2338,46 @@ of operation.")
        (sha256
         (base32 "04hjf319s6hswfmy0llv3c0bfc6yidic0nij5r8f4sr5pkbxkv98"))))))
 
+(define rust-miette ; required by new rust-watchexec
+  (package
+    (name "rust-miette")
+    (version "4.7.1")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "miette" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1365xpl8l66lsvn6bk4mhbpxf5gciiazj4apyiaqn87r8jg3540w"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-atty" ,(p rust-atty-0.2))
+		       ("rust-backtrace" ,(p rust-backtrace-0.3))
+                       ("rust-miette-derive" ,rust-miette-derive)
+                       ("rust-once-cell" ,(p rust-once-cell-1))
+                       ;; ("rust-owo-colors" ,(p rust-owo-colors-3)) ; TODO
+                       ;; ("rust-supports-color" ,(p rust-supports-color-1)) ; TODO
+                       ;; ("rust-supports-hyperlinks" ,(p rust-supports-hyperlinks-1)) ; TODO
+                       ;; ("rust-supports-unicode" ,(p rust-supports-unicode-1)) ; TODO
+                       ("rust-terminal-size" ,(p rust-terminal-size-0.1))
+                       ("rust-textwrap" ,(p rust-textwrap-0.12)) ; TODO: requires @0.15 in Cargo.toml
+                       ("rust-thiserror" ,(p rust-thiserror-1))
+                       ("rust-unicode-width" ,(p rust-unicode-width-0.1)))
+       #:cargo-development-inputs
+       (("rust-futures" ,(p rust-futures-0.3))
+	("rust-indenter" ,(p rust-indenter-0.3))
+        ("rust-rustversion" ,(p rust-rustversion-1))
+        ("rust-semver" ,(p rust-semver-1))
+        ("rust-syn" ,(p rust-syn-1))
+        ("rust-trybuild" ,(p rust-trybuild-1)))))
+    (home-page "https://github.com/zkat/miette")
+    (synopsis
+     "Fancy diagnostic reporting library and protocol for us mere mortals who aren't compiler hackers.")
+    (description
+     "Fancy diagnostic reporting library and protocol for us mere mortals who aren't
+compiler hackers.")
+    (license license:asl2.0)))
+
 (define rust-miette-derive ; required by rust-miette
   (package
     (name "rust-miette-derive")
@@ -3557,7 +3597,7 @@ futures-aware, FIFO queue")
       ;; ("rust-git-config" ,_) ; TODO
       ("rust-tokio-stream" ,(p rust-tokio-stream-0.1))
       ;; ("rust-atomic-take" ,_) ; TODO
-      ;; ("rust-miette" ,_) ; TODO
+      ("rust-miette" ,rust-miette)
       ("rust-thiserror" ,(p rust-thiserror-1))
       ("rust-async-recursion" ,(p rust-async-recursion-0.3))))))
 
