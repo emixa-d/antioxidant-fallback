@@ -3024,6 +3024,7 @@ futures-aware, FIFO queue")
     ("rust-bytestring" ,rust-bytestring)
     ("rust-avif-serialize" ,rust-avif-serialize)
     ("rust-nasm-rs" ,rust-nasm-rs)
+    ("rust-notify" ,(p rust-notify-5)) ; rust-notify@4 doesn't build
     ("rust-ivf" ,rust-ivf)
     ("rust-idna" ,(p rust-idna-0.2)) ; avoid multiple versions
     ("rust-siphasher" ,(p rust-siphasher-0.3)) ; avoid multiple versions
