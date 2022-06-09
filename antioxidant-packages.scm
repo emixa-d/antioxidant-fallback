@@ -2598,6 +2598,36 @@ matching")
 their conversions")
     (license (list license:expat license:asl2.0))))
 
+(define-public rust-git-sec
+  (package
+    (name "rust-git-sec")
+    (version "0.1.2")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-sec" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0sn5sjy2kcga3r664crwzm0fbfbr3a4y9phfms2fzygd3wyl6212"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs
+       (("rust-bitflags" ,(p rust-bitflags-1))
+	("rust-dirs" ,(p rust-dirs-3)) ; TODO: expects dirs@4
+        ("rust-git-path" ,rust-git-path)
+	("rust-libc" ,(p rust-libc-0.2))
+	("rust-serde" ,(p rust-serde-1))
+	("rust-thiserror" ,(p rust-thiserror-1)))
+       #:cargo-development-inputs
+       (("rust-tempfile" ,(p rust-tempfile-3)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis
+     "A WIP crate of the gitoxide project providing a shared trust model")
+    (description
+     "This package provides a WIP crate of the gitoxide project providing a shared
+trust model")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-headers ; @0.3.3 doesn't build against new rust-time
   (package
     (inherit (p rust-headers-0.3))
