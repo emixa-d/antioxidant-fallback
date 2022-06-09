@@ -2693,6 +2693,24 @@ trust model")
                (base32
                 "1yi9s6firixay11rahqshdv07ih8i27fxqqrrshfk3wwbn3rdi2w"))))))
 
+(define rust-unicode-bom ; required by rust-git-config
+  (package
+    (name "rust-unicode-bom")
+    (version "1.1.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "unicode-bom" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0cpc54ssrlrwm3x8dm7z1dgwj9r9bxjls620ra1vfxfq87snkv33"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (home-page "https://gitlab.com/philbooth/unicode-bom")
+    (synopsis "Unicode byte-order mark detection for files and byte arrays.")
+    (description
+     "Unicode byte-order mark detection for files and byte arrays.")
+    (license license:asl2.0)))
+
 (define rust-watchexec ; update to avoid mio-extras and old rust-nom
   (package
    (inherit (p rust-watchexec-1))
