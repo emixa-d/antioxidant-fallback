@@ -2574,6 +2574,30 @@ futures-aware, FIFO queue")
 matching")
     (license (list license:expat license:asl2.0))))
 
+(define rust-git-hash ; required by rust-git-features
+  (package
+    (name "rust-git-hash")
+    (version "0.9.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-hash" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "07pi52s49sx44nn6l5bdb7mc68qkkpy83y6avj613x0k0rv7wpg0"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs
+       (("rust-hex" ,(p rust-hex-0.4))
+	("rust-quick-error" ,(p rust-quick-error-2))
+        ("rust-serde" ,(p rust-serde-1)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis
+     "Borrowed and owned git hash digests used to identify git objects")
+    (description
+     "Borrowed and owned git hash digests used to identify git objects")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-git-path
   (package
     (name "rust-git-path")
