@@ -351,6 +351,14 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "src/lib.rs"
 			  (("#!\\[forbid\\(unsafe_code, rust_2018_idioms\\)]" line)
 			   (string-append "#![feature(is_symlink)]\n" line)))))))
+    ("rust-dashmap"
+     ,#~((add-after 'unpack 'unstable-rust
+	   ;; Required to use std::thread::available_parallelism
+	   (lambda _
+	     (setenv "RUSTC_BOOTSTRAP" "1")
+	     (substitute* "src/lib.rs"
+			  (("#!\\[allow\\(clippy::type_complexity\\)]" line)
+			   (string-append "#![feature(available_parallelism)]\n" line)))))))
     ("rust-cc"
      ,#~((add-after 'unpack 'fix-cc
 	   (lambda _
@@ -2240,6 +2248,19 @@ of operation.")
        (sha256
         (base32 "10phz3ppw4p8pz4rwniy3qkw95wiq64kbvpb0l8kjcrzpka9pcnj"))))))
 
+(define rust-dashmap ; rust-git-tempfile@2.0.1 requires new dashmap
+  (package
+    (inherit (p rust-dashmap-4))
+    (name "rust-dashmap")
+    (version "5.3.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "dashmap" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "13s4rdgb2rkavsgzjks23zb0zviz7x2g8fb4jwc2xkqwkhn9359l"))))))
+
 (define rust-deflate ; maybe required for new rust-png
   (package
     (inherit (p rust-deflate-0.9))
@@ -3792,6 +3813,10 @@ trust model")
     ("rust-clang-sys"
      ;; TODO needs more work for
      ,(list (list "clang" (@ (gnu packages llvm) clang-13))))
+    ("rust-dashmap" ; new inputs forn new version
+     (("rust-hashbrown" ,(p rust-hashbrown-0.11))
+      ("rust-parking-lot-core" ,(p rust-parking-lot-core-0.8))
+      ("rust-lock-api" ,(p rust-lock-api-0.4))))
     ;; for "pem" feature
     ("rust-der"
      (("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
