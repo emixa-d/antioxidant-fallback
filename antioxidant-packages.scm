@@ -3354,7 +3354,7 @@ cleanup")
     ("rust-similar" ,#~'("default" "text" "inline"))
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
-    ("rust-smallvec" ,#~'()) ; default features require non-stable
+    ("rust-smallvec" ,#~'("serde")) ; "serde": required by rust-git-object
     ;; Default serde1_lib requires unpackaged rust-serde1-lib
     ("rust-sval" ,#~'("alloc" "arbitrary-depth" "derive" "fmt" "std"))
     ;; "paw" required by sniffglue
