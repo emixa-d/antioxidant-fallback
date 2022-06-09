@@ -2425,6 +2425,29 @@ compiler hackers.")
     (description "An ultra simple CLI arguments parser.")
     (license '(list license:expat))))
 
+(define rust-pwd
+  (package
+    (name "rust-pwd")
+    (version "1.3.1")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "pwd" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0yxhkkkqi1ckln37vdz6gc16aykw88h02548rafi153mhl207jpr"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs
+       (("rust-failure" ,(p rust-failure-0.1))
+	("rust-libc" ,(p rust-libc-0.2)))))
+    (home-page "https://gitlab.com/pwoolcoc/pwd.git")
+    (synopsis "Safe interface to pwd.h
+")
+    (description "Safe interface to pwd.h")
+    (license 'unknown-license!)));; TODO: https://gitlab.com/pwoolcoc/pwd/-/issues/1
+
+
 (define rust-lalrpop-util
   (package
     (inherit (p rust-lalrpop-util-0.19))
