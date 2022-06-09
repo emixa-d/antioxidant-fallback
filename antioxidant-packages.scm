@@ -2815,6 +2815,38 @@ matching")
 their conversions")
     (license (list license:expat license:asl2.0))))
 
+(define rust-git-ref ; required by rust-git-config
+  (package
+    (name "rust-git-ref")
+    (version "0.13.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-ref" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "14flla7d3rgkrfhnj3lzn2h4anf1i6hh6b47yafm1h62hm4hg3gl"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-git-actor" ,rust-git-actor)
+		       ("rust-git-features" ,rust-git-features)
+                       ("rust-git-hash" ,rust-git-hash)
+                       ("rust-git-lock" ,rust-git-lock)
+                       ("rust-git-object" ,rust-git-object)
+                       ("rust-git-path" ,rust-git-path)
+                       ("rust-git-tempfile" ,rust-git-tempfile)
+                       ("rust-git-validate" ,rust-git-validate)
+                       ("rust-memmap2" ,(p rust-memmap2-0.5))
+                       ("rust-nom" ,(p rust-nom-7))
+                       ("rust-quick-error" ,(p rust-quick-error-2))
+                       ("rust-serde" ,(p rust-serde-1)))
+       #:cargo-development-inputs
+       (("rust-tempfile" ,(p rust-tempfile-3)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis "A crate to handle git references")
+    (description "This package provides a crate to handle git references")
+    (license (list license:expat license:asl2.0))))
+
 (define-public rust-git-sec
   (package
     (name "rust-git-sec")
