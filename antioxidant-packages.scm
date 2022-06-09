@@ -2550,6 +2550,39 @@ futures-aware, FIFO queue")
       "This package provides a low overhead intrusive flamegraph profiler.")
     (license license:expat)))
 
+;; TODO: lots of rust-git-... crates, maybe (gnu packages gitoxide)?
+(define rust-git-features
+  (package
+    (name "rust-git-features")
+    (version "0.21.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-features" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "05x5v96dx7mchqhcj7d9ddma2n2chfx7981pq0dw25a4n63qdx75"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    ;; TODO:
+    ;;  * the "parallel" feature requires the unpackaged rust-jwalk crate
+    ;;  * the "progress" feature requires unpackaged rust-prodash
+    ;;  * maybe enable the "io-pipe" and crc32 feature
+    ;;  * TODO: pick an appropriate zlib dependency for performance
+    ;;  * TODO: appropriate sha1 crate
+    (arguments
+     `(#:cargo-inputs
+       (("rust-bytes" ,(p rust-bytes-1))
+        ("rust-libc" ,(p rust-libc-0.2)))
+       #:cargo-development-inputs
+       (("rust-bstr" ,(p rust-bstr-0.2)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis
+     "A crate to integrate various capabilities using compile-time feature flags")
+    (description
+     "This package provides a crate to integrate various capabilities using
+compile-time feature flags")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-git-glob ; required by rust-git-config
   (package
     (name "rust-git-glob")
