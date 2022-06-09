@@ -2783,6 +2783,34 @@ their conversions")
 trust model")
     (license (list license:expat license:asl2.0))))
 
+(define rust-git-tempfile ; required by rust-git-lock
+  (package
+    (name "rust-git-tempfile")
+    (version "2.0.1")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-tempfile" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0d85cq5b1w18iv136qzgm7v3dxh7320c4wjqhflb00smkv0agspf"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs
+       (("rust-dashmap" ,rust-dashmap)
+	("rust-libc" ,(p rust-libc-0.2))
+        ("rust-once-cell" ,(p rust-once-cell-1))
+        ("rust-signal-hook" ,(p rust-signal-hook-0.3))
+        ("rust-signal-hook-registry" ,(p rust-signal-hook-registry-1))
+        ("rust-tempfile" ,(p rust-tempfile-3)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis
+     "A tempfile implementation with a global registry to assure cleanup")
+    (description
+     "This package provides a tempfile implementation with a global registry to assure
+cleanup")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-git-validate ; required by rust-git-object
   (package
     (name "rust-git-validate")
