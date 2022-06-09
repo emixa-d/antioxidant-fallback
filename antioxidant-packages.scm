@@ -2596,6 +2596,37 @@ futures-aware, FIFO queue")
     (license license:expat)))
 
 ;; TODO: lots of rust-git-... crates, maybe (gnu packages gitoxide)?
+
+(define rust-git-actor ; dependency of rust-git-ref
+  (package
+    (name "rust-git-actor")
+    (version "0.10.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-actor" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0251pjv49pggs6f9ndkh5adcs9607khz339igmic1a3hnxvwhjcp"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs
+       (("rust-bstr" ,(p rust-bstr-0.2))
+	("rust-btoi" ,rust-btoi)
+        ("rust-document-features" ,(p rust-document-features-0.2))
+        ("rust-git-features" ,rust-git-features)
+        ("rust-itoa" ,(p rust-itoa-1))
+        ("rust-nom" ,(p rust-nom-7))
+        ("rust-quick-error" ,(p rust-quick-error-2))
+        ("rust-serde" ,(p rust-serde-1)))
+       #:cargo-development-inputs
+       ;; required version not packaged in guix
+       (#;("rust-pretty-assertions" ,rust-pretty-assertions-1))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis "A way to identify git actors")
+    (description "This package provides a way to identify git actors")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-git-features
   (package
     (name "rust-git-features")
