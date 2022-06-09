@@ -2762,6 +2762,26 @@ their conversions")
 trust model")
     (license (list license:expat license:asl2.0))))
 
+(define rust-git-validate ; required by rust-git-object
+  (package
+    (name "rust-git-validate")
+    (version "0.5.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-validate" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1ym84rhv5fypgryzg82nn7k2d7p72l3prwi0md4krss2m6m1wb1c"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-bstr" ,(p rust-bstr-0.2))
+		       ("rust-quick-error" ,(p rust-quick-error-2)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis "Validation functions for various kinds of names in git")
+    (description "Validation functions for various kinds of names in git")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-headers ; @0.3.3 doesn't build against new rust-time
   (package
     (inherit (p rust-headers-0.3))
