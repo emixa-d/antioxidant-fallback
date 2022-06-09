@@ -3258,6 +3258,7 @@ trust model")
     ("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
     ;; rust-x509-parser required 'crypto' and 'x509'
     ("rust-oid-registry" ,#~'("default" "crypto" "x509"))
+    ("rust-once-cell" ,#~'("default" "race")) ; "race" is required by rust-git-tempfile@2.0.1
     ("rust-openssl-sys" ,#~'()) ;; avoid the 'vendored' feature
     ("rust-os-str-bytes" ,#~'("raw"))
     ("rust-pango" ,#~'("v1_46")) ; "dox" feature requires non-stable
