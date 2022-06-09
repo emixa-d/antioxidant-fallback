@@ -2542,6 +2542,30 @@ futures-aware, FIFO queue")
       "This package provides a low overhead intrusive flamegraph profiler.")
     (license license:expat)))
 
+(define rust-git-glob ; required by rust-git-config
+  (package
+    (name "rust-git-glob")
+    (version "0.3.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-glob" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1328www69gfmrcp93wggdvz84k20d0h0897xpzbd33d96simr1sf"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-bitflags" ,(p rust-bitflags-1))
+		       ("rust-bstr" ,(p rust-bstr-0.2))
+                       ("rust-serde" ,(p rust-serde-1)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis
+     "A WIP crate of the gitoxide project dealing with pattern matching")
+    (description
+     "This package provides a WIP crate of the gitoxide project dealing with pattern
+matching")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-headers ; @0.3.3 doesn't build against new rust-time
   (package
     (inherit (p rust-headers-0.3))
