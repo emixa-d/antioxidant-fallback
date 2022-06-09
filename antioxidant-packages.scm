@@ -2882,6 +2882,7 @@ futures-aware, FIFO queue")
     ;; build to fail (TODO: maybe report upstream?)
     ("rust-bitvec"
      ,#~'("std" "atomic" "alloc"))
+    ("rust-bstr" ,#~'("default" "serde1")) ; serde1: required by rust-git-glob
     ;; the default "generic-simd" feature required rust-packed-simd
     ;; which is currently uncompilable.
     ("rust-bytecount" ,#~'())
