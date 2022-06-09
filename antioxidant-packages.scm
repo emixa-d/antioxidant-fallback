@@ -2754,6 +2754,42 @@ matching")
     (description "This package provides a git-style lock-file implementation")
     (license (list license:expat license:asl2.0))))
 
+(define rust-git-object ; required by rust-git-ref
+  (package
+    (name "rust-git-object")
+    (version "0.19.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-object" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0fy69sy9niz91zj9lfyxi6gxqm8kplbi1f8vqhi9cyzicrx8lr43"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs
+       (("rust-bstr" ,(p rust-bstr-0.2))
+	("rust-btoi" ,rust-btoi)
+        ("rust-document-features" ,(p rust-document-features-0.2))
+        ("rust-git-actor" ,rust-git-actor)
+        ("rust-git-features" ,rust-git-features)
+        ("rust-git-hash" ,rust-git-hash)
+        ("rust-git-validate" ,rust-git-validate)
+        ("rust-hex" ,(p rust-hex-0.4))
+        ("rust-itoa" ,(p rust-itoa-1))
+        ("rust-nom" ,(p rust-nom-7))
+        ("rust-quick-error" ,(p rust-quick-error-2))
+        ("rust-serde" ,(p rust-serde-1))
+        ("rust-smallvec" ,(p rust-smallvec-1)))
+       #:cargo-development-inputs
+       (#;("rust-pretty-assertions" ,(p rust-pretty-assertions-1))))) ; TODO: not updated in Guix
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis
+     "Immutable and mutable git objects with decoding and encoding support")
+    (description
+     "Immutable and mutable git objects with decoding and encoding support")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-git-path
   (package
     (name "rust-git-path")
