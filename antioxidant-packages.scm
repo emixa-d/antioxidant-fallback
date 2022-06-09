@@ -2671,6 +2671,7 @@ futures-aware, FIFO queue")
         ("rust-libc" ,(p rust-libc-0.2))
 	("rust-sha-1" ,(p rust-sha-1-0.10)) ; for the "fast-sha1" feature
 	("rust-git-hash" ,rust-git-hash) ; for the "fast-sha1" feature
+	("rust-walkdir" ,(p rust-walkdir-2)) ; can be removed if the "parallel" feature is enabled instead of the "walkdir" feature
 	("rust-time" ,(p rust-time-0.3))) ; for "time" feature
        #:cargo-development-inputs
        (("rust-bstr" ,(p rust-bstr-0.2)))))
@@ -3317,7 +3318,7 @@ cleanup")
     ("rust-getrandom" ,#~'("std"))
     ("rust-gio" ,#~'("v2_66")) ; likewise
     ("rust-gio-sys" ,#~'("v2_66")) ; likewise
-    ("rust-git-features" ,#~'("time" "fast-sha1")) ; "time" is required by rust-git-actor, "fast-sha1" or "rustsha1" is required by rust-git-object
+    ("rust-git-features" ,#~'("time" "fast-sha1" "walkdir")) ; "time" is required by rust-git-actor, "fast-sha1" or "rustsha1" is required by rust-git-object, "walkdir" or "parallel" is required by rust-git-ref
     ;; serde1 failure requires undeclared ‘Glob’ dependency
     ("rust-globset" ,#~'())
     ;; The "dox" feature requires non-stable.
