@@ -2730,6 +2730,30 @@ matching")
      "Borrowed and owned git hash digests used to identify git objects")
     (license (list license:expat license:asl2.0))))
 
+(define rust-git-lock ; required by rust-git-ref
+  (package
+    (name "rust-git-lock")
+    (version "2.1.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-lock" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "14bfjghi42vj0kyxqvjlaiixcahdyi9is98frh797phc0xdr2i7f"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs
+       (("rust-fastrand" ,(p rust-fastrand-1))
+	("rust-git-tempfile" ,rust-git-tempfile)
+        ("rust-quick-error" ,(p rust-quick-error-2)))
+       #:cargo-development-inputs
+       (("rust-tempfile" ,(p rust-tempfile-3)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis "A git-style lock-file implementation")
+    (description "This package provides a git-style lock-file implementation")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-git-path
   (package
     (name "rust-git-path")
