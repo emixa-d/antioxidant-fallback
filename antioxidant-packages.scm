@@ -343,6 +343,14 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "src/lib.rs"
 	       (("\"cc\"") "\"gcc\"")
 	       (("\"c++\"") "\"g++\""))))))
+    ("rust-git-path"
+     ,#~((add-after 'unpack 'unstable-rust
+	   ;; Required to do real_path.is_symlink() in realpath.rs
+	   (lambda _
+	     (setenv "RUSTC_BOOTSTRAP" "1")
+	     (substitute* "src/lib.rs"
+			  (("#!\\[forbid\\(unsafe_code, rust_2018_idioms\\)]" line)
+			   (string-append "#![feature(is_symlink)]\n" line)))))))
     ("rust-cc"
      ,#~((add-after 'unpack 'fix-cc
 	   (lambda _
@@ -2564,6 +2572,30 @@ futures-aware, FIFO queue")
     (description
      "This package provides a WIP crate of the gitoxide project dealing with pattern
 matching")
+    (license (list license:expat license:asl2.0))))
+
+(define rust-git-path
+  (package
+    (name "rust-git-path")
+    (version "0.1.3")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "git-path" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "15dyxh8qvxpa31q1017k9pmfpsr8iifpkrxjsv29nd2x0gwngz1h"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-bstr" ,(p rust-bstr-0.2))
+		       ("rust-tempfile" ,(p rust-tempfile-3))
+                       ("rust-thiserror" ,(p rust-thiserror-1)))))
+    (home-page "https://github.com/Byron/gitoxide")
+    (synopsis
+     "A WIP crate of the gitoxide project dealing paths and their conversions")
+    (description
+     "This package provides a WIP crate of the gitoxide project dealing paths and
+their conversions")
     (license (list license:expat license:asl2.0))))
 
 (define rust-headers ; @0.3.3 doesn't build against new rust-time
