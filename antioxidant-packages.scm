@@ -2179,6 +2179,28 @@ of operation.")
         (sha256
           (base32 "1fb9ld4iq8d5q5i9nr60hsdvdpjw4zb65kagv7xp08gphycwqy0f"))))))
 
+(define rust-btoi ; required by rust-git-actor
+  (package
+    (name "rust-btoi")
+    (version "0.4.2")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "btoi" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "04ba4j96icaan10c613s2rwpn2kdbl8728qhz2xzi0dakyd8dh4p"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-num-traits" ,(p rust-num-traits-0.2)))
+       #:cargo-development-inputs
+       (("rust-bencher" ,(p rust-bencher-0.1))
+	("rust-quickcheck" ,(p rust-quickcheck-0.9)))))
+    (home-page "https://github.com/niklasf/rust-btoi")
+    (synopsis "Parse integers directly from ASCII byte slices")
+    (description "Parse integers directly from ASCII byte slices")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-h2
   (package
     (inherit (p rust-h2-0.3)) ; new version required by new rust-reqwest
