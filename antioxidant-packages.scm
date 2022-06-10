@@ -3093,7 +3093,11 @@ cleanup")
     "rust-skeptic" ; @0.13.4 doesn't build
     "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
     "rust-macrotest"
-    "rust-mio-extras" ; doesn't build against new rust-mio
+    ("rust-mio-extras" ; doesn't build against new rust-mio, so avoid it where possible.  Don't remove it unconditionally, because it's required by rust-notify@4 and rust-notify@4 is required by rust-watchexec
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (and (string=? "rust-notify" (package-name dependent))
+		  (string-prefix? "4." (package-version dependent))))))
     "rust-tokio-tls" ; @0.3.1 doesn't build
     "rust-rust-hawktracer-sys" ; only for tracing (debugging-only), so maybe the build failure can be avoided?
     "rust-ntest" "rust-ntest-test-cases" ; test-only, and @0.3.4 tries using non-exported syn::export
