@@ -3027,19 +3027,6 @@ cleanup")
      "Unicode byte-order mark detection for files and byte arrays.")
     (license license:asl2.0)))
 
-(define rust-watchexec ; update to avoid mio-extras and old rust-nom
-  (package
-   (inherit (p rust-watchexec-1))
-   (name "rust-watchexec")
-   (version "2.0.0-pre.14")
-   (source (origin
-            (method url-fetch)
-            (uri (crate-uri "watchexec" version))
-            (file-name (string-append name "-" version ".tar.gz"))
-            (sha256
-             (base32
-              "0jfr2w2qijm0f4bz8k2kzlxmggjavh0w2sqz4z63iqdx8d965dqp"))))))
-
 (define rust-command-group
   (package
     (name "rust-command-group")
@@ -3867,8 +3854,7 @@ cleanup")
     ("rust-nettle" ,rust-nettle-7)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
-    ("rust-log" ,(p rust-log-0.4))
-    ("rust-watchexec" ,rust-watchexec)))
+    ("rust-log" ,(p rust-log-0.4))))
 
 ;; TODO: add these (upstream) or teach "guix style" to add them
 (define %extra-inputs
@@ -4033,24 +4019,7 @@ cleanup")
       ("rust-futures-util" ,(p rust-futures-util-0.3))
       ("rust-tokio-util" ,rust-tokio-util-0.7)
       ("rust-rustls-pemfile" ,(p rust-rustls-pemfile-0.2))
-      ("rust-percent-encoding" ,(p rust-percent-encoding-2))))
-    ("rust-watchexec" ;; old version uses old rust-notify (TODO: remaining dependencies)
-     (("rust-tokio" ,(p rust-tokio-1))
-      ("rust-tracing" ,(p rust-tracing-0.1))
-      ("rust-futures" ,(p rust-futures-0.3))
-      ("rust-once-cell" ,(p rust-once-cell-1))
-      ("rust-command-group" ,rust-command-group)
-      ("rust-ignore" ,(p rust-ignore-0.4))
-      ("rust-dunce" ,(p rust-dunce-1))
-      ("rust-unicase" ,(p rust-unicase-2))
-      ("rust-nom" ,(p rust-nom-7))
-      ("rust-regex" ,(p rust-regex-1))
-      ;; ("rust-git-config" ,_) ; TODO
-      ("rust-tokio-stream" ,(p rust-tokio-stream-0.1))
-      ;; ("rust-atomic-take" ,_) ; TODO
-      ("rust-miette" ,rust-miette)
-      ("rust-thiserror" ,(p rust-thiserror-1))
-      ("rust-async-recursion" ,(p rust-async-recursion-0.3))))))
+      ("rust-percent-encoding" ,(p rust-percent-encoding-2))))))
 
 (define (find-replacement dependent dependency)
   (define test-replacement
