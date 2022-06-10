@@ -3599,7 +3599,23 @@ cleanup")
      #:for-dependent
      ,(lambda (dependent)
 	(string=? "swayhide" (package-name dependent))))
-    ("rust-mio" ,rust-mio)
+    ;; Use the newest version of rust-mio where possible,
+    ;; except for packages that still require an old rust-mio
+    ;; and where updating the package is difficult for now.
+    ("rust-mio" ,rust-mio
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (or (string=? (package-name dependent) "rust-mio-extras")
+		 (and (string=? (package-name dependent) "rust-notify")
+		      (string-prefix? "4." (package-version dependent)))))))
+    ("rust-mio" ,(package-with-rust-features (p rust-mio-0.6)
+					     #~'("default") ; not used, see %features
+					     #:rust-metadata "guix-version=2")
+     #:for-dependent
+     ,(lambda (dependent)
+	(or (string=? (package-name dependent) "rust-mio-extras")
+	    (and (string=? (package-name dependent) "rust-notify")
+		 (string-prefix? "4." (package-version dependent))))))
     ("rust-smol" ,(p rust-smol-1)) ; @0.1 or its dependencies don't build
     ("rust-actix-rt" ,rust-actix-rt)
     ("rust-actix-tls" ,rust-actix-tls)
