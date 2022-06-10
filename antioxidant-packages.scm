@@ -3548,7 +3548,14 @@ cleanup")
     ("rust-bytestring" ,rust-bytestring)
     ("rust-avif-serialize" ,rust-avif-serialize)
     ("rust-nasm-rs" ,rust-nasm-rs)
-    ("rust-notify" ,(p rust-notify-5)) ; rust-notify@4 doesn't build
+    ("rust-notify" ,(p rust-notify-5) ; use new version where possible, and the old where still required
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (string=? (package-name dependent) "rust-watchexec"))))
+    ("rust-notify" ,(p rust-notify-4)
+     #:for-dependent
+     ,(lambda (dependent)
+	(string=? (package-name dependent) "rust-watchexec")))
     ("rust-ivf" ,rust-ivf)
     ("rust-idna" ,(p rust-idna-0.2)) ; avoid multiple versions
     ("rust-siphasher" ,(p rust-siphasher-0.3)) ; avoid multiple versions
