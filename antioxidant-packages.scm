@@ -3406,7 +3406,11 @@ cleanup")
     ;; Required by rust-tokio
     ;; TODO remove os-poll, as implied features are implemented.
     ("rust-mio"
-     ,#~'("net" "os-ext" "os-poll"))
+     ,(lambda (original-package)
+	;; set of available features depends on the version
+	(if (string-prefix? "0.6." (package-version original-package))
+	    #~'("default")
+	    #~'("net" "os-ext" "os-poll"))))
     ("rust-multipart"
      ;; default "iron" feature requires rust-iron which currently fails to build.
      ;; Likewise for "nickel".
