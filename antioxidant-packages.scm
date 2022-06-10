@@ -4118,7 +4118,10 @@ cleanup")
 			   ;; are enabled by default?  And maybe the features can be moved
 			   ;; to Guix upstream?
 			   (match (assoc (package-name pack) %features)
-			     ((_ value) value)
+			     ((_ value)
+			      (match value
+				((? procedure? procedure) (procedure pack))
+				((? gexp? value) value)))
 			     (#false (match features
 				       ((? gexp? f) f)
 				       (('quote l)
