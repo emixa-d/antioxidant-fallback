@@ -1,0 +1,32 @@
+From 7fb77fa9e1ccfea97dd17157235d2b3db9277ee8 Mon Sep 17 00:00:00 2001
+From: Maxime Devos <maximedevos@telenet.be>
+Date: Fri, 10 Jun 2022 17:09:48 +0000
+Subject: [PATCH] TODO
+
+Make it build against new rust-nix(?).
+---
+ src/process.rs | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/src/process.rs b/src/process.rs
+index d913ef8..37f248e 100644
+--- a/src/process.rs
++++ b/src/process.rs
+@@ -144,11 +144,7 @@ mod imp {
+     }
+ 
+     fn from_nix_error(err: nix::Error) -> io::Error {
+-        match err {
+-            Error::Sys(errno) => io::Error::from_raw_os_error(errno as i32),
+-            Error::InvalidPath => io::Error::new(io::ErrorKind::InvalidInput, err),
+-            _ => io::Error::new(io::ErrorKind::Other, err),
+-        }
++        return io::Error::from_raw_os_error(err as i32);
+     }
+ 
+     #[allow(clippy::mutex_atomic)]
+
+base-commit: 74934f304fdc6b46228b1eb82706212f34c3e16f
+-- 
+2.30.2
+

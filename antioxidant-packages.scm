@@ -3861,7 +3861,11 @@ cleanup")
     ("rust-nettle" ,rust-nettle-7)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
-    ("rust-log" ,(p rust-log-0.4))))
+    ("rust-log" ,(p rust-log-0.4))
+    ("rust-watchexec"
+     ,(package-with-extra-patches
+       (p rust-watchexec-1)
+       (list (local-file "rust-watchexec-nix-compatibility.patch")))))) ; for compatibiliy with new rust-nix
 
 ;; TODO: add these (upstream) or teach "guix style" to add them
 (define %extra-inputs
