@@ -650,6 +650,25 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "0gmnn86ifc2ngmwf3mpiw00kmxm8m2wxxxqnchmpraj6mj97a032"))))))
 
+(define rust-atomic-take ; required by new rust-watchexec
+  (package
+    (name "rust-atomic-take")
+    (version "1.0.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "atomic-take" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0zmn2pay3p94kcg9b8qz2kd26flzchlg1lcq685sixjznd7mxxpr"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-development-inputs (("rust-futures" ,rust-futures-0.3))))
+    (home-page "https://github.com/Darksonn/atomic-take")
+    (synopsis "Atomically take a value out of a container once.")
+    (description "Atomically take a value out of a container once.")
+    (license license:expat)))
+
 (define rust-mio ; new rust-tokio is incompatible with rust-mio@0.8.0
   (package
     (inherit (p rust-mio-0.8))
