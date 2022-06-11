@@ -3226,6 +3226,19 @@ futures-aware, FIFO queue")
 (define %replacements
   `(("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
     ("rust-average" ,(p rust-average-0.13)) ; avoid complication due to multiple versions
+    ("rust-cbindgen" ,(package-with-extra-patches
+		       rust-cbindgen-0.19
+		       ;; Replace Cargo-specific assumptions by antioxidant-specific
+		       ;; assumptions (we cannot run "cargo metadata"!).
+		       ;;
+		       ;; rust-cbindgen tries to run "cargo metadata" to generate a JSON
+		       ;; file with some information on the package and its dependencies,
+		       ;; but fails, resulting in an unclear error message.
+		       ;;
+		       ;; As antioxidant isn't cargo, we have to replace this logic by
+		       ;; some other logic, generating the metadata ourselves.  TODO:
+		       ;; actually implement that generate-cbindgen-metadata phase.
+		      (list (local-file "rust-cbindgen-0.19-antioxidant-compatibility.patch"))))
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
     ("rust-h2" ,rust-h2)
