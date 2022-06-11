@@ -2655,6 +2655,19 @@ futures-aware, FIFO queue")
              (base32
               "1ss1ijakw48dgpxaj5a38pk0r3vmzhdgaj842ssfir9m9ymgg8a6"))))))
 
+(define rust-zip ; @0.5.13 doesn't compile against new rust-time
+  (package
+    (inherit (p rust-zip-0.5))
+    (name "rust-zip")
+    (version "0.6.2")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "zip" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "138brxnsknbvdh7h5h4rysfpcgvspp3pa177jsscnlmvfg7mn8mz"))))))
+
 (define rust-tungstenite ; @0.11 doesn't build
   (package
     (inherit (p rust-tungstenite-0.11))
@@ -3207,6 +3220,7 @@ futures-aware, FIFO queue")
     ;; rust-num-bigint-dig's zeroize feature requires the "derive"
     ;; feature of rust-zeroize
     ("rust-zeroize" ,#~'("default" "derive"))
+    ("rust-zip" ,#~'("bzip2" "deflate" "time" "zstd")) ; avoid default "aes-crypto" feature, which requiers an old rust-aes (and encrypted zips aren't used often anyways)
     ("rust-zstd-safe" ,#~'("default" "std")))) ; std is reaquired by rust-zstd@0.9.0
 
 (define %replacements
@@ -3549,7 +3563,8 @@ futures-aware, FIFO queue")
     ("rust-watchexec"
      ,(package-with-extra-patches
        (p rust-watchexec-1)
-       (list (local-file "rust-watchexec-nix-compatibility.patch")))))) ; for compatibiliy with new rust-nix
+       (list (local-file "rust-watchexec-nix-compatibility.patch")))) ; for compatibiliy with new rust-nix
+    ("rust-zip" ,rust-zip)))
 
 ;; TODO: add these (upstream) or teach "guix style" to add them
 (define %extra-inputs
@@ -3714,7 +3729,9 @@ futures-aware, FIFO queue")
       ("rust-futures-util" ,(p rust-futures-util-0.3))
       ("rust-tokio-util" ,rust-tokio-util-0.7)
       ("rust-rustls-pemfile" ,(p rust-rustls-pemfile-0.2))
-      ("rust-percent-encoding" ,(p rust-percent-encoding-2))))))
+      ("rust-percent-encoding" ,(p rust-percent-encoding-2))))
+    ("rust-zip" ; new inputs for new version
+     (("rust-zstd" ,(p rust-zstd-0.9))))))
 
 (define (find-replacement dependent dependency)
   (define test-replacement
