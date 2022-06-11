@@ -29,7 +29,7 @@ index 0b977d4..29aca50 100644
 -            }
 -            Cow::Borrowed(std::str::from_utf8(&output.stdout)?)
 -        }
-+        None => Cow::Owned(env::var("ANTIOXIDANT_CBINDGEN_METADATA").expect("add the generate-cbindgen-metadata phase to the package definition"))
++        None => Cow::Owned(std::fs::read_to_string(env::var("ANTIOXIDANT_CBINDGEN_METADATA").expect("add the generate-cbindgen-metadata phase to the package definition"))?)
      };
  
      let meta: Metadata = serde_json::from_str(&*metadata)?;
