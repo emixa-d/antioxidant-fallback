@@ -57,6 +57,38 @@
 	  '(("CARGO_CFG_TARGET_FEATURE" . "sse,sse2"))
 	  '())))
 
+;; TODO: move to antioxidant.scm
+(define generate-cbindgen-metadata-phase
+  #~(lambda _
+      ;; Generate the metadata as expected by cbindgen.
+      ;; Not all fields are set, only the ones that seem to be required
+      ;; are set and even then sometimes a dummy value suffices for now.
+      (define package ((@@ (antioxidant) manifest-package) *manifest*))
+      (define json-as-s-expression
+	`(("packages" .
+	   #((("name" . ,((@@ (antioxidant) package-name) package))
+	      ("version" . ,((@@ (antioxidant) package-version) package))
+	      ("id" . "the package we are building")
+	      ("source" . null)
+	      ("dependencies" . #())
+	      ("targets" . #((("kind" . #("lib"))
+			      ("crate_types" . #("lib"))
+			      ("name" . ,((@@ (antioxidant) package-name) package))
+			      ("src_path" . "src/lib.rs")))) ; TODO not true in general but sufficient for now
+	      ("features")
+	      ("manifest_path" . ,(in-vicinity (getcwd) "Cargo.toml")))))
+	  ("workspace_members" . #("the package we are building"))
+	  ("target_directory" . ,(getcwd)) ; TODO investigate proper valu
+	  ("version" . ,1)
+	  ("workspace_root" . ,(getcwd))))
+      (call-with-output-file ".cbindgen-metadata.json"
+	((@ (srfi srfi-26) cut)
+	 (@ (json builder) scm->json) json-as-s-expression <>
+	 #:pretty #true); #:pretty: might help with debugging and doesn't cost much
+	#:encoding "UTF-8")
+      (setenv "ANTIOXIDANT_CBINDGEN_METADATA" (in-vicinity (getcwd) ".cbindgen-metadata.json"))
+      #;(copy-file #$(local-file "md.js") (getenv "ANTIOXIDANT_CBINDGEN_METADATA"))))
+
 (define %custom-phases
   ;; TODO home page is incorrect
   `(("rust-servo-fontconfig-sys"
