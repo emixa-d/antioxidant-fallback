@@ -872,6 +872,9 @@ by %excluded-keys."
 	   (format (current-error-port)
 		   "configuration script: warning: ~a~%"
 		   (string-drop line (string-length "cargo:warning="))))
+	  ((or (string-prefix? "cargo:rerun-if-changed=" line)
+	       (string-prefix? "cargo:rerun-if-env-changed=" line))
+	   (values)) ; nothing to do for antioxidant, no need for a warning
 	  ((string-prefix? "cargo:" line)
 	   (pk 'l line)
 	   (format #t "warning: ~a: unrecognised build.rs instruction~%" line)
