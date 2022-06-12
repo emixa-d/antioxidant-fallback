@@ -815,8 +815,9 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 ;; variables set, exclude these variables which aren't used by dependents.
 ;; Not exhaustive.
 (define %excluded-keys
+  ;; 'include' is used by rust-tectonic-engine-bibtex@0.1.1
   '("rerun-if-env-changed" "rerun-if-changed" "rustc-link-search" "rustc-link-lib"
-    "rustc-cfg" "include" "warning"))
+    "rustc-cfg" "warning"))
 
 (define *save* #false) ;; TODO: less impure
 (define* (configure #:key inputs native-inputs target build optimisation-level
