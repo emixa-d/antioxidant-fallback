@@ -29,6 +29,18 @@
 	    %standard-antioxidant-phases
 	    %default-crate-type
 
+	    make-manifest manifest? scm->manifest manifest->scm
+	    manifest-lib
+	    manifest-bin
+	    manifest-bench
+	    manifest-example
+	    manifest-test
+	    manifest-features
+	    manifest-dependencies
+	    manifest-dev-dependencies
+	    manifest-build-dependencies
+	    manifest-target-specific
+
 	    crate-mapping?
 	    make-crate-mapping
 	    crate-mapping-dependency-name
