@@ -358,10 +358,9 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
 		    #$generate-cbindgen-metadata-phase)))
     ("rust-tectonic-bridge-flate"
-     ,#~((add-after 'unpack 'fix-cbindgen
-	   (lambda _ ; TODO: probably an unexpected difference between Cargo and antioxidant?
-	     (substitute* "build.rs"
-	       (("\\.with_crate\\(&manifest_dir\\)") ""))))))
+     ;; required to make rust-cbindgen produce building C code.
+     ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
+		    #$generate-cbindgen-metadata-phase)))
     ("rust-tuikit"
      ;; TODO: upstream
      ,#~((add-after 'unpack 'fix-unresolved+deprecated
