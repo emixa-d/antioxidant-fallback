@@ -354,9 +354,28 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "src/main.rs"
 	       (("signal_hook::SIGPIPE") "signal_hook::consts::signal::SIGPIPE"))))))
     ("rust-tectonic-bridge-core"
-     ;; required to make rust-cbindgen produce building C code.
+     ;; Required to invoke 'cbindgen' later.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
-		    #$generate-cbindgen-metadata-phase)))
+		    #$generate-cbindgen-metadata-phase)
+	 ;; Build a generated file from source, using the instructions
+	 ;; mentioned in the README.
+	 (add-after 'generate-cbindgen-metadata-phase 'regenerate-cbindgen-things
+	   (lambda _
+	     (delete-file "support/tectonic_bridge_core_generated.h")
+	     (invoke "cbindgen" "--output" "support/tectonic_bridge_core_generated.h")))
+	 ;; Actually install the headers somewhere where they can be found
+	 ;; by dependencies.
+	 (add-after 'unpack 'fixup-headers-locations
+	   (lambda _
+	     (substitute* "build.rs"
+	       (("main_header_src\\.display\\(\\)")
+		(string-append "\"" #$output "/include\""))
+	       (("env::var\\(\"OUT_DIR\"\\).unwrap\\(\\)") ; TODO: maybe set OUT_DIR to somewhere in the store, then this wouldn't be necessary
+		(string-append "\"" #$output "/include\"")))))
+	 (add-after 'install 'install-header
+	   (lambda _
+	     (install-file "support/tectonic_bridge_core_generated.h"
+			   (string-append #$output "/include"))))))
     ("rust-tectonic-bridge-flate"
      ;; required to make rust-cbindgen produce building C code.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
@@ -3763,6 +3782,11 @@ futures-aware, FIFO queue")
      (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
     ("rust-headers"
      (("rust-httpdate" ,(p rust-httpdate-1)))) ; new dependency
+    ("rust-tectonic-bridge-core"
+     ;; TODO: native-input
+     ;; Required in rust-tectonic-bridge-core@0.3 for extra 'regenerate-cbindgen-things'
+     ;; phase.
+     (("rust-cbindgen" ,rust-cbindgen-0.19)))
     ("rust-tungstenite"
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tokio" ; new dependency for new version
