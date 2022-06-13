@@ -387,6 +387,16 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "build.rs"
 	       (("env::var\\(\"OUT_DIR\"\\).unwrap\\(\\)") ; TODO: maybe set OUT_DIR to somewhere in the store, then this wouldn't be necessary
 		(string-append "\"" #$output "/include\"")))))))
+    ("rust-tectonic-pdf-io"
+     ;; Put headers somewhere where they can be found by dependencies.
+     ,#~((add-after 'unpack 'fixup-headers-location
+	   (lambda _
+	     (copy-recursively "pdf_io" (in-vicinity #$output "include"))
+	     (for-each delete-file (find-files (in-vicinity #$output "include")
+					       "\\.c$"))
+	     (substitute* "build.rs"
+			  (("main_header_src\\.display\\(\\)")
+			   (object->string (in-vicinity #$output "include"))))))))
     ("rust-tectonic-engine-bibtex"
      ;; required to use rust-cbindgen.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
