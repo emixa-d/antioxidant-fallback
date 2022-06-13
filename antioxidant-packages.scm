@@ -397,6 +397,16 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "build.rs"
 			  (("main_header_src\\.display\\(\\)")
 			   (object->string (in-vicinity #$output "include"))))))))
+    ("rust-tectonic-xetex-layout"
+     ;; Put headers somewhere where they can be found by dependencies.
+     ;; TODO: OUT_DIR.
+     ,#~((add-after 'unpack 'fixup-headers-location
+	   (lambda _
+	     (define destination (in-vicinity #$output "include"))
+	     (mkdir-p destination)
+	     (substitute* "build.rs"
+	       (("\\benv::var\\(\"OUT_DIR\"\\)\\.unwrap\\(\\)")
+		(object->string destination)))))))
     ("rust-tectonic-engine-bibtex"
      ;; required to use rust-cbindgen.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
