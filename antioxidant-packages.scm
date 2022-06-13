@@ -381,7 +381,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
     ("rust-tectonic-bridge-flate"
      ;; required to make rust-cbindgen produce building C code.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
-		    #$generate-cbindgen-metadata-phase)))
+		    #$generate-cbindgen-metadata-phase)
+	 (add-after 'unpack 'fixup-headers-locations ; see rust-tectonic-bridge-core
+	   (lambda _
+	     (substitute* "build.rs"
+	       (("env::var\\(\"OUT_DIR\"\\).unwrap\\(\\)") ; TODO: maybe set OUT_DIR to somewhere in the store, then this wouldn't be necessary
+		(string-append "\"" #$output "/include\"")))))))
     ("rust-tectonic-engine-bibtex"
      ;; required to use rust-cbindgen.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
