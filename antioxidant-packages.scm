@@ -391,6 +391,10 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ;; required to use rust-cbindgen.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
 		    #$generate-cbindgen-metadata-phase)))
+    ("rust-tectonic-engine-xdvipdfmx"
+     ;; required to use rust-cbindgen.
+     ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
+		    #$generate-cbindgen-metadata-phase)))
     ("rust-tuikit"
      ;; TODO: upstream
      ,#~((add-after 'unpack 'fix-unresolved+deprecated
