@@ -3821,6 +3821,8 @@ futures-aware, FIFO queue")
       ("harfbuzz" ,(@ (gnu packages gtk) harfbuzz))))
     ("rust-tectonic-bridge-icu"
      (("icu4c" ,(@ (gnu packages icu4c) icu4c))))
+    ("rust-tectonic-xetex-layout" ; missing input
+     (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))))
     ("rust-tungstenite"
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tokio" ; new dependency for new version
