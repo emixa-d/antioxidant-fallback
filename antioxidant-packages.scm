@@ -3925,7 +3925,8 @@ futures-aware, FIFO queue")
 	      ;; search paths too -- needed for compiling rust-glib-sys@0.14.0.
 	      ;; TODO: upstream Guix
 	      ((or "rust-pkg-config"
-		   "rust-system-deps")
+		   "rust-system-deps"
+		   "rust-tectonic-dep-support")
 	       (package-search-paths (@ (gnu packages pkg-config) pkg-config)))
 	      (_ '()))
 	    (package-search-paths pack)))
@@ -3934,7 +3935,8 @@ futures-aware, FIFO queue")
 	    (match (package-name pack)
 	      ;; Make sure that PKG_CONFIG_PATH is available to build.rs.
 	      ((or "rust-pkg-config"
-		   "rust-system-deps")
+		   "rust-system-deps"
+		   "rust-tectonic-dep-support")
 	       (package-native-search-paths (@ (gnu packages pkg-config) pkg-config)))
 	      (_ '()))
 	    (package-native-search-paths pack)))))
