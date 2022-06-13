@@ -3816,6 +3816,8 @@ futures-aware, FIFO queue")
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ("rust-tectonic-bridge-graphite2"
      (("graphite2" ,(@ (gnu packages fontutils) graphite2))))
+    ("rust-tectonic-bridge-harfbuzz"
+     (("harfbuzz" ,(@ (gnu packages gtk) harfbuzz))))
     ("rust-tectonic-bridge-icu"
      (("icu4c" ,(@ (gnu packages icu4c) icu4c))))
     ("rust-tungstenite"
