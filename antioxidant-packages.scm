@@ -3793,6 +3793,8 @@ futures-aware, FIFO queue")
      ;; Required in rust-tectonic-bridge-core@0.3 for extra 'regenerate-cbindgen-things'
      ;; phase.
      (("rust-cbindgen" ,rust-cbindgen-0.19)))
+    ("rust-tectonic-bridge-freetype2"
+     (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ("rust-tungstenite"
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tokio" ; new dependency for new version
