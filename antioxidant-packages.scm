@@ -407,6 +407,16 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "build.rs"
 	       (("\\benv::var\\(\"OUT_DIR\"\\)\\.unwrap\\(\\)")
 		(object->string destination)))))))
+    ("rust-tectonic-engine-xetex"
+     ,#~((add-after 'unpack 'find-fontconfig ; TODO: what causes <fontconfig/fontconfig.h> not to be found even though it is in C_INCLUDE_PATH?
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (substitute* "xetex/xetex-core.h"
+	       (("\\bfontconfig/fontconfig\\.h\\b")
+		(search-input-file inputs "include/fontconfig/fontconfig.h"))
+	       (("<harfbuzz\\b") ; XXX: -I points to subdirectory yet parent directory is used
+		(string-append
+		 "<"
+		 (search-input-directory inputs "include/harfbuzz"))))))))
     ("rust-tectonic-engine-bibtex"
      ;; required to use rust-cbindgen.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
@@ -3834,6 +3844,9 @@ futures-aware, FIFO queue")
     ("rust-tectonic-xetex-layout" ; missing input
      (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))
       ("harfbuzz" ,(@ (gnu packages gtk) harfbuzz)))) ; missing input, .pc points to a subdirectory while it shouldn't or #include <harfbuzz/hb.h> needs to be replaced by #include <harfbuzz/hb.h>
+    ("rust-tectonic-engine-xetex" ; missing input (TODO: maybe detect (upstream) in rust-tectonic-xetex-layout to add to the list?)
+     (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))
+      ("harfbuzz" ,(@ (gnu packages gtk) harfbuzz-3.0))))
     ("rust-tungstenite"
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tokio" ; new dependency for new version
