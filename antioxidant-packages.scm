@@ -3316,6 +3316,7 @@ futures-aware, FIFO queue")
     ("rust-cookie-store-15" ,rust-cookie-store)
     ("rust-structopt" ,(p rust-structopt-0.3))
     ("rust-structopt-derive" ,(p rust-structopt-derive-0.4)) ; @0.2.18 doesn't build
+    ("rust-tectonic-bridge-core" ,(p rust-tectonic-bridge-core-0.3)) ; to keep custom phases simple, only use a single version
     ("rust-tectonic-status-base" ,(p rust-tectonic-status-base-0.2)) ; resolve version conflict
     ("rust-tectonic-errors" ,(p rust-tectonic-errors-0.2)) ; resolve version conflict
     ("rust-totp-lite" ,rust-totp-lite)
