@@ -3800,6 +3800,8 @@ futures-aware, FIFO queue")
      (("rust-cbindgen" ,rust-cbindgen-0.19)))
     ("rust-tectonic-bridge-freetype2"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
+    ("rust-tectonic-bridge-graphite2"
+     (("graphite2" ,(@ (gnu packages fontutils) graphite2))))
     ("rust-tungstenite"
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tokio" ; new dependency for new version
