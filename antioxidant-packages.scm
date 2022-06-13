@@ -3822,7 +3822,8 @@ futures-aware, FIFO queue")
     ("rust-tectonic-bridge-icu"
      (("icu4c" ,(@ (gnu packages icu4c) icu4c))))
     ("rust-tectonic-xetex-layout" ; missing input
-     (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))))
+     (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))
+      ("harfbuzz" ,(@ (gnu packages gtk) harfbuzz)))) ; missing input, .pc points to a subdirectory while it shouldn't or #include <harfbuzz/hb.h> needs to be replaced by #include <harfbuzz/hb.h>
     ("rust-tungstenite"
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tokio" ; new dependency for new version
