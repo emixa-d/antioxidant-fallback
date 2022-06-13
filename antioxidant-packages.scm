@@ -375,6 +375,8 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	 (add-after 'install 'install-header
 	   (lambda _
 	     (install-file "support/tectonic_bridge_core_generated.h"
+			   (string-append #$output "/include"))
+	     (install-file "support/tectonic_bridge_core.h"
 			   (string-append #$output "/include"))))))
     ("rust-tectonic-bridge-flate"
      ;; required to make rust-cbindgen produce building C code.
