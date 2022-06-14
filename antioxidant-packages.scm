@@ -2854,6 +2854,19 @@ futures-aware, FIFO queue")
     (description "Extension to Command to spawn in a process group")
     (license (list license:asl2.0 license:expat))))
 
+(define rust-ctrlc ; for compatibility with new rust-nix
+  (package
+    (inherit (p rust-ctrlc-3))
+    (name "rust-ctrlc")
+    (version "3.2.2")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "ctrlc" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0r88w8l4hxc64w43xlwjk5f60vg57vdahnjy3w5f0qb89slflzxk"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -3345,6 +3358,7 @@ futures-aware, FIFO queue")
 		       ;; some other logic, generating the metadata ourselves.  TODO:
 		       ;; actually implement that generate-cbindgen-metadata phase.
 		      (list (local-file "rust-cbindgen-0.19-antioxidant-compatibility.patch"))))
+    ("rust-ctrlc" ,rust-ctrlc)
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
