@@ -3383,6 +3383,7 @@ futures-aware, FIFO queue")
     ("rust-tectonic-bridge-core" ,(p rust-tectonic-bridge-core-0.3)) ; to keep custom phases simple, only use a single version
     ("rust-tectonic-status-base" ,(p rust-tectonic-status-base-0.2)) ; resolve version conflict
     ("rust-tectonic-errors" ,(p rust-tectonic-errors-0.2)) ; resolve version conflict
+    ("rust-tectonic-io-base" ,(p rust-tectonic-io-base-0.4)) ; resolve version conflict
     ("rust-totp-lite" ,rust-totp-lite)
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
