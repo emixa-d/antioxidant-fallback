@@ -2831,6 +2831,24 @@ futures-aware, FIFO queue")
      "Unicode byte-order mark detection for files and byte arrays.")
     (license license:asl2.0)))
 
+(define rust-calloop ; old version doesn't build against new rust-nix
+  (package
+    (inherit (p rust-calloop-0.6))
+    (name "rust-calloop")
+    (version "0.10.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "calloop" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0bp0h8d8k7r05ggp7ip3y26anwaspld134mgx46s9s1z913128l4"))))
+    (inputs
+     (modify-inputs (package-inputs (p rust-calloop-0.6))
+		    (prepend
+		     (p rust-thiserror-1) ; TODO: where to put macros (native/non-native)?
+		     (p rust-vec-map-0.8) rust-futures-util-0.3 rust-slotmap)))))
+
 (define rust-command-group
   (package
     (name "rust-command-group")
@@ -3372,6 +3390,7 @@ futures-aware, FIFO queue")
 (define %replacements
   `(("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
     ("rust-average" ,(p rust-average-0.13)) ; avoid complication due to multiple versions
+    ("rust-calloop" ,rust-calloop)
     ("rust-cbindgen" ,(package-with-extra-patches
 		       rust-cbindgen-0.19
 		       ;; Replace Cargo-specific assumptions by antioxidant-specific
