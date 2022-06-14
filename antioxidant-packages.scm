@@ -425,6 +425,13 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ;; required to use rust-cbindgen.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
 		    #$generate-cbindgen-metadata-phase)))
+    ("tectonic" ; TODO: binary is compiled thrice
+     ;; TODO: bug in implementation in 'autobins'?
+     ,#~((add-after 'unpack 'fix-found-binaries
+	   (lambda _
+	     (substitute* "Cargo.toml"
+	       (("^(repository = .*)$" line)
+		(string-append line "autobins = false\n[[bin]]\nname = \"tectonic\"\npath=\"src/bin/tectonic/main.rs\"\n")))))))
     ("rust-tuikit"
      ;; TODO: upstream
      ,#~((add-after 'unpack 'fix-unresolved+deprecated
