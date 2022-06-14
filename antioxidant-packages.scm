@@ -3338,6 +3338,7 @@ futures-aware, FIFO queue")
 		       ;; some other logic, generating the metadata ourselves.  TODO:
 		       ;; actually implement that generate-cbindgen-metadata phase.
 		      (list (local-file "rust-cbindgen-0.19-antioxidant-compatibility.patch"))))
+    ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
     ("rust-h2" ,rust-h2)
