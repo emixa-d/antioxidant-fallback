@@ -2867,6 +2867,32 @@ futures-aware, FIFO queue")
                (base32
                 "0r88w8l4hxc64w43xlwjk5f60vg57vdahnjy3w5f0qb89slflzxk"))))))
 
+(define rust-slotmap ; required by new rust-calloop
+  (package
+    (name "rust-slotmap")
+    (version "1.0.6")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "slotmap" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0hhkvsc3x79c7fh97b3padjhssd19hzdyyiv291mr3qf3lk8xq71"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-serde" ,(p rust-serde-1))
+		       ("rust-version-check" ,(p rust-version-check-0.9)))
+       #:cargo-development-inputs
+       (("rust-fxhash" ,(p rust-fxhash-0.2))
+	("rust-quickcheck" ,(p rust-quickcheck-0.9))
+        ("rust-serde" ,(p rust-serde-1))
+        ("rust-serde-derive" ,(p rust-serde-derive-1))
+        ("rust-serde-json" ,(p rust-serde-json-1)))))
+    (home-page "https://github.com/orlp/slotmap")
+    (synopsis "Slotmap data structure")
+    (description "Slotmap data structure")
+    (license license:zlib)))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
