@@ -3332,6 +3332,7 @@ futures-aware, FIFO queue")
     ("rust-value-bag" ,#~'("std"))
     ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
     ("rust-webpki" ,#~'("std" "alloc"))
+    ("rust-xcb" ,#~'("thread" "xfixes")) ; not all features build, for now only enable features required by rust-x11-clipboard.
     ("rust-xz2" ,#~'("futures")) ; ???
     ;; rust-rcgen requires "time". While at it, enable other
     ;; features as well.
