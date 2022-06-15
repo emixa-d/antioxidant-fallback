@@ -301,6 +301,25 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"((rhs - OldDuration::seconds(rhssecs)).whole_nanoseconds() as i64)")
 	       (("duration\\.num_nanoseconds\\(\\)")
 		"Some(duration.whole_nanoseconds() as i64)"))))))
+    ("rust-chrono-humanize"
+     ;; TODO: upstream/update
+     ,#~((add-after 'unpack 'use-new-names
+	   (lambda _
+	     ;; TODO: upstream
+	     (substitute* "src/humantime.rs"
+	       (("use crate::Humanize;") "use crate::Humanize; use std::convert::TryInto;")
+	       (("Duration::zero\\(\\)") "Duration::ZERO")
+	       (("num_days\\(\\)") "whole_days()")
+	       (("num_weeks\\(\\)") "whole_weeks()")
+	       (("num_hours\\(\\)") "whole_hours()")
+	       (("num_seconds\\(\\)") "whole_seconds()")
+	       (("num_nanoseconds\\(\\)\\.unwrap_or_default\\(\\)")
+		"whole_nanoseconds().try_into().unwrap_or_default()")
+	       (("num_microseconds\\(\\)\\.unwrap_or_default\\(\\)")
+		"whole_microseconds().try_into().unwrap_or_default()")
+	       (("num_minutes\\(\\)") "whole_minutes()")
+	       (("self\\.0\\.num_milliseconds\\(\\)")
+		"self.0.whole_milliseconds().try_into().expect(\"milliseconds overflow\")")))))) ; TODO?
     ("rust-pkcs1"
      ,#~((add-after 'unpack 'fix-typing
 	   (lambda _
