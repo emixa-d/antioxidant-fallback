@@ -3946,6 +3946,8 @@ futures-aware, FIFO queue")
 		  ("rust-base64ct" ,(p rust-base64ct-1)) ; missing dep
 		  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
     ("rust-image" (("rust-exr" ,rust-exr)))
+    ;; contains pkg-config files
+    ("rust-mysqlclient-sys" (("mariadb:dev" ,(@ (gnu packages databases) mariadb) "dev")))
     ;; possibly only required by new version
     #;("rust-boxxy" (("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1)))) ; TODO: currently useless because in %removed-dependencies, revisit when tests are supported
     ("rust-petgraph" (("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
