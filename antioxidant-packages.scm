@@ -110,7 +110,9 @@
      ,#~((add-after 'unpack 'fix-pkg-config-use
 	   (lambda _
 	     (substitute* "build.rs"
-	       (("\"mysqlclient\"") "\"mariadb\""))))))
+	       ;; the mariadb.pc uses -lz without adding an appropriate -L
+	       ;; (TODO).  Using the libmariadb.pc instead seems to work.
+	       (("\"mysqlclient\"") "\"libmariadb\""))))))
     ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
     ;; Make sure the headers will be installed in a proper location.
     ;; TODO: make sure dependencies actually find the result (newsboat-ffi).
