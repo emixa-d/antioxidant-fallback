@@ -2761,6 +2761,19 @@ futures-aware, FIFO queue")
                (base32
                 "0365asqd8v2iij8sl0282rrc0ixzkixl0jr0m2day0vfjnznr347"))))))
 
+(define rust-postgres-types ; old version doesn't build against new rust-time
+  (package
+    (inherit (p rust-postgres-types-0.2))
+    (name "rust-postgres-types")
+    (version "0.2.3")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "postgres-types" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "129xn3q32r92ylwggrlg5l0z2w8hfx6d56z8j291cwws32vyimpb"))))))
+
 (define rust-reqwest ; @0.11.4 fails to build and uses deprecated functions from cookie_store
   (package
    (inherit (p rust-reqwest-0.11))
@@ -3304,6 +3317,7 @@ futures-aware, FIFO queue")
     ;; Required by 'sniffglue'
     ("rust-pktparse" ,#~'("serde"))
     ("rust-plotters-svg" ,#~'()) ; "debug" feature causes a build failure
+    ("rust-postgres-types" ,#~'("derive" "with-time-0_3" "with-uuid-0_8" "geo-types-0_7")) ; not all  dependencies of all features have been packaged yet.
     ("rust-proc-macro2"
      ;; span-locations is required by rust-cxx-gen@0.7.49
      ,#~'("default" "span-locations"))
@@ -3479,6 +3493,7 @@ futures-aware, FIFO queue")
 		    (list (local-file "0001-use-std-time-bump-to-0.5.4.patch"))))
     ("rust-partial-io" ,rust-partial-io)
     ("rust-postgres-protocol" ,rust-postgres-protocol)
+    ("rust-postgres-types" ,rust-postgres-types)
     ("rust-regex-syntax" ,(p rust-regex-syntax-0.6)) ; multiple version
     ;; swayhide requires non-async to build
     ("rust-swayipc" ,(package-with-rust-features (p rust-swayipc-2)
