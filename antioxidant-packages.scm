@@ -845,6 +845,19 @@ an unique string, which can be useful for resolving symbol conflicts."
      (sha256
       (base32 "08b941jj4kk1bfg82zrr5b2ifa4ip155g9cpqmmp116v1n6ypgsg"))))))
 
+(define rust-rust-decimal ; @1.14.3 incompatible with new rust-arrayvec
+  (package
+    (inherit (p rust-rust-decimal-1))
+    (name "rust-rust-decimal")
+    (version "1.25.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "rust-decimal" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0z78vwr4apw2h8c6iijv8xvvsvjq9c87ky8v36mz2cskx1cbp8rl"))))))
+
 (define rust-tokio-rustls-0.23
   (package
    (inherit (@ (gnu packages crates-io) rust-tokio-rustls-0.22))
@@ -3684,6 +3697,7 @@ futures-aware, FIFO queue")
     ;; 0.3.0 fails to build against new rust-serde
     ("rust-linked-hash-map"
      ,(p rust-linked-hash-map-0.5))
+    ("rust-rust-decimal" ,rust-rust-decimal) ; old rust-decimal incompatible with new rust-arrayvec
     ("rust-rustls-native-certs"
      ;; Old versio incompatible with new rustls
      ,(p rust-rustls-native-certs-0.6))
