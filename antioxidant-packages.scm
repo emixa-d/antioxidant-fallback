@@ -3757,6 +3757,7 @@ futures-aware, FIFO queue")
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-log" ,(p rust-log-0.4))
+    ("rust-uuid" ,(p rust-uuid-0.8)) ; @0.5.1 doesn't build
     ("rust-watchexec"
      ,(package-with-extra-patches
        (p rust-watchexec-1)
