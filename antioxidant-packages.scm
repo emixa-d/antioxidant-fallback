@@ -4177,7 +4177,7 @@ futures-aware, FIFO queue")
     (match-lambda
       (((? string? name) (? list? dependencies))
        (let ((check-dependency
-	      (match-lambda ((dependency-name _)
+	      (match-lambda ((dependency-name _ . rest)
 			     (when (member dependency-name %removed-dependencies)
 			       (pk "extra-input " dependency-name " of " name "in %removed-dependencies (contradictory)")
 			       (throw 'oops))
