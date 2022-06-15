@@ -106,6 +106,11 @@
 			 "README" "NEWS" "INSTALL" "ChangeLog" "AUTHORS" ; these are for freetype, not rust-servo-freetype-sys
 			 "COPYING" ; this is for freetype, not rust-servo-freetype-sys which is MPL
 			 ))))))
+    ("rust-mysqlclient-sys" ; the pkg-config file is named mariadb.pc, not mysqclient.pc
+     ,#~((add-after 'unpack 'fix-pkg-config-use
+	   (lambda _
+	     (substitute* "build.rs"
+	       (("\"mysqlclient\"") "\"mariadb\""))))))
     ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
     ;; Make sure the headers will be installed in a proper location.
     ;; TODO: make sure dependencies actually find the result (newsboat-ffi).
