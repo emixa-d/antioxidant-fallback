@@ -818,6 +818,19 @@ an unique string, which can be useful for resolving symbol conflicts."
      (sha256
       (base32 "0r0p83nisf732qydg23qvmdd6gbrvyr1qvfs8hhbl7a1cyqdxpqf"))))))
 
+(define rust-tokio-postgres ; @0.7.2 doesn't build against new rust-phf
+  (package
+    (inherit (p rust-tokio-postgres-0.7))
+    (name "rust-tokio-postgres")
+    (version "0.7.6")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "tokio-postgres" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1bn8f466n1s5q674hr7yq7fybiszpa7v73yjxk4jsp9wl93qmj0r"))))))
+
 ;; Old combinations of rust-rustls & rust-tokio-rustls fail to build
 (define rust-rustls-0.20
   (package
@@ -3571,6 +3584,7 @@ futures-aware, FIFO queue")
     ("rust-tokio-openssl" ,(p rust-tokio-openssl-0.6))
     ("rust-tokio-native-tls" ,(p rust-tokio-native-tls-0.3)) ; @0.1 doesn't build
     ("rust-tokio" ,rust-tokio) ; rust-tokio@1 in Guix doesn't build against new rust-mio
+    ("rust-tokio-postgres" ,rust-tokio-postgres) ; @0.7.2 doesn't build against new rust-phf
     ("rust-tokio-tungstenite" ,rust-tokio-tungstenite) ; @0.11 doesn't build
     ("rust-bindgen"
      ;; In the old version 'runtime' cannot be
