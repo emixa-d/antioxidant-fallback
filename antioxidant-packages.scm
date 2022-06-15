@@ -2748,6 +2748,19 @@ futures-aware, FIFO queue")
         (sha256
           (base32 "0pd5i8aywnmx9q7wfzn9bs0jq2fm5rmk0kdhcnmy1qcbg3jpizsc"))))))
 
+(define rust-postgres-protocol ; old version doesn't build against new rust-hmac
+  (package
+    (inherit (p rust-postgres-protocol-0.6))
+    (name "rust-postgres-protocol")
+    (version "0.6.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "postgres-protocol" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0365asqd8v2iij8sl0282rrc0ixzkixl0jr0m2day0vfjnznr347"))))))
+
 (define rust-reqwest ; @0.11.4 fails to build and uses deprecated functions from cookie_store
   (package
    (inherit (p rust-reqwest-0.11))
@@ -3465,6 +3478,7 @@ futures-aware, FIFO queue")
 		    ;; For compatibility with new rust-time
 		    (list (local-file "0001-use-std-time-bump-to-0.5.4.patch"))))
     ("rust-partial-io" ,rust-partial-io)
+    ("rust-postgres-protocol" ,rust-postgres-protocol)
     ("rust-regex-syntax" ,(p rust-regex-syntax-0.6)) ; multiple version
     ;; swayhide requires non-async to build
     ("rust-swayipc" ,(package-with-rust-features (p rust-swayipc-2)
