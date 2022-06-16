@@ -3547,6 +3547,9 @@ futures-aware, FIFO queue")
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
     ("rust-hdrhistogram" ,rust-hdrhistogram)
+    ("rust-hmac-sha1" ,(package-with-extra-patches
+			(p rust-hmac-sha1-0.1)
+			(list (local-file "rust-hmac-sha1-update-dependencies.patch")))) ; compatibility with new dependencies
     ("rust-h2" ,rust-h2)
     ("rust-rand-core" ,(p rust-rand-core-0.6)) ; avoid multiple versions
     ("rust-blake2" ,rust-blake2)
