@@ -3453,6 +3453,7 @@ futures-aware, FIFO queue")
     ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
     ("rust-signal-hook-mio" ,#~'("support-v0_8")) ; othef features require an old rust-mio
     ("rust-similar" ,#~'("default" "text" "inline"))
+    ("rust-derive-builder" ,#~'()) ; for now don't build the non-building test features
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
     ("rust-smallvec" ,#~'("serde" "write")) ; "serde", "serde": required by rust-git-object
