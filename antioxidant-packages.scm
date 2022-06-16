@@ -2988,6 +2988,20 @@ futures-aware, FIFO queue")
     (description "Extension to Command to spawn in a process group")
     (license (list license:asl2.0 license:expat))))
 
+(define rust-crossterm
+  (package
+    (inherit (p rust-crossterm-0.20)) ; @0.19 and @0.20 and don't build against new dependencies
+    (name "rust-crossterm")
+    (version "0.23.2")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "crossterm" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "05ygjddfp70961ij7cbvrrwz88r09hghdpcqbf50z4c1yyj2w452"))))))
+
+
 (define rust-ctrlc ; for compatibility with new rust-nix
   (package
     (inherit (p rust-ctrlc-3))
@@ -3525,6 +3539,7 @@ futures-aware, FIFO queue")
 		       ;; some other logic, generating the metadata ourselves.  TODO:
 		       ;; actually implement that generate-cbindgen-metadata phase.
 		      (list (local-file "rust-cbindgen-0.19-antioxidant-compatibility.patch"))))
+    ("rust-crossterm" ,rust-crossterm) ; @0.19 doesn't build against new rust-signal-hook
     ("rust-ctrlc" ,rust-ctrlc)
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
