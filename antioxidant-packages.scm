@@ -3511,6 +3511,7 @@ futures-aware, FIFO queue")
     ("rust-actix-service" ,rust-actix-service)
     ("rust-awc" ,rust-awc)
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
+    ("rust-libgit2-sys" ,(p rust-libgit2-sys-0.12)) ; old version doesn't build.
     ("rust-markup5ever" ,(p rust-markup5ever-0.9)) ; @0.9 doesn't build against new rust-phf-... without patches, but we still need it because monolith doesn't support the new rust-markup5ever@0.10 yet
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
