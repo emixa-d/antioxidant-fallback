@@ -3264,7 +3264,8 @@ futures-aware, FIFO queue")
   (any remove-dependency*? %removed-dependencies))
 
 (define %crate-types
-  `(("rust-hyper" ,#~"rlib")))
+  `(("rust-hyper" ,#~"rlib")
+    ("rust-jsonpath-lib" ,#~"rlib")))
 
 ;; Try keeping things sorted, to avoid rebase/merge conflicts.
 (define %features
