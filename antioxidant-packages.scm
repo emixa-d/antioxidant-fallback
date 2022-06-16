@@ -458,6 +458,14 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "Cargo.toml"
 	       (("^(repository = .*)$" line)
 		(string-append line "autobins = false\n[[bin]]\nname = \"tectonic\"\npath=\"src/bin/tectonic/main.rs\"\n")))))))
+    ;; TODO: likewise
+    ("bat"
+     ;; TODO: bug in implementation in 'autobins'?
+     ,#~((add-after 'unpack 'fix-found-binaries
+	   (lambda _
+	     (substitute* "Cargo.toml"
+	       (("^(repository = .*)$" line)
+		(string-append line "autobins = false\n[[bin]]\nname = \"bat\"\npath=\"src/bin/bat/main.rs\"\n")))))))
     ("rust-tuikit"
      ;; TODO: upstream
      ,#~((add-after 'unpack 'fix-unresolved+deprecated
