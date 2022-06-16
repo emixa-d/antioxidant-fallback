@@ -818,6 +818,19 @@ an unique string, which can be useful for resolving symbol conflicts."
         (sha256
           (base32 "168pqd9v7llhhal1jy5l1k0k8qp0g8hsddv6w1s93n24kc6magbi"))))))
 
+(define rust-signal-hook-mio ; @0.2.1 doesn't suppport rust-mio@0.8
+  (package
+    (inherit (p rust-signal-hook-mio-0.2))
+    (name "rust-signal-hook-mio")
+    (version "0.2.3")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "signal-hook-mio" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1bwrrbd0lhwzlf63708vyzlh20693s5bg5s0ak6adjbyycajxb99"))))))
+
 ;; The old tokio doesn't build against recent rust-futures
 #; ; currently removed
 (define rust-tokio-io-0.2
@@ -3424,6 +3437,7 @@ futures-aware, FIFO queue")
     ("rust-servo-fontconfig-sys" ,#~'("force_system_lib")) ; be extra sure the bundled copy isn't used
     ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
     ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
+    ("rust-signal-hook-mio" ,#~'("support-v0_8")) ; othef features require an old rust-mio
     ("rust-similar" ,#~'("default" "text" "inline"))
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
@@ -3603,6 +3617,7 @@ futures-aware, FIFO queue")
 	(or (string=? (package-name dependent) "rust-mio-extras")
 	    (and (string=? (package-name dependent) "rust-notify")
 		 (string-prefix? "4." (package-version dependent))))))
+    ("rust-signal-hook-mio" ,rust-signal-hook-mio)
     ("rust-smol" ,(p rust-smol-1)) ; @0.1 or its dependencies don't build
     ("rust-actix-rt" ,rust-actix-rt)
     ("rust-actix-tls" ,rust-actix-tls)
