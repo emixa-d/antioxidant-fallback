@@ -3027,6 +3027,7 @@ futures-aware, FIFO queue")
   `("rust-derive-error-chain" ; doesn't build (even when updated) and unmaintained, avoid it for now
     "rust-crypto-tests" ; test dependency doesn't build against new rust-digest, avoid for now
     "rust-objc" "rust-objc-exception" "rust-objc-foundation" "rust-objc-id" "rust-objc-test-utils" ; requires gcc-objc, but gcc-objc doesn't seem to be used by any Rust crate, so it looks like these objc crates have never worked in the first place in Guix.
+    "rust-avro-rs" ; doesn't compile against new rust-digest and longer maintained, replace by apache-avro, let's see if we can avoid it ...
     ("rust-quickcheck"
      ;; Usually only required for tests.
      ;; Avoid (quickcheck env-logger humantime chrono bincode) cycle.
