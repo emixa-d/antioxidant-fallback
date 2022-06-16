@@ -3539,6 +3539,7 @@ futures-aware, FIFO queue")
 		       ;; some other logic, generating the metadata ourselves.  TODO:
 		       ;; actually implement that generate-cbindgen-metadata phase.
 		      (list (local-file "rust-cbindgen-0.19-antioxidant-compatibility.patch"))))
+    ("rust-comfy-table" ,(p rust-comfy-table-4)) ; @1 doesn't build against new dependencies
     ("rust-crossterm" ,rust-crossterm) ; @0.19 doesn't build against new rust-signal-hook
     ("rust-ctrlc" ,rust-ctrlc)
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
