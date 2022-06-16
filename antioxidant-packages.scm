@@ -3333,7 +3333,7 @@ futures-aware, FIFO queue")
     ("rust-gobject-sys" ,#~'("v2_68")) ; likewise
     ("rust-gtk" ,#~'("v3_24_9")) ; likewise (for dox)
     ("rust-gtk-sys" ,#~'("v3_24_11")) ; likewise (for dox)
-    ("rust-integer-encoding" ,#~'()) ; the features are mutually exclusive, so for now enable none.
+    ("rust-integer-encoding" ,#~'("futures_async")) ; the features are mutually exclusive, so enable only the futures_async feature required by rust-parquet-format-async-temp.
     ;; Avoid "use-intrisics", which requires unstable.
     ("rust-half" ,#~'("alloc" "serialize" "std"))
     ;; TODO: move into Guix proper?
