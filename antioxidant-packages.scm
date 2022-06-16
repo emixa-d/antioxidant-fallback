@@ -2799,6 +2799,19 @@ futures-aware, FIFO queue")
 
 ;; TODO: lots of rust-git-... crates, maybe (gnu packages gitoxide)?
 
+(define rust-hdrhistogram ; old hdrhistogram doesn't build against new rust-nom
+  (package
+    (inherit (p rust-hdrhistogram-6))
+    (name "rust-hdrhistogram")
+    (version "7.5.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "hdrhistogram" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1h0905yk0pxgxfk4kzlfmnglm6ky1ssbrpf4ars4yb5y25q2nrri"))))))
+
 (define rust-headers ; @0.3.3 doesn't build against new rust-time
   (package
     (inherit (p rust-headers-0.3))
@@ -3500,6 +3513,7 @@ futures-aware, FIFO queue")
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
+    ("rust-hdrhistogram" ,rust-hdrhistogram)
     ("rust-h2" ,rust-h2)
     ("rust-rand-core" ,(p rust-rand-core-0.6)) ; avoid multiple versions
     ("rust-blake2" ,rust-blake2)
