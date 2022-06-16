@@ -3546,6 +3546,7 @@ futures-aware, FIFO queue")
     ("rust-partial-io" ,rust-partial-io)
     ("rust-postgres-protocol" ,rust-postgres-protocol)
     ("rust-postgres-types" ,rust-postgres-types)
+    ("rust-regex" ,(p rust-regex-1)) ; old version doesn't build against new rust-aho-corasick
     ("rust-regex-syntax" ,(p rust-regex-syntax-0.6)) ; multiple version
     ;; swayhide requires non-async to build
     ("rust-swayipc" ,(package-with-rust-features (p rust-swayipc-2)
