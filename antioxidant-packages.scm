@@ -310,6 +310,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"((rhs - OldDuration::seconds(rhssecs)).whole_nanoseconds() as i64)")
 	       (("duration\\.num_nanoseconds\\(\\)")
 		"Some(duration.whole_nanoseconds() as i64)"))))))
+    ("rust-arrow2"
+     ;; TODO: upstream/update
+     ,#~((add-after 'unpack 'use-nondeprecated-names
+	   (lambda _
+	     (substitute* "src/temporal_conversions.rs"
+	       (("\\bnum_days\\(\\)") "whole_days()"))))))
     ("rust-timer"
      ;; There's another patch available upstream:
      ;; <https://github.com/Yoric/timer.rs/pull/21>
