@@ -2843,6 +2843,20 @@ futures-aware, FIFO queue")
         (sha256
           (base32 "0pd5i8aywnmx9q7wfzn9bs0jq2fm5rmk0kdhcnmy1qcbg3jpizsc"))))))
 
+(define rust-s3handler ; @.7 doesn't build against new rust-hmac
+  (package
+    (inherit (p rust-s3handler-0.7))
+    (name "rust-s3handler")
+    (version "0.8.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "s3handler" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0142vqnkknc9ibv8wn3nc0pqhxqgngrrily7v46zzjwyc01pmg4z"))))))
+
+
 (define rust-postgres-protocol ; old version doesn't build against new rust-hmac
   (package
     (inherit (p rust-postgres-protocol-0.6))
@@ -3631,6 +3645,7 @@ futures-aware, FIFO queue")
     ("rust-zstd" ,(p rust-zstd-0.9)) ; @0.6 doesn't build a dependency failing to build
     ("rust-rand-distr" ,(p rust-rand-distr-0.4)) ; avoid complications due to multiple versions
     ("rust-reqwest" ,rust-reqwest) ; @0.10 has
+    ("rust-s3handler" ,rust-s3handler)
     ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
     ("rust-cookie-store-15" ,rust-cookie-store)
     ("rust-structopt" ,(p rust-structopt-0.3))
@@ -4098,6 +4113,8 @@ futures-aware, FIFO queue")
      (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
     ("rust-headers"
      (("rust-httpdate" ,(p rust-httpdate-1)))) ; new dependency
+    ("rust-s3handler" ; new dependency for new version
+     (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tectonic-bridge-core"
      ;; TODO: native-input
      ;; Required in rust-tectonic-bridge-core@0.3 for extra 'regenerate-cbindgen-things'
