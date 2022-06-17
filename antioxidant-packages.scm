@@ -4060,6 +4060,7 @@ futures-aware, FIFO queue")
 		  ("rust-base64ct" ,(p rust-base64ct-1)) ; missing dep
 		  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
     ("rust-image" (("rust-exr" ,rust-exr)))
+    ("rust-libsqlite3-sys" (("sqlite" ,(@ (gnu packages sqlite) sqlite)))) ; missing dependencies (the old versions of rust-libsqlite3-sys acurately add this dependency!),see #56032
     ;; contains pkg-config files
     ("rust-mysqlclient-sys" (("mariadb:dev" ,(@ (gnu packages databases) mariadb) "dev")))
     ;; possibly only required by new version
