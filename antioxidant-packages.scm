@@ -3431,6 +3431,7 @@ futures-aware, FIFO queue")
     ("rust-proc-macro2"
      ;; span-locations is required by rust-cxx-gen@0.7.49
      ,#~'("default" "span-locations"))
+    ("rust-quick-xml" ,#~'("default" "encoding")) ; calamine requires the "encoding" feature
     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
     ;; small_rngs is required by rust-phf-generator.
     ("rust-rand"
