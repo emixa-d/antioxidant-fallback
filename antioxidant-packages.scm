@@ -3324,9 +3324,10 @@ futures-aware, FIFO queue")
 
 ;; Try keeping things sorted, to avoid rebase/merge conflicts.
 (define %features
-  ;; rust-swayipcs requires 'spawn_blocking' which is only
-  ;; public if "unstable" is enabled.
-  `(("rust-async-std" ,#~'("default" "unstable"))
+  `(("rust-arrow2" ,#~'("default" "compute")) ; compute is required by rust-polars-core
+    ;; rust-swayipcs requires 'spawn_blocking' which is only
+    ;; public if "unstable" is enabled.
+    ("rust-async-std" ,#~'("default" "unstable"))
     ("rust-actix-tls" ,#~'("default" "uri")) ; rust-awc@3.0.0 requires non-default "uri" feature
     ("rust-actix-http" ,#~'("default" "ws" "http2" "compress-gzip" "compress-zstd")) ; ws, http2, compress-gzip, compress-zstd: required by rust-awc
     ("rust-awc" ,#~'("compress-gzip" "compress-zstd" "cookies")) ; default "compress-brotli" feature requires the "compress-brotli" feature in rust-actix-http but that doesn't build
