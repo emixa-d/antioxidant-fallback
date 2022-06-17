@@ -3095,6 +3095,7 @@ futures-aware, FIFO queue")
     "rust-rocket" ; its dependency rust-hyper-sync-rustls fails to build
     "rust-nickel" ; fails to build
     "rust-kqueue-sys" "rust-kqueue" "rust-errno-dragonfly" ;; TODO: BSD not supported
+    "rust-pdcurses-sys" ; bundles pdcurses, maybe actually unused?, see #56031
     ;; TODO: how do the three following crates even work?
     "rust-rustc-std-workspace-std"
     "rust-rustc-std-workspace-core"
