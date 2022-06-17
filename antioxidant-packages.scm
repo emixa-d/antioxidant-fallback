@@ -310,6 +310,17 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"((rhs - OldDuration::seconds(rhssecs)).whole_nanoseconds() as i64)")
 	       (("duration\\.num_nanoseconds\\(\\)")
 		"Some(duration.whole_nanoseconds() as i64)"))))))
+    ("rust-timer"
+     ;; There's another patch available upstream:
+     ;; <https://github.com/Yoric/timer.rs/pull/21>
+     ;; but doesn't apply cleanly.  Do something simpler
+     ;; for now.
+     ,#~((add-after 'unpack 'use-nondeprecated-names
+	   (lambda _
+	     (substitute* "src/lib.rs"
+	       (("\\bnum_seconds\\(\\)") "whole_seconds()")
+	       (("\\bnum_nanoseconds\\(\\)\\.unwrap\\(\\)") ; this replacement technically has different semantics, but in this context, the result is the same.
+		"subsec_nanoseconds()"))))))
     ("rust-chrono-humanize"
      ;; TODO: upstream/update
      ,#~((add-after 'unpack 'use-new-names
