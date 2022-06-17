@@ -3530,6 +3530,9 @@ futures-aware, FIFO queue")
 	  "fold" ; used by rust-diesel-derives
 	  ;; Used by rust-strum-macros
 	  "extra-traits"))
+    ("rust-tower" ,#~'("default"
+		       ;; features used by rust-tonic
+		       "balance" "buffer" "discover" "limit" "load" "make" "timeout" "util"))
     ("rust-tinyvec" ,#~'("alloc"))
     ("rust-tiny-keccak"
      ;; By default nothing is build, which seems rather useless.
