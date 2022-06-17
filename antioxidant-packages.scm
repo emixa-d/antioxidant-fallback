@@ -3572,6 +3572,7 @@ futures-aware, FIFO queue")
     ("rust-actix-service" ,rust-actix-service)
     ("rust-awc" ,rust-awc)
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
+    ("rust-libsqlite3-sys" ,(p rust-libsqlite3-sys-0.23)) ; custom phase assumes != @0.20
     ("rust-libgit2-sys" ,(p rust-libgit2-sys-0.12)) ; old version doesn't build.
     ("rust-markup5ever" ,(p rust-markup5ever-0.9)) ; @0.9 doesn't build against new rust-phf-... without patches, but we still need it because monolith doesn't support the new rust-markup5ever@0.10 yet
     ("rust-meval" ,(package-with-extra-patches
