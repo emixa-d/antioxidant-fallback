@@ -117,6 +117,11 @@
 	       ;; the mariadb.pc uses -lz without adding an appropriate -L
 	       ;; (TODO).  Using the libmariadb.pc instead seems to work.
 	       (("\"mysqlclient\"") "\"libmariadb\""))))))
+    ("rust-libsqlite3-sys"
+     ,#~((add-after 'unpack 'unbundle
+	   (lambda _
+	     (delete-file-recursively "sqlcipher")
+	     (delete-file-recursively "sqlite3")))))
     ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
     ;; Make sure the headers will be installed in a proper location.
     ;; TODO: make sure dependencies actually find the result (newsboat-ffi).
