@@ -3593,6 +3593,7 @@ futures-aware, FIFO queue")
      #:for-dependent
      ,(lambda (dependent)
 	(string=? (package-name dependent) "rust-watchexec")))
+    ("rust-num-rational" ,(p rust-num-rational-0.4)) ; @0.1 doesn't build when "serde" is enabled
     ("rust-ivf" ,rust-ivf)
     ("rust-idna" ,(p rust-idna-0.2)) ; avoid multiple versions
     ("rust-siphasher" ,(p rust-siphasher-0.3)) ; avoid multiple versions
