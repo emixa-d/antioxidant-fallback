@@ -3445,6 +3445,7 @@ futures-aware, FIFO queue")
     ("rust-reqwest" ,#~'("default" "blocking" "cookies" "json")) ; tealdeer@1.4.1 requires "blocking" to build, drill requires cookies, rbw requires json
     ;; The 'inline-asm' feature requires non-stable
     ("rust-riscv" ,#~'())
+    ("rust-rusqlite" ,#~'()) ; some features are only for bundling or require extra configure flags(?) for sqlite.  For now, don't enable anything. 
     ;; Some features required rust-rand when using the getrandom feature,
     ;; serde for rust-rand-isaac@0.3.0 ... (now building with all features)
     ;; ("rust-rand-core" #~'("std" "getrandom"))
