@@ -3072,6 +3072,7 @@ futures-aware, FIFO queue")
     "rust-defmt" ; accidentally requires unstable-test?
     "rust-heapsize-plugin" ; makes use of removed features
     "rust-rustc-test" ; doesn't build against recent rust-time
+    "rust-serde-hjson" ; doesn't build against new rust-serde
     "rust-mio-uds" ; doesn't build against new rust-mio, now included in new rust-mio
     "rust-speculate" ; @0.1.2 doesn't build against recent rust-syn
     "rust-skeptic" ; @0.13.4 doesn't build
