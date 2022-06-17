@@ -3134,6 +3134,8 @@ futures-aware, FIFO queue")
     "rust-bencher" ; FTB
     "rust-criterion" "rust-criterion-cycles-per-byte" ;; fails to build because rust-async-log-attributes fails to build
     "rust-femme" ; some dependencies fail to build
+    ("rust-ptree" -> "rust-config") ; only required by disabled "config" feature
+    ("rust-ptree" -> "rust-directories") ; likewise
     "rust-proptest" "rust-proptest-derive"
     "rust-futures-util-preview" ; futures-util has been updated?
     "rust-iron" ; its dependency rust-hyper-native-tls fails to build
@@ -3477,6 +3479,8 @@ futures-aware, FIFO queue")
     ("rust-proc-macro2"
      ;; span-locations is required by rust-cxx-gen@0.7.49
      ,#~'("default" "span-locations"))
+    ("rust-ptree"
+     ,#~'("petgraph" "ansi" "value")) ; default "config" feature doesn't build
     ("rust-quick-xml" ,#~'("default" "encoding")) ; calamine requires the "encoding" feature
     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
     ;; small_rngs is required by rust-phf-generator.
