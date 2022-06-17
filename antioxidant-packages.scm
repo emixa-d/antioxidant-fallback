@@ -3105,7 +3105,7 @@ futures-aware, FIFO queue")
     #;"rust-structopt" #;"rust-structopt-derive"
     "rust-compiler-builtins"
     "rust-compiletest-rs" ;; TODO: rustc-dev?
-    "rust-winapi" "rust-kernel32-sys" "rust-winreg" "rust-wepoll-sys" "rust-wepoll-sys-stjepang" "rust-ipconfig" ; skip Windows support for now
+    "rust-winapi" "rust-kernel32-sys" "rust-winreg" "rust-wepoll-sys" "rust-wepoll-sys-stjepang" "rust-ipconfig" "rust-windows" "rust-windows-x86-64-msvc" "rust-windows-x86-64-gnu" "rust-windows-i686-msvc" "rust-windows-i686-gnu" "rust-windows-aarch64-msvc" "rust-windows-sys" "rust-windows-gen" "rust-windows-macros" ; skip Windows support for now
     "rust-nodrop-union" ; required unstable, and deprecated
     "rust-sleef-sys" ; requires unstable
     "rust-packed-simd" "rust-packed-simd-2" ; requires unstable (TODO: rust-packed-simd-2?)
