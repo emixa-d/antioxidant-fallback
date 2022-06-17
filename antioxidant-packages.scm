@@ -3407,6 +3407,7 @@ futures-aware, FIFO queue")
     ("rust-numtoa" ,#~'("std"))
     ;; rust-rsa requires "prime" and "zeroize"
     ("rust-num-bigint-dig" ,#~'("default" "prime" "zeroize"))
+    ("rust-num-rational" ,#~'("default" "serde")) ; 'serde' is required by rust-mp4@0.9.2
     ;; rust-x509-parser required 'crypto' and 'x509'
     ("rust-oid-registry" ,#~'("default" "crypto" "x509"))
     ("rust-once-cell" ,#~'("default" "race")) ; "race" is required by rust-git-tempfile@2.0.1
