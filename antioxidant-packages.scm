@@ -4056,6 +4056,7 @@ futures-aware, FIFO queue")
     ("sniffglue" (("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
     ("rust-lalrpop" (("rust-tiny-keccak" ,(p rust-tiny-keccak-2))
                      ("rust-pico-args" ,rust-pico-args)))
+    ("rust-ncurses" (("ncurses" ,(@ (gnu packages ncurses) ncurses)))) ; missing input
     ;; TODO: is this sufficient?
     ("rust-futures-core-preview"
      (("rust-futures-core" ,rust-futures-core-0.3)))
