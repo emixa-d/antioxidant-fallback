@@ -3565,6 +3565,19 @@ futures-aware, FIFO queue")
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
     ("rust-libgit2-sys" ,(p rust-libgit2-sys-0.12)) ; old version doesn't build.
     ("rust-markup5ever" ,(p rust-markup5ever-0.9)) ; @0.9 doesn't build against new rust-phf-... without patches, but we still need it because monolith doesn't support the new rust-markup5ever@0.10 yet
+    ("rust-meval" ,(package-with-extra-patches
+		    (package
+		     (inherit (p rust-meval-0.2))
+		     ;; Update to latest git such that the patch applies.
+		     (source
+		      (origin
+		       (method git-fetch)
+		       (uri
+			(git-reference
+			 (url "https://github.com/rekka/meval-rs")
+			 (commit "ac9586fb19e1d6fb505425dbbc9598f372122130")))
+		       (sha256 "18554xrhdl0lyga408l01yjhilh69qxkjyyss6mlpxypdwy6cf7w"))))
+		    (list (local-file "rust-meval-update-dependencies.patch"))))
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
