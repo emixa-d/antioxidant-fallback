@@ -3089,6 +3089,7 @@ futures-aware, FIFO queue")
     "rust-mio-uds" ; doesn't build against new rust-mio, now included in new rust-mio
     "rust-speculate" ; @0.1.2 doesn't build against recent rust-syn
     "rust-skeptic" ; @0.13.4 doesn't build
+    "rust-termbox-sys" ; downloads the library it wraps at compile time, cannot have work in Guix in the first place. 
     "rust-boxxy" ; doesn't build and not supposed to be used ‘in production’
     "rust-macrotest"
     ("rust-mio-extras" ; doesn't build against new rust-mio, so avoid it where possible.  Don't remove it unconditionally, because it's required by rust-notify@4 and rust-notify@4 is required by rust-watchexec
