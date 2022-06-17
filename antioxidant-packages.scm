@@ -3263,9 +3263,10 @@ futures-aware, FIFO queue")
       (a (pk 'a a) (error "bogus entry in %removed-dependencies"))))
   (any remove-dependency*? %removed-dependencies))
 
-(define %crate-types
+(define %crate-types ; resolve multiple crate types inside the Cargo.toml.
   `(("rust-hyper" ,#~"rlib")
-    ("rust-jsonpath-lib" ,#~"rlib")))
+    ("rust-jsonpath-lib" ,#~"rlib")
+    ("rust-neso" ,#~"rlib")))
 
 ;; Try keeping things sorted, to avoid rebase/merge conflicts.
 (define %features
