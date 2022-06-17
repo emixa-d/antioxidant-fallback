@@ -3580,6 +3580,7 @@ futures-aware, FIFO queue")
 		       (sha256 "18554xrhdl0lyga408l01yjhilh69qxkjyyss6mlpxypdwy6cf7w"))))
 		    (list (local-file "rust-meval-update-dependencies.patch"))))
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
+    ("rust-num-bigint" ,(p rust-num-bigint-0.4)) ; avoid multiple versions
     ("rust-arrayvec" ,(p rust-arrayvec-0.7)) ; avoid multiple versions
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
     ("rust-bytestring" ,rust-bytestring)
