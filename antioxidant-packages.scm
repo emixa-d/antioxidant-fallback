@@ -2993,6 +2993,19 @@ futures-aware, FIFO queue")
     (description "Extension to Command to spawn in a process group")
     (license (list license:asl2.0 license:expat))))
 
+(define rust-config ; @0.11 doesn't build against new rust-nom
+  (package
+    (inherit (p rust-config-0.11))
+    (name "rust-config")
+    (version "0.13.1")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "config" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "06xk2846zsa239h2jr34jbnz9d8hyz4d6m9v9q1bbpvf9fviga9y"))))))
+
 (define rust-crossterm
   (package
     (inherit (p rust-crossterm-0.20)) ; @0.19 and @0.20 and don't build against new dependencies
@@ -3312,6 +3325,7 @@ futures-aware, FIFO queue")
     ;; the standard reasons against static linking in Guix.
     ("rust-clang-sys" ,#~'("clang_10_0")) ; Guix by default does dynamic linking, not static linking, which would use the "static" feature IIUC
     ("rust-command-group" ,#~'("default" "with-tokio")) ;; with-tokio required by rust-watchexec
+    ("rust-config" ,#~'("toml" "json" "yaml" "ini" "ron")) ; default json5 feature required pcackage not in Guix.
     ;; This addresses the build failure
     ;; ‘could not find `collector` in the crate root’
     ;; and ‘cannot find function `pin` in crate `epoch`’
@@ -3553,6 +3567,7 @@ futures-aware, FIFO queue")
 		       ;; actually implement that generate-cbindgen-metadata phase.
 		      (list (local-file "rust-cbindgen-0.19-antioxidant-compatibility.patch"))))
     ("rust-comfy-table" ,(p rust-comfy-table-4)) ; @1 doesn't build against new dependencies
+    ("rust-config" ,rust-config)
     ("rust-crossterm" ,rust-crossterm) ; @0.19 doesn't build against new rust-signal-hook
     ("rust-ctrlc" ,rust-ctrlc)
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
@@ -4035,6 +4050,10 @@ futures-aware, FIFO queue")
     ("rust-clang-sys"
      ;; TODO needs more work for
      ,(list (list "clang" (@ (gnu packages llvm) clang-13))))
+    ("rust-config" ; new inputs for new verison
+     (("rust-async-trait" ,(p rust-async-trait-0.1))
+      ("rust-ron" ,(p rust-ron-0.6))
+      ("rust-pathdiff" ,(p rust-pathdiff-0.2))))
     ("rust-dashmap" ; new inputs forn new version
      (("rust-hashbrown" ,(p rust-hashbrown-0.11))
       ("rust-parking-lot-core" ,(p rust-parking-lot-core-0.8))
