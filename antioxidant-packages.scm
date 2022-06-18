@@ -3518,7 +3518,8 @@ futures-aware, FIFO queue")
     ;; / deserialisation traits.
     ("rust-semver" ,#~'("default" "serde"))
     ;; 'derive' is needed by rust-ron
-    ("rust-serde" ,#~'("std" "alloc" "derive"))
+    ("rust-serde" ,#~'("std" "alloc" "derive"
+		       "rc")) ; rc: required by rust-nu-protocol
     ("rust-servo-fontconfig-sys" ,#~'("force_system_lib")) ; be extra sure the bundled copy isn't used
     ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
     ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
