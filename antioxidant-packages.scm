@@ -3478,6 +3478,7 @@ futures-aware, FIFO queue")
     ("rust-parking-lot-core" ,#~'())
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
+    ("rust-polars-core" ,#~'("default" "dtype-time")) ; "dtype-time" required by rust-polars-io's csv support
     ("rust-phf-shared" ,#~'("default" "uncased")) ; uncased required by rust-phf's uncased feature
     ("rust-phf" ,#~'("default" "macros" "uncased")) ; "macros" is required by rust-cssparser@0.28, "uncased" is required by a dependency of "tokei"
     ;; Required by 'sniffglue'
