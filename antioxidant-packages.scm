@@ -3483,7 +3483,7 @@ futures-aware, FIFO queue")
     ("rust-polars-core" ,#~'("default" "dtype-time" "dtype-date" "dtype-datetime" ; "dtype-time", "dtype-datetime" and "dtype-date" are required by rust-polars-io's csv support
 			     "performant" ; requested by rust-nu-protocol via rust-polars, and the downside (panic in case of incorrect usage) seems mild
 			     "object" "checked_arithmetic" ; indirectly required by rust-nu-protocol
-			     "serde" ; required by rust-nu-protocol
+			     "serde" "strings" ; required by rust-nu-protocol
 			     "lazy" "private" "zip_with")) ; required by rust-polars-lazy
     ("rust-phf-shared" ,#~'("default" "uncased")) ; uncased required by rust-phf's uncased feature
     ("rust-phf" ,#~'("default" "macros" "uncased")) ; "macros" is required by rust-cssparser@0.28, "uncased" is required by a dependency of "tokei"
