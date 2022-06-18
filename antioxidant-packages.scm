@@ -3324,7 +3324,7 @@ futures-aware, FIFO queue")
 
 ;; Try keeping things sorted, to avoid rebase/merge conflicts.
 (define %features
-  `(("rust-arrow2" ,#~'("default" "compute")) ; compute is required by rust-polars-core
+  `(("rust-arrow2" ,#~'("default" "compute" "io_csv" "io_ipc" "io_parquet" "io_json")) ; compute is required by rust-polars-core; "io_csv", "io_ipc", "io_parquet", "io_json" and by rust-polars-io
     ("rust-arrow-format" ,#~'("default" "ipc")) ; "ipc" required by "ipc" feature of "rust-arrow2"
     ;; rust-swayipcs requires 'spawn_blocking' which is only
     ;; public if "unstable" is enabled.
