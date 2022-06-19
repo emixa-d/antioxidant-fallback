@@ -3494,6 +3494,7 @@ futures-aware, FIFO queue")
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ("rust-polars-core" ,#~'("default" "dtype-time" "dtype-date" "dtype-datetime" ; "dtype-time", "dtype-datetime" and "dtype-date" are required by rust-polars-io's csv support
 			     "performant" ; requested by rust-nu-protocol via rust-polars, and the downside (panic in case of incorrect usage) seems mild
+			     "pivot" "downsample" "is_in" "rolling_window" #;"random" ; required by rust-nu-command (TODO: "random" doesn't build)
 			     "object" "checked_arithmetic" ; indirectly required by rust-nu-protocol
 			     "serde" "strings" ; required by rust-nu-protocol
 			     "lazy" "private" "zip_with")) ; required by rust-polars-lazy
