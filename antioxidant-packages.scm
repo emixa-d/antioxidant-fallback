@@ -3594,6 +3594,7 @@ futures-aware, FIFO queue")
     ("rust-trust-dns-proto"
      ,#~'("default" "dns-over-openssl" "dns-over-native-tls" "dns-over-rustls"
 	  "dns-over-https"))
+    ("rust-tui" ,#~'("default" "crossterm")) ; required by rust-nu-plugin-chart
     ;; For now avoid optional dependencies
     ("rust-typenum" ,#~'())
     ("rust-uuid" ,#~'("default" "serde" "v4")) ; v4,serde required by alfis
