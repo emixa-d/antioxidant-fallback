@@ -3668,6 +3668,7 @@ futures-aware, FIFO queue")
 		    (list (local-file "rust-meval-update-dependencies.patch"))))
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
     ("rust-num-bigint" ,(p rust-num-bigint-0.4)) ; avoid multiple versions
+    ("rust-num" ,(p rust-num-0.4)) ; avoid multiple versions (TODO: let the CI test if it doesn't cause build failures)
     ("rust-num-complex" ,(p rust-num-complex-0.4)) ; avoid multiple versions (TODO: let the CI test if it doesn't cause build failures)
     ("rust-arrayvec" ,(p rust-arrayvec-0.7) ; avoid multiple versions
      #:for-dependent
