@@ -517,6 +517,18 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "src/lib.rs"
 			  (("#!\\[allow\\(clippy::type_complexity\\)]" line)
 			   (string-append "#![feature(available_parallelism)]\n" line)))))))
+    ("rust-nu-protocol"
+     ,#~((add-after 'unpack 'new-chrono-compatibility
+	   (lambda _
+	     ;; TODO: upstream
+	     (substitute* "src/value/primitive.rs"
+	       (("&chrono::Duration::nanoseconds")
+		"chrono::Duration::nanoseconds")
+	       (("&chrono::Duration::seconds")
+		"chrono::Duration::seconds")
+	       (("\\bnum_seconds\\(\\)") "whole_seconds()")
+	       (("\\bnum_nanoseconds\\(\\)") "whole_nanoseconds()") ; technically has a different semantics but in this context the result is the same
+	       (("\\.expect\\(\"Unexpected overflow\"\\) as u32") "as u32"))))))
     ("rust-cc"
      ,#~((add-after 'unpack 'fix-cc
 	   (lambda _
