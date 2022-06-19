@@ -3769,6 +3769,7 @@ futures-aware, FIFO queue")
     ("rust-rustc-version" ,(p rust-rustc-version-0.4)) ; @0.2.3 doesn't build against rust-semver@1
     ("rust-dotenv" ,(p rust-dotenv-0.15)) ; @0.10 doesn't build
     ("rust-quickcheck-macros" ,(p rust-quickcheck-macros-1)) ; 0.9 doesn't build against rust-syn@1
+    ("rust-quick-xml" ,(p rust-quick-xml-0.22)) ; resolve version conflict
     ("rust-glib-sys" ,(@ (gnu packages crates-gtk) rust-glib-sys-0.14)) ; @0.10 doesn't build
     ("rust-glib" ,(@ (gnu packages crates-gtk) rust-glib-0.14)) ; @0.9 doesn't build
     ("rust-gobject-sys" ,(@ (gnu packages crates-gtk) rust-gobject-sys-0.14)) ; @0.10 doesn't build
