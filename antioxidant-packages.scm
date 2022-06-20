@@ -395,7 +395,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ,#~((add-after 'unpack 'delete-bin
 	   (lambda _
 	     (delete-file "src/bin/afl_runner.rs")))))
-    ("rust-parasail-sys" ; TODO: license of bundled library seems to forbid writing a Wikipedia article of whatever that calls the Battelle Memorial Institute by name without consent by Battelle.  Also, the license fishes for citations.
+    ("rust-parasail-sys" ; TODO: license of bundled library seems to forbid writing a Wikipedia article of whatever that calls the Battelle Memorial Institute by name without consent by Battelle.  Also, the license fishes for citations.  Also, it isn't cross-compiled as required.
      ,#~((add-after 'unpack 'fixup-installation-location
 	   (lambda _
 	     (substitute* "build.rs"
