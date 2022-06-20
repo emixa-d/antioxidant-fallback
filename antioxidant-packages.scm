@@ -3526,6 +3526,7 @@ futures-aware, FIFO queue")
      ;; Likewise for "nickel".
      ;; The "hyper" feature is incompatible with rust-hyper>0.11
      ,#~'("client" "mock" "server" "tiny_http"))
+    ("rust-nalgebra" ,#~'("default" "rand")) ; rust-statrs@0.13 required "rand"
     ;; The non-default feature "alloc" is required by rust-pure-rust-locales.
     ("rust-nom"
      ,#~'("std" "lexical" "alloc"))
