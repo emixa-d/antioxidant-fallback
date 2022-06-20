@@ -744,7 +744,11 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 	   (string-drop directory (string-length "all=")))
 	  (#t directory)))
   (define (do crate-info)
-    (format #t "setting extra environment variables in ~a~%" crate-info)
+    (unless (null? (crate-information-environment crate-info))
+      ;; Don't spam the build log with do-nothing messages
+      ;; if there are no actual environment variables to set.
+      (format #t "setting extra environment variables in ~a~%"
+	      (crate-information->file-name crate-info)))
     (for-each
      (match-lambda
        ((x . y) (setenv*
