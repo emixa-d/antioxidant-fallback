@@ -107,10 +107,6 @@
 			 "README" "NEWS" "INSTALL" "ChangeLog" "AUTHORS" ; these are for freetype, not rust-servo-freetype-sys
 			 "COPYING" ; this is for freetype, not rust-servo-freetype-sys which is MPL
 			 ))))))
-    ("rust-libgit2-sys" ; @0.12.25 bundles libgit2
-     ,#~((add-after 'unpack 'unbundle-libgit2
-	   (lambda _
-	     (delete-file-recursively "libgit2"))))) ; TODO: move to snippet (see 56020)
     ("rust-mysqlclient-sys" ; the pkg-config file is named mariadb.pc, not mysqclient.pc
      ,#~((add-after 'unpack 'fix-pkg-config-use
 	   (lambda _
