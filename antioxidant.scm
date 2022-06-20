@@ -770,7 +770,7 @@ chosen, enabling all features like Cargo does (except nightly).~%")
 			       "/lib/guixcrate/" link-name ".crate-info"))
   (define available-crates (find-directly-available-crates inputs))
   (define crate-mappings (manifest-all-dependencies *manifest* '(dependency)))
-  (format #t "Saving crate informtion in ~a~%" where)
+  (format #t "Saving crate information in ~a~%" where)
   (mkdir-p (dirname where))
   ;; /tmp/guix-build-... directories won't exist after the build is finished,
   ;; so including them is pointless.
