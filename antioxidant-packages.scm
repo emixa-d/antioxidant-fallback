@@ -2893,6 +2893,19 @@ futures-aware, FIFO queue")
         (sha256
           (base32 "0pd5i8aywnmx9q7wfzn9bs0jq2fm5rmk0kdhcnmy1qcbg3jpizsc"))))))
 
+(define rust-iso8601 ; required for compatibility with new rust-nom
+  (package
+    (inherit (p rust-iso8601-0.1))
+    (name "rust-iso8601")
+    (version "0.4.2")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "iso8601" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "15nfg6d4qlniw4gk7039s5y07lzgr1dp9snsw63lsxarnyz4zfg5"))))))
+
 (define rust-s3handler ; @.7 doesn't build against new rust-hmac
   (package
     (inherit (p rust-s3handler-0.7))
@@ -3829,6 +3842,7 @@ futures-aware, FIFO queue")
     ("rust-system-deps" ,rust-system-deps)
     ("rust-version-compare" ,rust-version-compare)
     ("rust-input-buffer" ,rust-input-buffer)
+    ("rust-iso8601" ,rust-iso8601)
     ("rust-enum-to-u8-slice-derive" ,rust-enum-to-u8-slice-derive)
     ("rust-cookie" ,rust-cookie)
     ("rust-aead" ,(p rust-aead-0.4)) ; resolve ‘found two different crates with name `aead`’ errors
