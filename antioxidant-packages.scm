@@ -3584,6 +3584,7 @@ futures-aware, FIFO queue")
     ("rust-signal-hook-mio" ,#~'("support-v0_8")) ; othef features require an old rust-mio
     ("rust-similar" ,#~'("default" "text" "inline"))
     ("rust-derive-builder" ,#~'()) ; for now don't build the non-building test features
+    ("rust-safe-arch" ,#~'("bytemuck")) ; there are no default features.  Enable "bytemuck", requires by rust-wide@0.6.5
     ("rust-selectors" ,#~'()) ; "bench" feature requires non-stable
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
