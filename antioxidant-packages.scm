@@ -4325,7 +4325,10 @@ futures-aware, FIFO queue")
 			   (cond (rust-metadata rust-metadata)
 				 ((member (package-name pack) %automatic-metadata)
 				  ;; TODO: maybe make this the default (in antioxidant.scm?)
-				  (string-append "version=" (version-major (package-version pack)))) ; TODO: maybe handle 0.X / 0.Y / ...
+				  (string-append "version="
+						 (if (string-prefix? "0." (package-version pack))
+						     (version-major+minor (package-version pack))
+						     (version-major (package-version pack)))))
 				 (#true ""))
 			   #:rust-crate-type
 			   (match (assoc (package-name pack) %crate-types)
