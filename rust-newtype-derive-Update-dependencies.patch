@@ -1,0 +1,44 @@
+From a3013a748fdcceb09f7db287e7bddfc162b903fe Mon Sep 17 00:00:00 2001
+From: Igor Gnatenko <i.gnatenko.brain@gmail.com>
+Date: Tue, 5 Dec 2017 14:10:43 +0100
+Subject: [PATCH] bump rustc_version to 0.2
+
+Signed-off-by: Igor Gnatenko <i.gnatenko.brain@gmail.com>
+Upstream: <https://github.com/DanielKeep/rust-custom-derive/pull/37>
+---
+ newtype_derive/Cargo.toml | 2 +-
+ newtype_derive/build.rs   | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/newtype_derive/Cargo.toml b/newtype_derive/Cargo.toml
+index 3c46f4e..b2aa83e 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -17,7 +17,7 @@ std = []
+ std-unstable = []
+ 
+ [build-dependencies]
+-rustc_version = "0.1.7"
++rustc_version = "0.2"
+ 
+ [dev-dependencies]
+ macro-attr = { version = "0.2.1", path = ".." }
+diff --git a/build.rs b/build.rs
+index c617b37..e4a10e0 100644
+--- a/build.rs
++++ b/build.rs
+@@ -8,12 +8,12 @@ files in the project carrying such notice may not be copied, modified,
+ or distributed except according to those terms.
+ */
+ extern crate rustc_version;
+-use rustc_version::{version_matches};
++use rustc_version::{version, Version};
+ 
+ fn main() {
+     println!("cargo:rerun-if-changed=build.rs");
+ 
+-    if version_matches("1.8.0") {
++    if version().unwrap() >= Version::parse("1.8.0").unwrap() {
+         println!("cargo:rustc-cfg=op_assign");
+     }
+ }

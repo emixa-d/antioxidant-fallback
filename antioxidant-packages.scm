@@ -3723,6 +3723,9 @@ futures-aware, FIFO queue")
 		       (sha256 "18554xrhdl0lyga408l01yjhilh69qxkjyyss6mlpxypdwy6cf7w"))))
 		    (list (local-file "rust-meval-update-dependencies.patch"))))
     ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
+    ("rust-newtype-derive" ; TODO: can be merged in upstream Guix
+     ,(package-with-extra-patches (p rust-newtype-derive-0.1)
+				  (list (local-file "rust-newtype-derive-Update-dependencies.patch"))))
     ("rust-num-bigint" ,(p rust-num-bigint-0.4)) ; avoid multiple versions
     ("rust-num" ,(p rust-num-0.4)) ; avoid multiple versions (TODO: let the CI test if it doesn't cause build failures)
     ("rust-num-complex" ,(p rust-num-complex-0.4)) ; avoid multiple versions (TODO: let the CI test if it doesn't cause build failures)
