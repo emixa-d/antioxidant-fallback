@@ -3653,6 +3653,7 @@ futures-aware, FIFO queue")
     ("rust-config" ,rust-config)
     ("rust-crossterm" ,rust-crossterm) ; @0.19 doesn't build against new rust-signal-hook
     ("rust-ctrlc" ,rust-ctrlc)
+    ("rust-darling-core" ,(p rust-darling-core-0.13)) ; @0.9 incompatible with new rust-syn
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
