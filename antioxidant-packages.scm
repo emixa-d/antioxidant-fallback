@@ -3948,6 +3948,7 @@ futures-aware, FIFO queue")
      #:for-dependent
      ,(lambda (p)
 	(member (package-name p) '("rust-terminfo")))) ; needs old rust-nom@5 and no update available
+    ("rust-ndarray" ,(p rust-ndarray-0.15)) ; old versions don't build
     ;; rust-pktparse@0.5 doesn't build against nom@7
     ("rust-pktparse" ,rust-pktparse)
     ("rust-rusticata-macros" ; old version doesn't build against nom@7
