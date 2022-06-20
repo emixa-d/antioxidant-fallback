@@ -3767,6 +3767,7 @@ futures-aware, FIFO queue")
     ("rust-ivf" ,rust-ivf)
     ("rust-idna" ,(p rust-idna-0.2)) ; avoid multiple versions
     ("rust-siphasher" ,(p rust-siphasher-0.3)) ; avoid multiple versions
+    ("rust-statrs" ,(p rust-statrs-0.14)) ; @0.13 doesn't build
     ("rust-syslog" ,rust-syslog)
     ("rust-clap-derive" ,rust-clap-derive)
     ("rust-askama-shared" ,rust-askama-shared)
