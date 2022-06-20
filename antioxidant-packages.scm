@@ -520,7 +520,6 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ,#~((add-after 'unpack 'unstable-rust
 	   ;; Required to use std::thread::available_parallelism
 	   (lambda _
-	     (setenv "RUSTC_BOOTSTRAP" "1")
 	     (substitute* "src/lib.rs"
 			  (("#!\\[allow\\(clippy::type_complexity\\)]" line)
 			   (string-append "#![feature(available_parallelism)]\n" line)))))))
