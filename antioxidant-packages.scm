@@ -4149,6 +4149,8 @@ futures-aware, FIFO queue")
       ("rust-itoa" ,(p rust-itoa-1))
       ("rust-http" ,(p rust-http-0.2))
       ("rust-tokio" ,rust-tokio)))
+    ("rust-enquote" ; missing input
+     (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-freetype-sys"
      (("freetype" ,(@ (gnu packages fontutils) freetype))))
     ;; No need to avoid Rust dependencies.
