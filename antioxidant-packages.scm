@@ -4041,6 +4041,9 @@ futures-aware, FIFO queue")
     ("rust-wayland-commons" ,rust-wayland-commons) ; for compatibility with new rust-nix
     ("rust-zip" ,rust-zip)))
 
+(define %automatic-metadata
+  '("rust-percent-encoding")) ; TODO: make automatic metadata the default!
+
 ;; TODO: add these (upstream) or teach "guix style" to add them
 (define %extra-inputs
   `(("rust-structopt" ; for paw feature
@@ -4261,7 +4264,7 @@ futures-aware, FIFO queue")
 		 skip-build? cargo-test-flags tests?
 		 cargo-build-flags ; TODO: investigate later
 		 vendor-dir ; not needed in antioxidant
-		 (rust-metadata "")
+		 (rust-metadata #false) ; #false: automatically determine
 		 modules ; TODO: handle #:modules
 		 install-source? ; not used by antioxidant-build-system
 		 (features #~'("default")))
@@ -4318,7 +4321,12 @@ futures-aware, FIFO queue")
 	       ;; TODO: for compatibility with rust-http
 	       (patches (list (local-file "rust-itoa-Reintroduce-fmt.patch")))))
 	     (_ (package-source pack))))
-	  (arguments (list #:rust-metadata rust-metadata
+	  (arguments (list #:rust-metadata ; the same crate can be linked to multiple times with different versions as long a the metadata is different. (it's not simply set to X.Y.Z, to allow for grafting later)
+			   (cond (rust-metadata rust-metadata)
+				 ((member (package-name pack) %automatic-metadata)
+				  ;; TODO: maybe make this the default (in antioxidant.scm?)
+				  (string-append "version=" (version-major (package-version pack)))) ; TODO: maybe handle 0.X / 0.Y / ...
+				 (#true ""))
 			   #:rust-crate-type
 			   (match (assoc (package-name pack) %crate-types)
 			     ((_ value) value)
