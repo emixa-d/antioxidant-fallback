@@ -27,8 +27,9 @@
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
 (define (target-environment-variables target)
-  ;; TODO gnueabihf?
-  `(("CARGO_CFG_TARGET_ENV" .
+  `(("RUSTC_BOOTSTRAP" . "1") ; make it sometimes possible to use unstable features (TODO: not really a ‘target’ environment variable, needs some renaming).
+    ;; TODO gnueabihf?
+    ("CARGO_CFG_TARGET_ENV" .
      ,(if (or (target-linux? target) (target-hurd? target))
 	  "gnu"
 	  (unrecognised)))
