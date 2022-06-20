@@ -246,6 +246,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"ToUpperCamelCase, ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase")
 	       (("to_camel_case") "to_upper_camel_case")
 	       (("to_mixed_case") "to_lower_camel_case"))))))
+    ;; TODO: upstream
+    ("rust-argh-derive"
+     ,#~((add-after 'unpack 'new-heck-compatibility
+	   (lambda _
+	     (substitute* "src/lib.rs"
+	       (("heck::KebabCase::to_kebab_case") "heck::ToKebabCase::to_kebab_case"))))))
     ;; TODO: Upstream/update
     ("rust-cbindgen"
      ,#~((add-after 'unpack 'use-existing
