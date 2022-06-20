@@ -3656,7 +3656,14 @@ futures-aware, FIFO queue")
     ("rust-crossterm" ,rust-crossterm) ; @0.19 doesn't build against new rust-signal-hook
     ("rust-ctrlc" ,rust-ctrlc)
     ("rust-darling-core" ,(p rust-darling-core-0.13)) ; @0.9 incompatible with new rust-syn
-    ("rust-derive-builder" ,(p rust-derive-builder-0.10)) ; @0.7.2 has failing dependencies
+    ("rust-derive-builder" ,(p rust-derive-builder-0.10) ; @0.7.2 has failing dependencies
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (member (package-name dependent) '("skim"))))) ; needs @0.9
+    ("rust-derive-builder" ,(p rust-derive-builder-0.9)
+     #:for-dependent
+     ,(lambda (dependent)
+	(member (package-name dependent) '("skim")))) ; needs @0.9
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
@@ -4042,7 +4049,8 @@ futures-aware, FIFO queue")
   '("rust-arrayvec"
     "rust-mio"
     "rust-nom"
-    "rust-percent-encoding"))
+    "rust-percent-encoding"
+    "rust-derive-builder"))
 
 ;; TODO: add these (upstream) or teach "guix style" to add them
 (define %extra-inputs
