@@ -4062,6 +4062,7 @@ futures-aware, FIFO queue")
     ("rust-exr" ,rust-exr)
     ("rust-lalrpop" ,rust-lalrpop)
     ("rust-lalrpop-util" ,rust-lalrpop-util)
+    ("rust-nalgebra" ,(p rust-nalgebra-0.26)) ; replace by building version
     ("rust-nettle-sys" ,rust-nettle-sys-2)
     ("rust-nettle" ,rust-nettle-7)
     ;; 0.4.30 fails to build.
