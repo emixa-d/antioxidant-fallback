@@ -3976,6 +3976,7 @@ futures-aware, FIFO queue")
     ("rust-webpki" ,(p rust-webpki-0.22))
     ;; Old versions don't build (because rust-tokio-io disappeared)
     ("rust-hyper-rustls" ,rust-hyper-rustls)
+    ("rust-hyper-tls" ,(p rust-hyper-tls-0.5)) ; @0.4 fails to build, @0.5 succeeds
     ("rust-rustls"
      ;; Remove old (not-building) and potentially unsecure versions
      ;; Also, rust-tokio-rustls requires a newer rust-rustls.
