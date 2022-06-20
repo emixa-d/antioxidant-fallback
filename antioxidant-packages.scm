@@ -395,6 +395,16 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ,#~((add-after 'unpack 'delete-bin
 	   (lambda _
 	     (delete-file "src/bin/afl_runner.rs")))))
+    ("rust-parasail-sys" ; TODO: license of bundled library seems to forbid writing a Wikipedia article of whatever that calls the Battelle Memorial Institute by name without consent by Battelle.  Also, the license fishes for citations.
+     ,#~((add-after 'unpack 'fixup-installation-location
+	   (lambda _
+	     (substitute* "build.rs"
+	       (("env::var\\(\"OUT_DIR\"\\).unwrap\\(\\)") ; TODO: maybe set OUT_DIR to somewhere in the store, then this wouldn't be necessary
+		(object->string (string-append #$output "/lib")))))) ; exact location doesn't matter as long as it's in the store
+	 (add-after 'unpack 'set-shell-for-configure-script ; keep upstream Guix phase
+	   (lambda* _
+	     (setenv "SHELL" (which "sh"))
+             (setenv "CONFIG_SHELL" (which "sh")))))) ; TODO: bundles a C library
     ("rust-tokio-sync"
      ,#~((add-after 'unpack 'unpreview
 	   (lambda _
