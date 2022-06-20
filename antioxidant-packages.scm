@@ -3123,6 +3123,19 @@ futures-aware, FIFO queue")
     (description "Slotmap data structure")
     (license license:zlib)))
 
+(define rust-xml5ever
+  (package
+    (inherit (p rust-xml5ever-0.16)) ; @0.16 doesn't build against new rust-time
+    (name "rust-xml5ever")
+    (version "0.17.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "xml5ever" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0l76v0c228c92sskiflpsy19c0bgc8q7flhlfanm32zrbb8f2d20"))))))
+
 ;; Some of these are only used for tests, cause cycles, ???,
 ;; so remove them.  (TODO: some of them can probably now be removed.)
 ;; TODO: write a "guix style" thing for doing this.
@@ -3225,6 +3238,7 @@ futures-aware, FIFO queue")
     "rust-serde-test"
     "rust-actix-testing" ; doesn't build
     "rust-actix-connect" ; doesn't build and no update available
+    ("rust-xml5ever" -> "rust-time") ; new version doesn't use rust-time anymore
     "rust-wasm-bindgen" "rust-wasi"
     "rust-wasm-bindgen-futures" ; ECMAScript-only and doesn't build
     "rust-wasm-bindgen-test"
@@ -4043,6 +4057,7 @@ futures-aware, FIFO queue")
        (p rust-watchexec-1)
        (list (local-file "rust-watchexec-nix-compatibility.patch")))) ; for compatibiliy with new rust-nix
     ("rust-wayland-commons" ,rust-wayland-commons) ; for compatibility with new rust-nix
+    ("rust-xml5ever" ,rust-xml5ever)
     ("rust-zip" ,rust-zip)))
 
 ;; Needed to support multiple versions of the same crate in the same result.
