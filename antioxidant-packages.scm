@@ -3655,6 +3655,7 @@ futures-aware, FIFO queue")
     ("rust-tui" ,#~'("default" "crossterm")) ; required by rust-nu-plugin-chart
     ;; For now avoid optional dependencies
     ("rust-typenum" ,#~'())
+    ("rust-url" ,#~'("default" "serde")) ; serde is required by rust-lsp-types@0.80
     ("rust-uuid" ,#~'("default" "serde" "v4")) ; v4,serde required by alfis
     ("rust-value-bag" ,#~'("std"))
     ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
