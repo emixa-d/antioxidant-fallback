@@ -2023,6 +2023,19 @@ of operation.")
 		     (delete-file "Cargo.toml")
 		     (rename-file "Cargo.toml.orig" "Cargo.toml")))))))
 
+(define rust-wayland-commons
+  (package ; for compatibility with new rust-nix
+    (inherit (@ (gnu packages crates-graphics) rust-wayland-commons-0.28))
+    (name "rust-wayland-commons")
+    (version "0.29.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "wayland-commons" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0gnk4a771i3g1k4fbzx54xnganpc9j68jrx8xj839hfp83iybxll"))))))
+
 (define rust-as-slice ; 0.1 uses multiple generic-array version which antioxidant doesn't support (TODO?)
   (package
     (name "rust-as-slice")
@@ -4023,6 +4036,7 @@ futures-aware, FIFO queue")
      ,(package-with-extra-patches
        (p rust-watchexec-1)
        (list (local-file "rust-watchexec-nix-compatibility.patch")))) ; for compatibiliy with new rust-nix
+    ("rust-wayland-commons" ,rust-wayland-commons) ; for compatibility with new rust-nix
     ("rust-zip" ,rust-zip)))
 
 ;; TODO: add these (upstream) or teach "guix style" to add them
