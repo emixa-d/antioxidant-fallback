@@ -3671,7 +3671,8 @@ futures-aware, FIFO queue")
     ("rust-zstd-safe" ,#~'("default" "std")))) ; std is reaquired by rust-zstd@0.9.0
 
 (define %replacements
-  `(("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
+  `(("rust-approx" ,(p rust-approx-0.5)) ; resolve version conflict
+    ("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
     ("rust-aho-corasick" ,(p rust-aho-corasick-0.7)) ; avoid version conflict
     ("rust-average" ,(p rust-average-0.13)) ; avoid complication due to multiple versions
     ("rust-calloop" ,rust-calloop)
