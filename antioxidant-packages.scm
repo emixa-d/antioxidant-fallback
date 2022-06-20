@@ -668,10 +668,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 (define crate-uri (@ (guix build-system cargo) crate-uri))
 
 (define* (package-with-rust-features base new-features #:key (name (package-name base))
-				     (rust-metadata #~""))
+				     (rust-metadata #false))
   "Return a variant of BASE with name NAME build with the features FEATURES.
 To distinguish this variant from other variants, RUST-METADATA can be set to
-an unique string, which can be useful for resolving symbol conflicts."
+an unique string, which can be useful for resolving symbol conflicts.  By default,
+the metadata will be set based on the major version (or the minor version, if the major
+version is 0), if it is in %automatic-metadata.."
   (package
    (inherit base)
    (name name)
@@ -3698,8 +3700,7 @@ futures-aware, FIFO queue")
      ,(lambda (dependent)
 	(not (string=? (package-name dependent) "rust-vte"))))
     ("rust-arrayvec" ,(package-with-rust-features (p rust-arrayvec-0.5)
-						  #~'("default")
-						  #:rust-metadata "version=0.5")
+						  #~'("default"))
      #:for-dependent
      ,(lambda (dependent)
 	(string=? (package-name dependent) "rust-vte"))) ; still required old rust-arrayvec
@@ -3770,8 +3771,7 @@ futures-aware, FIFO queue")
 		 (and (string=? (package-name dependent) "rust-notify")
 		      (string-prefix? "4." (package-version dependent)))))))
     ("rust-mio" ,(package-with-rust-features (p rust-mio-0.6)
-					     #~'("default") ; not used, see %features
-					     #:rust-metadata "guix-version=2")
+					     #~'("default")) ; not used, see %features
      #:for-dependent
      ,(lambda (dependent)
 	(or (string=? (package-name dependent) "rust-mio-extras")
@@ -3909,11 +3909,7 @@ futures-aware, FIFO queue")
      #:for-dependent
      ,(lambda (p)
 	(not (member (package-name p) '("rust-terminfo"))))) ; needs old rust-nom@5 and no update available
-    ("rust-nom"
-     ,(package (inherit (p rust-nom-5))
-               (arguments
-		(append (list #:rust-metadata "version=5")
-			(package-arguments (p rust-nom-5)))))
+    ("rust-nom" ,(p rust-nom-5)
      #:for-dependent
      ,(lambda (p)
 	(member (package-name p) '("rust-terminfo")))) ; needs old rust-nom@5 and no update available
@@ -4041,8 +4037,12 @@ futures-aware, FIFO queue")
     ("rust-wayland-commons" ,rust-wayland-commons) ; for compatibility with new rust-nix
     ("rust-zip" ,rust-zip)))
 
-(define %automatic-metadata
-  '("rust-percent-encoding")) ; TODO: make automatic metadata the default!
+;; Needed to support multiple versions of the same crate in the same result.
+(define %automatic-metadata ; TODO: make automatic metadata the default!
+  '("rust-arrayvec"
+    "rust-mio"
+    "rust-nom"
+    "rust-percent-encoding"))
 
 ;; TODO: add these (upstream) or teach "guix style" to add them
 (define %extra-inputs
