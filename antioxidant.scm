@@ -909,6 +909,14 @@ by %excluded-keys."
 	;; E.g, rust-proc-macros2 doesn't set 'build'
 	;; even though it has a configure script.
 	(and (file-exists? "build.rs") "build.rs")))
+  (define (set-feature-environment-variable! feature)
+    ;; Some crates, e.g. rust-indexmap and rust-wayland-protocols
+    ;; expect CARGO_FEATURE_... environment variables to be set.  See:
+    ;; <https://doc.rust-lang.org/cargo/reference/features.html#build-scripts>.
+    (setenv (string-append "CARGO_FEATURE_"
+			   (string-replace-substring
+			    (string-upcase feature) "-" "_"))
+	    "1"))
   (when build.rs
     (format #t "building configuration script~%")
     (apply
@@ -936,6 +944,7 @@ by %excluded-keys."
     ;; This improves error messages
     (setenv "RUST_BACKTRACE" "full")
     ;; rust-indexmap expectes this to be set (TODO: this is rather ad-hoc)
+    (for-each set-feature-environment-variable! *features*)
     (setenv "CARGO_FEATURE_STD" "")
     (setenv "TARGET" target) ; used by rust-proc-macro2's build.rs
     (setenv "HOST" build) ; used by rust-pico-sys
