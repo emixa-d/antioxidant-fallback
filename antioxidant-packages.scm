@@ -119,6 +119,32 @@
 	   (lambda _
 	     (delete-file-recursively "sqlcipher")
 	     (delete-file-recursively "sqlite3")))))
+    ("rust-nitrokey-sys"
+     ,#~((add-after 'unpack 'unbundle ;; TODO: upstream Guix
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (delete-file-recursively "libnitrokey-v3.6")
+	     ;; tell build.rs to not use its bundled copy
+	     (setenv "USE_SYSTEM_LIBNITROKEY" "1")
+	     ;; used by Makefile
+	     (setenv "LIBNITROKEY"
+		     (search-input-directory inputs "include/libnitrokey"))
+	     ;; Regenerate bindings.
+	     (delete-file "src/ffi.rs")
+	     (substitute* "Makefile"
+	       (("quilt") ":") ; only usable from a git checkout
+	       (("-- (.*)\n" _ argument) ; make it find stdbool.h (TODO: is there a more proper way (actually cross-platform, etc)?
+		(string-append "-- " argument
+			       " -I"
+			       (search-input-directory inputs "lib/gcc/x86_64-unknown-linux-gnu/10.3.0/include")
+			       "\n")))
+	     (invoke "make" "src/ffi.rs")))
+	 ;; TODO: simplify and make for robust by making it support pkg-config.
+	 ;;
+	 ;; Ensure that dependencies will actually find libnitrokey.
+	 (add-before 'configure 'add-library-directory
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     ((@@ (antioxidant) add-c-library-directory!)
+	      (dirname (search-input-file inputs "lib/libnitrokey.so")))))))
     ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
     ;; Make sure the headers will be installed in a proper location.
     ;; TODO: make sure dependencies actually find the result (newsboat-ffi).
@@ -4251,6 +4277,10 @@ futures-aware, FIFO queue")
     ("rust-lalrpop" (("rust-tiny-keccak" ,(p rust-tiny-keccak-2))
                      ("rust-pico-args" ,rust-pico-args)))
     ("rust-ncurses" (("ncurses" ,(@ (gnu packages ncurses) ncurses)))) ; missing input
+    ("rust-nitrokey-sys" (("libnitrokey" ,(@ (gnu packages security-token) libnitrokey))
+			  ("gcc:lib" ,(@ (gnu packages gcc) gcc) "lib") ; for stdbool.h (TODO?)
+			  ("rust-bindgen" ,(p rust-bindgen-0.59)) ; TODO: actually a native-input
+			  ("rust-cc" ,(p rust-cc-1)))) ; TODO: actually a native-input
     ;; TODO: is this sufficient?
     ("rust-futures-core-preview"
      (("rust-futures-core" ,rust-futures-core-0.3)))
