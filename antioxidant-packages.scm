@@ -4158,6 +4158,7 @@ futures-aware, FIFO queue")
        (p rust-watchexec-1)
        (list (local-file "rust-watchexec-nix-compatibility.patch")))) ; for compatibiliy with new rust-nix
     ("rust-wayland-commons" ,rust-wayland-commons) ; for compatibility with new rust-nix
+    ("rust-wayland-cursor" ,rust-wayland-cursor) ; ditto
     ("rust-xml5ever" ,rust-xml5ever)
     ("rust-zip" ,rust-zip)))
 
