@@ -146,6 +146,18 @@
 	     ((@@ (antioxidant) add-c-library-directory!)
 	      (dirname (search-input-file inputs "lib/libnitrokey.so")))))))
     ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
+    ("rust-buffering-nocopy-macro"
+     ,#~((add-after 'unpack 'new-syn-compatibility
+	   ;; TODO: upstream
+	   (lambda _
+	     (substitute* "Cargo.toml"
+	       (("\\[dependencies\\.quote\\]" line)
+		(string-append "[dependencies.proc-macro2]\nversion=\"1\"\n"
+			       line)))
+	     (substitute* "src/lib.rs"
+	       (("export::Span, ") "")
+	       (("use proc_macro::TokenStream;")
+		"use proc_macro::TokenStream; use proc_macro2::Span;"))))))
     ;; Make sure the headers will be installed in a proper location.
     ;; TODO: make sure dependencies actually find the result (newsboat-ffi).
     ;; TODO: set RUST_CXX_BUILD_OUTPUT in antioxidant.scm.
@@ -4146,6 +4158,8 @@ futures-aware, FIFO queue")
      (("rust-paw" ,(p rust-paw-1))))
     ("rust-aom-sys"
      (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
+    ("rust-buffering-nocopy-macro" ; for new phase
+     (("rust-proc-macro2" ,(p rust-proc-macro2-1))))
     ("rust-servo-fontconfig-sys"
      (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))))
     ("rust-swayipc"
