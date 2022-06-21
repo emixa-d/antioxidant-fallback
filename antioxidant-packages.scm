@@ -2096,6 +2096,19 @@ of operation.")
                (base32
                 "0gnk4a771i3g1k4fbzx54xnganpc9j68jrx8xj839hfp83iybxll"))))))
 
+(define rust-wayland-cursor
+  (package ; @ 0.28.3 doesn't build against new rust-nix
+    (inherit (@ (gnu packages crates-graphics) rust-wayland-cursor-0.28))
+    (name "rust-wayland-cursor")
+    (version "0.29.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "wayland-cursor" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1gd6aswkrdz556n54pjpd4rchw7jkgcx6hnrhgy62y2y7pqmh9y5"))))))
+
 (define rust-as-slice ; 0.1 uses multiple generic-array version which antioxidant doesn't support (TODO?)
   (package
     (name "rust-as-slice")
@@ -4361,6 +4374,9 @@ futures-aware, FIFO queue")
       ("rust-tokio-util" ,rust-tokio-util-0.7)
       ("rust-rustls-pemfile" ,(p rust-rustls-pemfile-0.2))
       ("rust-percent-encoding" ,(p rust-percent-encoding-2))))
+    ("rust-wayland-cursor" ; new dependencies for new version
+     (("rust-xcursor" ,(p rust-xcursor-0.3))
+      ("rust-wayland-client" ,(@ (gnu packages crates-graphics) rust-wayland-client-0.28))))
     ("rust-zip" ; new inputs for new version
      (("rust-zstd" ,(p rust-zstd-0.9))))))
 
