@@ -3725,7 +3725,7 @@ futures-aware, FIFO queue")
     ("rust-uuid" ,#~'("default" "serde" "v4")) ; v4,serde required by alfis
     ("rust-value-bag" ,#~'("std"))
     ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
-    ("rust-wayland-protocols" ,#~'("wayland-client" "wayland-server")) ; unstable-protocols doesn't build.  TODO: bundles wayland protocol things
+    ("rust-wayland-protocols" ,#~'("wayland-client" "wayland-server" "unstable-protocols")) ; unstable-protocols is required by (TODO: forgot which one).  TODO: bundles wayland protocol things
     ("rust-webpki" ,#~'("std" "alloc"))
     ("rust-xcb" ,#~'("thread" "xfixes")) ; not all features build, for now only enable features required by rust-x11-clipboard.
     ("rust-xz2" ,#~'("futures")) ; ???
