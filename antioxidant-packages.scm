@@ -4005,6 +4005,7 @@ futures-aware, FIFO queue")
     ("rust-cipher" ,rust-cipher)
     ("rust-block-padding" ,rust-block-padding)
     ("rust-streebog" ,(p rust-streebog-0.10))
+    ("rust-pango" ,(p rust-pango-0.14)) ; @0.8 doesn't build
     ("rust-pbkdf2" ,rust-pbkdf2)
     ("rust-hmac" ,(p rust-hmac-0.12))
     ; ("rust-boxxy" ,rust-boxxy) ; TODO: currently useless because in %removed-dependencies, revisit when tests are supported
