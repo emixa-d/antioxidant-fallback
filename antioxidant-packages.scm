@@ -3950,6 +3950,7 @@ futures-aware, FIFO queue")
     ("rust-actix-derive" ,rust-actix-derive)
     ("rust-actix-server" ,rust-actix-server)
     ("rust-typenum" ,rust-typenum)
+    ("rust-serial-test-derive" ,(p rust-serial-test-derive-0.5)) ; @0.1 doesn't build
     ("rust-syscallz" ,rust-syscallz)
     ("rust-strum" ,rust-strum)
     ("rust-strum-macros" ,rust-strum-macros)
