@@ -339,6 +339,19 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"((rhs - OldDuration::seconds(rhssecs)).whole_nanoseconds() as i64)")
 	       (("duration\\.num_nanoseconds\\(\\)")
 		"Some(duration.whole_nanoseconds() as i64)"))))))
+    ("rust-plotters"
+     ,#~((add-after 'unpack 'new-dependencies-compatibility
+	   ;; TODO: upstream
+	   (lambda _
+	     (substitute* "src/coord/ranged1d/types/datetime.rs"
+	       (("use std::ops::\\{Add, Range, Sub\\};") "use std::ops::{Add, Range, Sub}; use std::convert::TryInto;")
+	       (("total_span\\.num_nanoseconds\\(\\)") "Some(total_span.whole_nanoseconds())")
+	       (("value_span\\.num_nanoseconds\\(\\)") "Some(value_span.whole_nanoseconds())")
+	       (("self.0.num_nanoseconds\\(\\)") "self.0.whole_nanoseconds().try_into()")
+	       (("\\bnum_days\\(\\)") "whole_days()")
+	       (("\\bnum_weeks\\(\\)") "whole_weeks()"))
+	     (substitute* "src/element/image.rs"
+	       (("\\bto_bgra8\\b") "to_rgba8")))))) ;; TODO: does the ordering of the letters matter?
     ("rust-arrow2"
      ;; TODO: upstream/update
      ,#~((add-after 'unpack 'use-nondeprecated-names
