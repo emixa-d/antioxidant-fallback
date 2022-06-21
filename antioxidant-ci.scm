@@ -29,9 +29,14 @@
   #:autoload (guix ui) (warning G_)
   #:export (all-packages))
 
-(define (is-leaf-cargo-rust-package? package)
+
+(define %fails-to-build-with-cargo ; these are bugs but don't appear to be bugs introduced by antioxidant (TODO: bug reports, etc)
+  '("git-interactive-rebase-tool"))
+
+(define (is-acceptable-leaf-cargo-rust-package? package)
   (and (eq? cargo-build-system (package-build-system package))
-       (not (string-prefix? "rust-" (package-name package)))))
+       (not (string-prefix? "rust-" (package-name package)))
+       (not (member (package-name package) %fails-to-build-with-cargo))))
 
 (define (all-packages)
   "Return a list of all antioxidated leaf packages (not guaranteed to build yet)"
@@ -52,7 +57,7 @@
 	       list))
       (cons (or (manually-antioxidated-variant foo)
 		(public-test-package (vitaminate/auto foo))) list)))
-  (fold-packages add '() #:select? is-leaf-cargo-rust-package?))
+  (fold-packages add '() #:select? is-acceptable-leaf-cargo-rust-package?))
 
 (define (package-closure/vhash todo seen descend?)
   ;; Compute the closure, depth-first
