@@ -4292,7 +4292,7 @@ futures-aware, FIFO queue")
     ("rust-merge-derive" (("rust-syn" ,(p rust-syn-1)) ; missing inputs
 			  ("rust-quote" ,(p rust-quote-1))
 			  ("rust-proc-macro2" ,(p rust-proc-macro2-1))
-			  ("rust-proc-macro-error" ,(p rust-proc-marco-error-1))))
+			  ("rust-proc-macro-error" ,(p rust-proc-macro-error-1))))
     ("rust-ncurses" (("ncurses" ,(@ (gnu packages ncurses) ncurses)))) ; missing input
     ("rust-nitrokey-sys" (("libnitrokey" ,(@ (gnu packages security-token) libnitrokey))
 			  ("gcc:lib" ,(@ (gnu packages gcc) gcc) "lib") ; for stdbool.h (TODO?)
