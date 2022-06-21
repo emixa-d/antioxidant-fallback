@@ -3770,6 +3770,7 @@ futures-aware, FIFO queue")
      ,(lambda (dependent)
 	(member (package-name dependent) '("skim")))) ; needs @0.9
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
+    ("rust-gio" ,(@ (gnu packages crates-gtk) rust-gio-0.14)) ; @0.8.1 doesn't build
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
     ("rust-hdrhistogram" ,rust-hdrhistogram)
