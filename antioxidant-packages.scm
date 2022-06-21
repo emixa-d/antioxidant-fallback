@@ -4289,6 +4289,10 @@ futures-aware, FIFO queue")
     ("sniffglue" (("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
     ("rust-lalrpop" (("rust-tiny-keccak" ,(p rust-tiny-keccak-2))
                      ("rust-pico-args" ,rust-pico-args)))
+    ("rust-merge-derive" (("rust-syn" ,(p rust-syn-1)) ; missing inputs
+			  ("rust-quote" ,(p rust-quote-1))
+			  ("rust-proc-macro2" ,(p rust-proc-macro2-1))
+			  ("rust-proc-macro-error" ,(p rust-proc-marco-error-1))))
     ("rust-ncurses" (("ncurses" ,(@ (gnu packages ncurses) ncurses)))) ; missing input
     ("rust-nitrokey-sys" (("libnitrokey" ,(@ (gnu packages security-token) libnitrokey))
 			  ("gcc:lib" ,(@ (gnu packages gcc) gcc) "lib") ; for stdbool.h (TODO?)
