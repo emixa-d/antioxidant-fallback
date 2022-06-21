@@ -4023,6 +4023,7 @@ futures-aware, FIFO queue")
     ("rust-futures-sink" ,rust-futures-sink-0.3)
     ("rust-futures-task" ,rust-futures-task-0.3)
     ("rust-futures-util" ,rust-futures-util-0.3)
+    ("rust-git2" ,(p rust-git2-0.13)) ; @0.9.1 doesn't build
     ("rust-http" ; 0.1 doesn't build and @0.2.1 doesn't have a const HeaderValue from_static
      ,rust-http)
     ;; rust-http-body@0.1.0's dependency rust-tokio-buf doesn't
