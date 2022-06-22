@@ -3568,6 +3568,7 @@ futures-aware, FIFO queue")
     ("rust-bitvec"
      ,#~'("std" "atomic" "alloc"))
     ("rust-bigdecimal" ,#~'("serde")) ; "serde" required by rust-nu-protocol
+    ("rust-bson" ,#~'("default" "chrono-0_4")) ; chrono-0_4: required by rust-nu-plugin-from-bson@0.44.
     ("rust-bstr" ,#~'("default" "serde1")) ; serde1: required by rust-git-glob
     ;; the default "generic-simd" feature required rust-packed-simd
     ;; which is currently uncompilable.
