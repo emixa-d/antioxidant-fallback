@@ -3233,6 +3233,19 @@ futures-aware, FIFO queue")
     (description "Slotmap data structure")
     (license license:zlib)))
 
+(define rust-smithay-client-toolkit ; @0.12 doesn't build against new rust-calloop
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-smithay-client-toolkit-0.12))
+    (name "rust-smithay-client-toolkit")
+    (version "0.16.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "smithay-client-toolkit" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0m7l0zhl9s3321yj8z6hf1g0w3l2ay85irgcw2r5wwfj69yw81zk"))))))
+
 (define rust-xml5ever
   (package
     (inherit (p rust-xml5ever-0.16)) ; @0.16 doesn't build against new rust-time
@@ -3709,6 +3722,7 @@ futures-aware, FIFO queue")
 	  "extra-traits"))
     ("rust-libssh2-sys" ,#~'()) ;; Setting zlib-ng-compat will make build.rs complain because apparently it could (on other systems) indirectly cause both a bundled and a non-bundled libssl to be loaded.  But we don't do bundling in Guix.  Anyway, in antioxidant, setting zlib-ng-compat only changes error reporting in build.rs, no runtime behaviour changes.  (In Cargo, it would cause a variant of the zlib library to be used)
     ("rust-libgit2-sys" ,#~'("ssh" "https")) ; don't enable vendoring
+    ("rust-smithay-client-toolkit" ,#~'("calloop")) ; don't enable the "dlopen" feature because directly linking works fine and is less fragile.
     ("rust-tower" ,#~'("default"
 		       ;; features used by rust-tonic
 		       "balance" "buffer" "discover" "limit" "load" "make" "timeout" "util"))
@@ -4184,6 +4198,7 @@ futures-aware, FIFO queue")
     ("rust-nettle" ,rust-nettle-7)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
+    ("rust-smithay-client-toolkit" ,rust-smithay-client-toolkit)
     ("rust-log" ,(p rust-log-0.4))
     ("rust-uuid" ,(p rust-uuid-0.8)) ; @0.5.1 doesn't build
     ("rust-watchexec"
@@ -4212,6 +4227,9 @@ futures-aware, FIFO queue")
      (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
     ("rust-buffering-nocopy-macro" ; for new phase
      (("rust-proc-macro2" ,(p rust-proc-macro2-1))))
+    ("rust-smithay-client-toolkit" ; new inputs for new version
+     (("rust-pkg-config" ,(p rust-pkg-config-0.3)) ; TODO: actually a native-input
+      ("libxkbcommon" ,(@ (gnu packages xdisorg) libxkbcommon))))
     ("rust-servo-fontconfig-sys"
      (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))))
     ("rust-swayipc"
