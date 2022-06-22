@@ -1,0 +1,93 @@
+From 0d2889d03fd7b97ef8e1753f998e57e8a116c8e6 Mon Sep 17 00:00:00 2001
+From: Kirill Chibisov <contact@kchibisov.com>
+Date: Sun, 19 Jun 2022 09:56:12 +0300
+Subject: [PATCH] Bump smithay-client-toolkit to v0.16.0
+
+Upstream: <https://github.com/rust-windowing/winit/pull/2342/>
+Without this patch, rust-winit doesn't build against the new
+rust-smithay-client-toolkit.  Rebased for use in Guix.
+
+---
+ .../linux/wayland/event_loop/mod.rs           |  4 ++-
+ .../linux/wayland/seat/keyboard/mod.rs        | 25 ++++---------------
+ 2 files changed, 8 insertions(+), 21 deletions(-)
+
+diff --git a/src/platform_impl/linux/wayland/event_loop/mod.rs b/src/platform_impl/linux/wayland/event_loop/mod.rs
+index 0f879ea2d9..b2948a9b15 100644
+--- a/src/platform_impl/linux/wayland/event_loop/mod.rs
++++ b/src/platform_impl/linux/wayland/event_loop/mod.rs
+@@ -538,6 +538,8 @@ impl<T: 'static> EventLoop<T> {
+             _ => unreachable!(),
+         };
+ 
+-        self.event_loop.dispatch(timeout, state)
++        self.event_loop
++            .dispatch(timeout, state)
++            .map_err(|error| error.into())
+     }
+ }
+diff --git a/src/platform_impl/linux/wayland/seat/keyboard/mod.rs b/src/platform_impl/linux/wayland/seat/keyboard/mod.rs
+index c6e0ad456e..262a014bac 100644
+--- a/src/platform_impl/linux/wayland/seat/keyboard/mod.rs
++++ b/src/platform_impl/linux/wayland/seat/keyboard/mod.rs
+@@ -7,7 +7,7 @@ use sctk::reexports::client::protocol::wl_keyboard::WlKeyboard;
+ use sctk::reexports::client::protocol::wl_seat::WlSeat;
+ use sctk::reexports::client::Attached;
+ 
+-use sctk::reexports::calloop::{LoopHandle, RegistrationToken};
++use sctk::reexports::calloop::LoopHandle;
+ 
+ use sctk::seat::keyboard;
+ 
+@@ -20,12 +20,6 @@ mod keymap;
+ 
+ pub(crate) struct Keyboard {
+     pub keyboard: WlKeyboard,
+-
+-    /// The source for repeat keys.
+-    pub repeat_token: Option<RegistrationToken>,
+-
+-    /// LoopHandle to drop `RepeatSource`, when dropping the keyboard.
+-    pub loop_handle: LoopHandle<'static, WinitState>,
+ }
+ 
+ impl Keyboard {
+@@ -35,7 +29,7 @@ impl Keyboard {
+         modifiers_state: Rc<RefCell<ModifiersState>>,
+     ) -> Option<Self> {
+         let mut inner = KeyboardInner::new(modifiers_state);
+-        let keyboard_data = keyboard::map_keyboard_repeat(
++        let keyboard = keyboard::map_keyboard_repeat(
+             loop_handle.clone(),
+             seat,
+             None,
+@@ -44,15 +38,10 @@ impl Keyboard {
+                 let winit_state = dispatch_data.get::<WinitState>().unwrap();
+                 handlers::handle_keyboard(event, &mut inner, winit_state);
+             },
+-        );
+-
+-        let (keyboard, repeat_token) = keyboard_data.ok()?;
++        )
++        .ok()?;
+ 
+-        Some(Self {
+-            keyboard,
+-            loop_handle,
+-            repeat_token: Some(repeat_token),
+-        })
++        Some(Self { keyboard })
+     }
+ }
+ 
+@@ -61,10 +50,6 @@ impl Drop for Keyboard {
+         if self.keyboard.as_ref().version() >= 3 {
+             self.keyboard.release();
+         }
+-
+-        if let Some(repeat_token) = self.repeat_token.take() {
+-            self.loop_handle.remove(repeat_token);
+-        }
+     }
+ }
+ 

@@ -3285,6 +3285,21 @@ futures-aware, FIFO queue")
                (base32
                 "0m7l0zhl9s3321yj8z6hf1g0w3l2ay85irgcw2r5wwfj69yw81zk"))))))
 
+(define rust-winit ; for compatibility against new rust-smithay-client-toolkit
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-winit-0.24))
+    (name "rust-winit")
+    (version "0.26.1")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "winit" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0fp7cdh7llbqmm6ga8f6bzk9785jmkbyy1w631hr9faq3n9wqhwv"))
+	      (patches
+	       (list (local-file "rust-winit-Update-smithay-client-toolkit.patch")))))))
+
 (define rust-xml5ever
   (package
     (inherit (p rust-xml5ever-0.16)) ; @0.16 doesn't build against new rust-time
@@ -4251,6 +4266,7 @@ futures-aware, FIFO queue")
     ("rust-wayland-client" ,rust-wayland-client) ; for Debug traits required by new rust-smithay-client-toolkit
     ("rust-wayland-cursor" ,rust-wayland-cursor) ; ditto
     ("rust-wayland-protocols" ,rust-wayland-protocols) ; ditto
+    ("rust-winit" ,rust-winit) ; for compatibility against new dependencies
     ("rust-xml5ever" ,rust-xml5ever)
     ("rust-zip" ,rust-zip)))
 
