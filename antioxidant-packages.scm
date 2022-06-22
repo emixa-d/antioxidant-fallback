@@ -2633,6 +2633,19 @@ of operation.")
        (sha256
         (base32 "0bs319wa9wl7pn9j6jrrxg1gaqbak581rkx210cbix0qyljpwvy8"))))))
 
+(define rust-emacs-macros
+  (package
+    (inherit (p rust-emacs-macros-0.11)) ; @0.11 doesn't build against new rust-syn
+    (name "rust-emacs-macros")
+    (version "0.17.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "emacs-macros" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0qg1dcn5acbirq617qq2fgg9adswif2dnr292s3qnq62wzgnyrb9"))))))
+
 (define rust-png ; old version doesn't build against certain new crates
   (package
     (inherit (@ (gnu packages crates-graphics) rust-png-0.16))
@@ -3887,6 +3900,7 @@ futures-aware, FIFO queue")
      ,(lambda (dependent)
 	(member (package-name dependent) '("skim")))) ; needs @0.9
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
+    ("rust-emacs-macros" ,rust-emacs-macros)
     ("rust-gio" ,(@ (gnu packages crates-gtk) rust-gio-0.14)) ; @0.8.1 doesn't build
     ("rust-dlib" ,rust-dlib) ; old rust-dlib and new rust-smithay-client-toolkit are incompatible
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
@@ -4424,6 +4438,8 @@ futures-aware, FIFO queue")
     ;; for "pem" feature
     ("rust-der"
      (("rust-pem-rfc7468" ,(@ (gnu packages crates-io) rust-pem-rfc7468-0.2))))
+    ("rust-emacs-macros"
+     (("rust-proc-macro2" ,(p rust-proc-macro2-1)))) ; new input for new version
     ("rust-embed-resource"
      (("rust-cc" ,(p rust-cc-1)))) ;; TODO: native-input
     ;; for "pem" and "alloc" feature
