@@ -3233,6 +3233,19 @@ futures-aware, FIFO queue")
     (description "Slotmap data structure")
     (license license:zlib)))
 
+(define rust-smithay-clipboard ; @0.6.2 doesn't build against new rust-smithay-client-toolkit
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-smithay-clipboard-0.6))
+    (name "rust-smithay-clipboard")
+    (version "0.6.6")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "smithay-clipboard" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1s5hyhbmnk75i0sm14wy4dy7c576a4dyi1chfwdhpbhz1a3mqd0a"))))))
+
 (define rust-smithay-client-toolkit ; @0.12 doesn't build against new rust-calloop
   (package
     (inherit (@ (gnu packages crates-graphics) rust-smithay-client-toolkit-0.12))
@@ -4199,6 +4212,7 @@ futures-aware, FIFO queue")
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-smithay-client-toolkit" ,rust-smithay-client-toolkit)
+    ("rust-smithay-clipboard" ,rust-smithay-clipboard)
     ("rust-log" ,(p rust-log-0.4))
     ("rust-uuid" ,(p rust-uuid-0.8)) ; @0.5.1 doesn't build
     ("rust-watchexec"
