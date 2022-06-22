@@ -3726,6 +3726,7 @@ futures-aware, FIFO queue")
     ("rust-value-bag" ,#~'("std"))
     ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
     ("rust-wayland-protocols" ,#~'("client" "server" "unstable_protocols")) ; unstable-protocols is required by (TODO: forgot which one).  TODO: bundles wayland protocol things
+    ("rust-wayland-sys" ,#~'("client" "cursor" "egl" "server")) ; don't enable the dlopen feature, dlopen(...) is somewhat fragile and RUNPATH works just fine
     ("rust-webpki" ,#~'("std" "alloc"))
     ("rust-xcb" ,#~'("thread" "xfixes")) ; not all features build, for now only enable features required by rust-x11-clipboard.
     ("rust-xz2" ,#~'("futures")) ; ???
