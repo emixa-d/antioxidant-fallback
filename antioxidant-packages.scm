@@ -2135,6 +2135,19 @@ of operation.")
                (base32
                 "1gd6aswkrdz556n54pjpd4rchw7jkgcx6hnrhgy62y2y7pqmh9y5"))))))
 
+(define rust-wayland-protocols ; new rust-winit required a new version
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-wayland-protocols-0.28))
+    (name "rust-wayland-protocols")
+    (version "0.29.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "wayland-protocols" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0hap8vky2fwsq05c98c8xs00gb9m5kxp8kq3zr0jwh036gi7l530"))))))
+
 (define rust-as-slice ; 0.1 uses multiple generic-array version which antioxidant doesn't support (TODO?)
   (package
     (name "rust-as-slice")
@@ -3778,7 +3791,7 @@ futures-aware, FIFO queue")
     ("rust-uuid" ,#~'("default" "serde" "v4")) ; v4,serde required by alfis
     ("rust-value-bag" ,#~'("std"))
     ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
-    ("rust-wayland-protocols" ,#~'("client" "server" "unstable_protocols")) ; unstable-protocols is required by (TODO: forgot which one).  TODO: bundles wayland protocol things
+    ("rust-wayland-protocols" ,#~'("client" "server" "unstable_protocols" "staging_protocols")) ; unstable-protocols is required by (TODO: forgot which one).  staging_protocols is required by rust_winit.  TODO: bundles wayland protocol things.
     ("rust-wayland-sys" ,#~'("client" "cursor" "egl" "server")) ; don't enable the dlopen feature, dlopen(...) is somewhat fragile and RUNPATH works just fine
     ("rust-wayland-client" ,#~'("use_system_lib")) ; don't use the dlopen feature, which is fragile and unneeded in Guix.  system_lib is required by rust-wayland-egl.
     ("rust-webpki" ,#~'("std" "alloc"))
@@ -4223,6 +4236,7 @@ futures-aware, FIFO queue")
     ("rust-wayland-commons" ,rust-wayland-commons) ; for compatibility with new rust-nix
     ("rust-wayland-client" ,rust-wayland-client) ; for Debug traits required by new rust-smithay-client-toolkit
     ("rust-wayland-cursor" ,rust-wayland-cursor) ; ditto
+    ("rust-wayland-protocols" ,rust-wayland-protocols) ; ditto
     ("rust-xml5ever" ,rust-xml5ever)
     ("rust-zip" ,rust-zip)))
 
