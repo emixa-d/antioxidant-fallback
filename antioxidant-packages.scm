@@ -3778,6 +3778,7 @@ futures-aware, FIFO queue")
     ("rust-libssh2-sys" ,#~'()) ;; Setting zlib-ng-compat will make build.rs complain because apparently it could (on other systems) indirectly cause both a bundled and a non-bundled libssl to be loaded.  But we don't do bundling in Guix.  Anyway, in antioxidant, setting zlib-ng-compat only changes error reporting in build.rs, no runtime behaviour changes.  (In Cargo, it would cause a variant of the zlib library to be used)
     ("rust-libgit2-sys" ,#~'("ssh" "https")) ; don't enable vendoring
     ("rust-smithay-client-toolkit" ,#~'("calloop")) ; don't enable the "dlopen" feature because directly linking works fine and is less fragile.
+    ("rust-snafu-derive" ,#~'()) ; unstable-backtraces-impl-std requires unstable
     ("rust-tower" ,#~'("default"
 		       ;; features used by rust-tonic
 		       "balance" "buffer" "discover" "limit" "load" "make" "timeout" "util"))
