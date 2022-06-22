@@ -3846,6 +3846,7 @@ futures-aware, FIFO queue")
     ("rust-buffering" ,(p rust-buffering-0.4)) ; @0.3 doesn't build
     ("rust-buffering-nocopy-macro" ,(p rust-buffering-nocopy-macro-0.2)) ; @0.1 doesn't build
     ("rust-calloop" ,rust-calloop)
+    ("rust-cairo-rs" ,(@ (gnu packages crates-gtk) rust-cairo-rs-0.14)) ; @0.8.1 doesn't build
     ("rust-cbindgen" ,(package-with-extra-patches
 		       rust-cbindgen-0.19
 		       ;; Replace Cargo-specific assumptions by antioxidant-specific
