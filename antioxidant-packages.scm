@@ -1009,6 +1009,19 @@ version is 0), if it is in %automatic-metadata.."
                (base32
                 "0z78vwr4apw2h8c6iijv8xvvsvjq9c87ky8v36mz2cskx1cbp8rl"))))))
 
+(define rust-dlib
+  (package
+    (inherit (p rust-dlib-0.4)) ; new rust-smithay-client-toolkit needs new rust-dlib to build without 'dlopen'
+    (name "rust-dlib")
+    (version "0.5.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "dlib" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1547hy7nrhkrb2i09va244c0h8mr845ccbs2d2mc414c68bpa6xc"))))))
+
 (define rust-tokio-rustls-0.23
   (package
    (inherit (@ (gnu packages crates-io) rust-tokio-rustls-0.22))
@@ -3775,6 +3788,7 @@ futures-aware, FIFO queue")
 	(member (package-name dependent) '("skim")))) ; needs @0.9
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
     ("rust-gio" ,(@ (gnu packages crates-gtk) rust-gio-0.14)) ; @0.8.1 doesn't build
+    ("rust-dlib" ,rust-dlib) ; old rust-dlib and new rust-smithay-client-toolkit are incompatible
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
     ("rust-getrandom" ,(p rust-getrandom-0.2)) ; avoid multiple versions
     ("rust-hdrhistogram" ,rust-hdrhistogram)
