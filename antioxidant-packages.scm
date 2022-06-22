@@ -3567,6 +3567,7 @@ futures-aware, FIFO queue")
     ;; build to fail (TODO: maybe report upstream?)
     ("rust-bitvec"
      ,#~'("std" "atomic" "alloc"))
+    ("rust-bv" ,#~'("serde")) ; there are no default features.  Enable "serde" required by rust-bio@0.33
     ("rust-bigdecimal" ,#~'("serde")) ; "serde" required by rust-nu-protocol
     ("rust-bson" ,#~'("default" "chrono-0_4")) ; chrono-0_4: required by rust-nu-plugin-from-bson@0.44.
     ("rust-bstr" ,#~'("default" "serde1")) ; serde1: required by rust-git-glob
