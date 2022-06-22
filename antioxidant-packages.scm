@@ -3220,6 +3220,19 @@ futures-aware, FIFO queue")
                (base32
                 "0r88w8l4hxc64w43xlwjk5f60vg57vdahnjy3w5f0qb89slflzxk"))))))
 
+(define rust-raw-window-handle ; required by new rust-winit@0.26
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-raw-window-handle-0.3))
+    (name "rust-raw-window-handle")
+    (version "0.4.3")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "raw-window-handle" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0hgvrqbr2b62zhq4ryv08h92mwis9v8f7j9pwcgxzlp7nswvw05q"))))))
+
 (define rust-slotmap ; required by new rust-calloop
   (package
     (name "rust-slotmap")
@@ -4225,6 +4238,7 @@ futures-aware, FIFO queue")
     ("rust-nettle" ,rust-nettle-7)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
+    ("rust-raw-window-handle" ,rust-raw-window-handle)
     ("rust-smithay-client-toolkit" ,rust-smithay-client-toolkit)
     ("rust-smithay-clipboard" ,rust-smithay-clipboard)
     ("rust-log" ,(p rust-log-0.4))
@@ -4256,6 +4270,8 @@ futures-aware, FIFO queue")
      (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
     ("rust-buffering-nocopy-macro" ; for new phase
      (("rust-proc-macro2" ,(p rust-proc-macro2-1))))
+    ("rust-raw-window-handle" ; new input for new dependency
+     (("rust-cty" ,(p rust-cty-0.2))))
     ("rust-smithay-client-toolkit" ; new inputs for new version
      (("rust-pkg-config" ,(p rust-pkg-config-0.3)) ; TODO: actually a native-input
       ("libxkbcommon" ,(@ (gnu packages xdisorg) libxkbcommon))))
