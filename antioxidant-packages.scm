@@ -3782,6 +3782,7 @@ futures-aware, FIFO queue")
     ("rust-wayland-sys" ,#~'("client" "cursor" "egl" "server")) ; don't enable the dlopen feature, dlopen(...) is somewhat fragile and RUNPATH works just fine
     ("rust-wayland-client" ,#~'("use_system_lib")) ; don't use the dlopen feature, which is fragile and unneeded in Guix.  system_lib is required by rust-wayland-egl.
     ("rust-webpki" ,#~'("std" "alloc"))
+    ("rust-winit" ,#~'("x11" "wayland")) ; don't enable the default wayland-dlopen feature, because it's not necessary and fragile in Guix. (TODO: doesn't build yet)
     ("rust-xcb" ,#~'("thread" "xfixes")) ; not all features build, for now only enable features required by rust-x11-clipboard.
     ("rust-xz2" ,#~'("futures")) ; ???
     ;; rust-rcgen requires "time". While at it, enable other
