@@ -2096,6 +2096,19 @@ of operation.")
 		     (delete-file "Cargo.toml")
 		     (rename-file "Cargo.toml.orig" "Cargo.toml")))))))
 
+(define rust-wayland-client ; for compatibility with new rust-smithay-client-toolkit
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-wayland-client-0.28))
+    (name "rust-wayland-client")
+    (version "0.29.4")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "wayland-client" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "13s5sj9344izk2g48yizk81kcg8jg4940gg2v6bzcmrjwxh388li"))))))
+
 (define rust-wayland-commons
   (package ; for compatibility with new rust-nix
     (inherit (@ (gnu packages crates-graphics) rust-wayland-commons-0.28))
@@ -3740,6 +3753,7 @@ futures-aware, FIFO queue")
     ("rust-v-frame" ,#~'("serialize")) ; wasm doesn't build, tracing seems unnecessary
     ("rust-wayland-protocols" ,#~'("client" "server" "unstable_protocols")) ; unstable-protocols is required by (TODO: forgot which one).  TODO: bundles wayland protocol things
     ("rust-wayland-sys" ,#~'("client" "cursor" "egl" "server")) ; don't enable the dlopen feature, dlopen(...) is somewhat fragile and RUNPATH works just fine
+    ("rust-wayland-client" ,#~'("use_system_lib")) ; don't use the dlopen feature, which is fragile and unneeded in Guix.  system_lib is required by rust-wayland-egl.
     ("rust-webpki" ,#~'("std" "alloc"))
     ("rust-xcb" ,#~'("thread" "xfixes")) ; not all features build, for now only enable features required by rust-x11-clipboard.
     ("rust-xz2" ,#~'("futures")) ; ???
@@ -4177,6 +4191,7 @@ futures-aware, FIFO queue")
        (p rust-watchexec-1)
        (list (local-file "rust-watchexec-nix-compatibility.patch")))) ; for compatibiliy with new rust-nix
     ("rust-wayland-commons" ,rust-wayland-commons) ; for compatibility with new rust-nix
+    ("rust-wayland-client" ,rust-wayland-client) ; for Debug traits required by new rust-smithay-client-toolkit
     ("rust-wayland-cursor" ,rust-wayland-cursor) ; ditto
     ("rust-xml5ever" ,rust-xml5ever)
     ("rust-zip" ,rust-zip)))
