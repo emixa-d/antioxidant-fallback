@@ -3220,6 +3220,19 @@ futures-aware, FIFO queue")
                (base32
                 "0r88w8l4hxc64w43xlwjk5f60vg57vdahnjy3w5f0qb89slflzxk"))))))
 
+(define rust-pangocairo
+  (package
+    (inherit (@ (gnu packages crates-gtk) rust-pangocairo-0.9)) ; make it build
+    (name "rust-pangocairo")
+    (version "0.15.1")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "pangocairo" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0rjk0clrjxah4kc0kybn7l7bxa5m5kpxkihxc2i7a6hx3xfa8xkq"))))))
+
 (define rust-raw-window-handle ; required by new rust-winit@0.26
   (package
     (inherit (@ (gnu packages crates-graphics) rust-raw-window-handle-0.3))
@@ -4024,6 +4037,7 @@ futures-aware, FIFO queue")
     ("rust-gdk" ,(@ (gnu packages crates-gtk) rust-gdk-0.14)) ; no need for old versions
     ("rust-cairo-sys-rs" ,(@ (gnu packages crates-gtk) rust-cairo-sys-rs-0.14)) ; avoid version conflicts
     ("rust-pango-sys" ,(@ (gnu packages crates-gtk) rust-pango-sys-0.14)) ; likewise
+    ("rust-pangocairo" ,rust-pangocairo) ; old version doesn't build
     ("rust-gtk" ,(@ (gnu packages crates-gtk) rust-gtk-0.14)) ; avoid potential problems
     ("rust-ansi-parser" ,rust-ansi-parser)
     ("rust-system-deps" ,rust-system-deps)
