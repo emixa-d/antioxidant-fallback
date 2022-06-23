@@ -3458,6 +3458,7 @@ futures-aware, FIFO queue")
     "rust-wasm-bindgen" "rust-wasi"
     "rust-wasm-bindgen-futures" ; ECMAScript-only and doesn't build
     "rust-wasm-bindgen-test"
+    ("rust-x11rb" -> "libloading") ; no need for the fragile dlopen
 
     ("rust-average" -> "rust-rand-distr") ; test cycle?
     ("rust-cxxbridge-macro" -> "rust-cxx") ; test cycle?
@@ -3868,6 +3869,7 @@ futures-aware, FIFO queue")
     ("rust-winit" ,#~'("x11" "wayland")) ; don't enable the default wayland-dlopen feature, because it's not necessary and fragile in Guix. (TODO: doesn't build yet)
     ("rust-xcb" ,#~'("thread" "xfixes")) ; not all features build, for now only enable features required by rust-x11-clipboard.
     ("rust-xz2" ,#~'("futures")) ; ???
+    ("rust-x11rb" ,#~'("allow-unsafe-code" "cursor" "image" "resource_manager" "all-extensions")) ; disable libloading/dlopen, which is fragile and unnecessary
     ;; rust-rcgen requires "time". While at it, enable other
     ;; features as well.
     ("rust-yasna" ,#~'("default" "time" "bit-vec" "bigint" "std"))
