@@ -561,6 +561,28 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ;; required to use rust-cbindgen.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
 		    #$generate-cbindgen-metadata-phase)))
+    ("rust-tree-magic-mini"
+     ,#~((add-after 'unpack 'use-unbundled-magic-data
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (substitute* "src/fdo_magic/builtin/runtime.rs"
+	       ;; Looks broken in Guix w.r.t. foreign distros.  The $HOME/.local/share/mime/magic
+	       ;; looks ok-ish, but would be unpopulated in Guix.  These substitutions are fragile,
+	       ;; please check them after an update!
+	       ;; See: <https://issues.guix.gnu.org/56173>.
+	      (("&\\[&str; 3\\]") "&[&str; 1]")
+	      (("\"/usr/share/mime/subclasses\",") "")
+	      (("\"/usr/local/share/mime/subclasses\",") "")
+	      (("\\$HOME/\\.local/share/mime/subclasses")
+	       (search-input-file inputs "share/mime/subclasses"))
+	      (("\"/usr/share/mime/magic\",") "")
+	      (("\"/usr/local/share/mime/magic\",") "")
+	      (("\\$HOME/\\.local/share/mime/magic")
+	       (search-input-file inputs "share/mime/magic"))
+	      (("\"/usr/share/mime/aliases\",") "")
+	      (("\"/usr/local/share/mime/aliases\",") "")
+	      (("\\$HOME/\\.local/share/mime/aliases")
+	       (search-input-file inputs "share/mime/aliases")))
+	     #;(error "barf"))))) ; for checking after an update with --keep-failed
     ("tectonic" ; TODO: binary is compiled thrice
      ;; TODO: bug in implementation in 'autobins'?
      ,#~((add-after 'unpack 'fix-found-binaries
@@ -3155,6 +3177,19 @@ futures-aware, FIFO queue")
                (base32
                 "1yi9s6firixay11rahqshdv07ih8i27fxqqrrshfk3wwbn3rdi2w"))))))
 
+(define rust-tree-magic-mini ; fork with updated dependencies, see <https://github.com/aahancoc/tree_magic/pull/20>
+  (package
+    (inherit (p rust-tree-magic-0.2))
+    (name "rust-tree-magic-mini")
+    (version "3.0.3")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "tree-magic-mini" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0vdazv3y1iggriwx5ksin72c2ds0xjdhx1yvmd5nxkya0w3gvbci")))))) ; TODO: check license
+
 (define rust-unicode-bom ; required by rust-git-config
   (package
     (name "rust-unicode-bom")
@@ -3882,6 +3917,7 @@ futures-aware, FIFO queue")
     ("rust-tokio-util" ,#~'("full" "codec"))
     ;; early-data is required by rust-trust-dns-proto
     ("rust-tokio-rustls" ,#~'("default" "early-data"))
+    ("rust-tree-magic-mini" ,#~'()) ; Don't enable "with-gpl-data". We don't mind GPL in Guix, but enabling this feature causes rust-tree-magic-mini to look for a bundling crate, which will not be packaged in Guix.  Instead, disable that feature and adjust the ‘runtime’ code to look at the data with a baked-in reference to freedesktop's magic data.
     ;; dns-over-openssl is required by rust-trust-dns-openssl.
     ;; dns-over-native-tls is required by rust-trust-dns-native-tls.
     ;; dns-over-rustls is required by rust-trust-dns-rustls.
@@ -4036,6 +4072,7 @@ futures-aware, FIFO queue")
     ("rust-tectonic-errors" ,(p rust-tectonic-errors-0.2)) ; resolve version conflict
     ("rust-tectonic-io-base" ,(p rust-tectonic-io-base-0.4)) ; resolve version conflict
     ("rust-totp-lite" ,rust-totp-lite)
+    ("rust-tree-magic" ,rust-tree-magic-mini) ; for compatibility with new rust-nom
     ("rust-trust-dns-proto" ,rust-trust-dns-proto)
     ("rust-trust-dns-openssl" ,rust-trust-dns-openssl)
     ("rust-trust-dns-native-tls" ,rust-trust-dns-native-tls)
@@ -4388,6 +4425,10 @@ futures-aware, FIFO queue")
     ("rust-swayipc+sync"
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-failure" ,(p rust-failure-0.1))))
+    ("rust-tree-magic-mini" ; new inputs for new version
+     (("rust-bytecount" ,(p rust-bytecount-0.6))
+      ("rust-once-cell" ,(p rust-once-cell-1))
+      ("shared-mime-info" ,(@ (gnu packages gnome) shared-mime-info))))
     ("castor" ;; TODO: add them in upstream Guix
      (("rust-gio" ,(@ (gnu packages crates-gtk) rust-gio-0.14))
       ("rust-glib" ,(@ (gnu packages crates-gtk) rust-glib-0.14))
