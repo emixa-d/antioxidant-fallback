@@ -669,9 +669,8 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 			    install-source? ; not used by antioxidant-build-system
 			    system target source search-paths outputs
 			    (rust-metadata "")
-			    ;; TODO: consider optimisations (what does cargo-build-system
-			    ;; do?)
-			    (optimisation-level 0)
+			    (optimisation-level "3") ; the Cargo default.  IIUC, also enables LTO.
+			    (debuginfo-level "1") ; 1: line tables
 			    (features #~'("default"))
 			    (cargo-target-directory #false)
 			    (rust-crate-type #false)
@@ -702,6 +701,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 					    search-paths)
 		     #:features #$features
 		     #:optimisation-level '#$optimisation-level
+		     #:debuginfo-level '#$debuginfo-level
 		     #:cargo-env-variables #$cargo-env-variables
 		     #:cargo-target-directory #$cargo-target-directory ; <-- TODO: unused, maybe remove?
 		     #:rust-crate-type #$rust-crate-type

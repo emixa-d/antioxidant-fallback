@@ -558,6 +558,8 @@ to the crates in CRATE-MAPPINGS."
 (define* (compile-rust source destination extra-arguments
 		       #:key inputs native-inputs outputs
 		       target
+		       (optimisation-level "1")
+		       (debuginfo-level "1")
 		       (rust-metadata "")
 		       (configuration '())
 		       (available-crates '())
@@ -569,6 +571,8 @@ to the crates in CRATE-MAPPINGS."
   (apply invoke
 	 "rustc" "--verbose"
 	 (string-append "--target=" target)
+	 "-C" (string-append "opt-level=" optimisation-level)
+	 "-C" (string-append "debuginfo=" debuginfo-level)
 	 ;; Cargo adds '--extern=proc_macro' by default,
 	 ;; see <https://github.com/rust-lang/cargo/pull/7700>.
 	 ;; Make sure that it will be used.
@@ -936,9 +940,7 @@ by %excluded-keys."
     ;; Expected by rust-const-fn's build.rs
     (setenv "OUT_DIR" (getcwd))
     ;; Expected by rust-libm's build.rs
-    (setenv "OPT_LEVEL" (if (number? optimisation-level)
-			    (number->string optimisation-level)
-			    optimisation-level))
+    (setenv "OPT_LEVEL" optimisation-level)
     ;; Expected by some configuration scripts, e.g. rust-libc
     (setenv "RUSTC" (which "rustc"))
     ;; This improves error messages
