@@ -1,0 +1,61 @@
+From 3e0730d1d892f9d085199f0ea4f66cea37e15939 Mon Sep 17 00:00:00 2001
+From: Maxime Devos <maximedevos@telenet.be>
+Date: Thu, 23 Jun 2022 21:25:15 +0000
+Subject: [PATCH] =?UTF-8?q?Re-instate=20=E2=80=98Initial=20implementation?=
+ =?UTF-8?q?=20of=20self-incrementing=20version=20numbers.=E2=80=99?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+This unreverts the commit:
+
+commit 860caa20d7e1b939cbf3b7ca0a923f2c51293906
+Author: Cruz Julian Bishop <cruzjbishop@gmail.com>
+Date:   Sun Jun 14 09:41:25 2015 +1000
+
+    Initial implementation of self-incrementing version numbers.
+
+which is still used by rust-nu-plugin-inc.
+---
+ src/lib.rs | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
+
+diff --git a/src/lib.rs b/src/lib.rs
+index f1e1776..37ffb85 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -431,6 +431,29 @@ impl Version {
+     pub fn parse(text: &str) -> Result<Self, Error> {
+         Version::from_str(text)
+     }
++
++
++    ///Increments the patch number for this Version (Must be mutable)
++    pub fn increment_patch(&mut self) {
++        self.patch += 1;
++    }
++
++    ///Increments the minor version number for this Version (Must be mutable)
++    ///
++    ///As instructed by section 7 of the spec, the patch number is reset to 0.
++    pub fn increment_minor(&mut self) {
++        self.minor += 1;
++        self.patch = 0;
++    }
++
++    ///Increments the major version number for this Version (Must be mutable)
++    ///
++    ///As instructed by section 8 of the spec, the minor and patch numbers are reset to 0
++    pub fn increment_major(&mut self) {
++        self.major += 1;
++        self.minor = 0;
++        self.patch = 0;
++    }
+ }
+ 
+ impl VersionReq {
+
+base-commit: ce0ab4d7a525d2f81e393ef10250192175b0569d
+-- 
+2.36.1
+

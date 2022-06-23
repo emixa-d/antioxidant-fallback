@@ -4142,7 +4142,9 @@ futures-aware, FIFO queue")
     ("rust-multipart" ,(p rust-multipart-0.18)) ; @0.17 doesn't build
     ("rust-memoffset" ,(p rust-memoffset-0.6)) ; @0.5 doesn't build
     ("rust-signal-hook" ,(p rust-signal-hook-0.3)) ; @0.1 doesn't build
-    ("rust-semver" ,(p rust-semver-1))
+    ("rust-semver" ,(package-with-extra-patches
+		     (p rust-semver-1)
+		     (list (local-file "rust-semver-Add-increment-foo-again.patch"))))
     ("rust-rustc-version" ,(p rust-rustc-version-0.4)) ; @0.2.3 doesn't build against rust-semver@1
     ("rust-dotenv" ,(p rust-dotenv-0.15)) ; @0.10 doesn't build
     ("rust-quickcheck-macros" ,(p rust-quickcheck-macros-1)) ; 0.9 doesn't build against rust-syn@1
