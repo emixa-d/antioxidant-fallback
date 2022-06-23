@@ -446,6 +446,17 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ,#~((add-after 'unpack 'delete-bin
 	   (lambda _
 	     (delete-file "src/bin/afl_runner.rs")))))
+    ("rust-email" ;; TODO: upstream
+     ,#~((add-after 'unpack 'new-rand-compatibility
+	   (lambda _
+	     (define first? #true)
+	     (substitute* "src/message.rs"
+	       (("\\.collect\\(\\)")
+		(if first?
+		    (begin
+		      (set! first? #false)
+		      ".map(char::from).collect()")
+		    ".collect()")))))))
     ("rust-parasail-sys" ; TODO: license of bundled library seems to forbid writing a Wikipedia article of whatever that calls the Battelle Memorial Institute by name without consent by Battelle.  Also, the license fishes for citations.  Also, it isn't cross-compiled as required.
      ,#~((add-after 'unpack 'fixup-installation-location
 	   (lambda _
@@ -3233,6 +3244,19 @@ futures-aware, FIFO queue")
                (base32
                 "0r88w8l4hxc64w43xlwjk5f60vg57vdahnjy3w5f0qb89slflzxk"))))))
 
+(define rust-email ; for compatibility with new rust-base64
+  (package
+    (inherit (p rust-email-0.0.20))
+    (name "rust-email")
+    (version "0.0.21")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "email" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0gkv0lgs1apmq3w13pj2qr2bxiy42hw3vgi1jsb705l3p01hadk5"))))))
+
 (define rust-pangocairo
   (package
     (inherit (@ (gnu packages crates-gtk) rust-pangocairo-0.9)) ; make it build
@@ -3916,6 +3940,7 @@ futures-aware, FIFO queue")
 	(member (package-name dependent) '("skim")))) ; needs @0.9
     ("rust-dirs" ,(p rust-dirs-3)) ; avoid version conflict in tectonic
     ("rust-emacs-macros" ,rust-emacs-macros)
+    ("rust-email" ,rust-email)
     ("rust-gio" ,(@ (gnu packages crates-gtk) rust-gio-0.14)) ; @0.8.1 doesn't build
     ("rust-dlib" ,rust-dlib) ; old rust-dlib and new rust-smithay-client-toolkit are incompatible
     ("rust-gtk-sys" ,(@ (gnu packages crates-gtk) rust-gtk-sys-0.14)) ; @0.10 doesn't build
@@ -4275,6 +4300,8 @@ futures-aware, FIFO queue")
     ;; instead as upstream recommends.
     ("rust-tempdir"
      ,(p rust-tempfile-3))
+    ("rust-version-check"
+     ,(p rust-version-check-0.9)) ; rust-email@0.0.21 needs a new rust-version-check
     ("rust-bare-metal"
      ,(p rust-bare-metal-1))
     ;; The old parking-lot doesn't build against
