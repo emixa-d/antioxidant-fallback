@@ -3326,6 +3326,19 @@ futures-aware, FIFO queue")
 	      (patches
 	       (list (local-file "rust-winit-Update-smithay-client-toolkit.patch")))))))
 
+(define rust-x11rb ; required for compatibility with new rust-nix
+  (package
+    (inherit (@ (gnu packages crates-graphics) rust-x11rb-0.8))
+    (name "rust-x11rb")
+    (version "0.9.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "x11rb" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "12kdvzjfdbv9nkliq9lk6jd70f71q1qaiya24fjy4flbciavx6bf"))))))
+
 (define rust-xml5ever
   (package
     (inherit (p rust-xml5ever-0.16)) ; @0.16 doesn't build against new rust-time
@@ -4299,6 +4312,7 @@ futures-aware, FIFO queue")
     ("rust-wayland-cursor" ,rust-wayland-cursor) ; ditto
     ("rust-wayland-protocols" ,rust-wayland-protocols) ; ditto
     ("rust-winit" ,rust-winit) ; for compatibility against new dependencies
+    ("rust-x11rb" ,rust-x11rb)
     ("rust-xml5ever" ,rust-xml5ever)
     ("rust-zip" ,rust-zip)))
 
