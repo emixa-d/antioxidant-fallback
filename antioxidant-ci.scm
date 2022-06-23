@@ -35,7 +35,9 @@
 
 (define (is-acceptable-leaf-cargo-rust-package? package)
   (and (eq? cargo-build-system (package-build-system package))
-       (not (string-prefix? "rust-" (package-name package)))
+       (or (not (string-prefix? "rust-" (package-name package)))
+	   (member (package-name package)
+		   '("rust-analyzer" "rust-cargo-c"))) ; not libraries
        (not (member (package-name package) %fails-to-build-with-cargo))))
 
 (define (all-packages)
