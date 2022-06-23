@@ -3880,6 +3880,9 @@ futures-aware, FIFO queue")
     ("rust-safe-arch" ,#~'("bytemuck")) ; there are no default features.  Enable "bytemuck", requires by rust-wide@0.6.5
     ("rust-selectors" ,#~'()) ; "bench" feature requires non-stable
     ("rust-serde-json" ,#~'("default"
+			    "preserve_order" ; presumably comes with a small time or space cost, but it seems safe and potentially unsafe to disable, depending on the dependent
+			    "float_roundtrip" ; seems safe, albiet with & 2× performance cost according to the documentation. We don't know which dependents need it and which ones don't, so just enable it to be safe.
+			    "arbitrary_precision" ; seems safe (at worst a compile error in a dependent?), and we don't know which dependents need it and which ones don't.
 			    "unbounded_depth")) ; add a method disable_recursion_limit that is used by rust-cargo-metadata
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
