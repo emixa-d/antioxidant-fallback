@@ -3879,6 +3879,8 @@ futures-aware, FIFO queue")
     ("rust-derive-builder" ,#~'()) ; for now don't build the non-building test features
     ("rust-safe-arch" ,#~'("bytemuck")) ; there are no default features.  Enable "bytemuck", requires by rust-wide@0.6.5
     ("rust-selectors" ,#~'()) ; "bench" feature requires non-stable
+    ("rust-serde-json" ,#~'("default"
+			    "unbounded_depth")) ; add a method disable_recursion_limit that is used by rust-cargo-metadata
     ;; "nested-values" is required by the "nested-values" feature of rust-slog-term
     ("rust-slog" ,#~'("default" "nested-values"))
     ("rust-smallvec" ,#~'("serde" "write")) ; "serde", "serde": required by rust-git-object
