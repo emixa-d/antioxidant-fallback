@@ -287,6 +287,14 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   (lambda _
 	     (substitute* "src/lib.rs"
 	       (("heck::KebabCase::to_kebab_case") "heck::ToKebabCase::to_kebab_case"))))))
+    ;; TODO: upstream
+    ("rust-salsa-macros"
+     ,#~((add-after 'unpack 'new-heck-compatibility
+	   (lambda _
+	     (substitute* '("src/database_storage.rs" "src/query_group.rs")
+	       (("heck::SnakeCase") "heck::ToSnakeCase")
+	       (("heck::CamelCase") "heck::ToUpperCamelCase")
+	       (("to_camel_case") "to_upper_camel_case"))))))
     ;; TODO: Upstream/update
     ("rust-cbindgen"
      ,#~((add-after 'unpack 'use-existing
@@ -625,6 +633,8 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   ;; likewise
 	   ((? (cut string-prefix? "rust-mesalink-1.1.0-cratesio" <>) name)
 	    "rust-mesalink")
+	   ((? (cut string-prefix? "rust-salsa-macros-0.17.0-pre.2" <>) name)
+	    "rust-salsa-macros")
 	   (_ (drop-version name)))))
     (match (assoc name %custom-phases)
       ((_ phases) phases)
