@@ -281,6 +281,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"ToUpperCamelCase, ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase")
 	       (("to_camel_case") "to_upper_camel_case")
 	       (("to_mixed_case") "to_lower_camel_case"))))))
+    ("rust-arboard"
+     ;; TODO: upstream/update
+     ,#~((add-after 'unpack 'new-image-compatibility
+	   (lambda _
+	     (substitute* "src/common_linux.rs"
+	       (("image::png::PngEncoder") "image::codecs::png::PngEncoder"))))))
     ;; TODO: upstream
     ("rust-argh-derive"
      ,#~((add-after 'unpack 'new-heck-compatibility
