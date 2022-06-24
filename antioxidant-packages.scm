@@ -3958,6 +3958,8 @@ futures-aware, FIFO queue")
     ("rust-tokio-util" ,#~'("full" "codec"))
     ;; early-data is required by rust-trust-dns-proto
     ("rust-tokio-rustls" ,#~'("default" "early-data"))
+    ("rust-tracing-subscriber"
+     ,#~'("default" "env-filter")) ; env-filter is required by rust-chalk-solve@0.75
     ("rust-tree-magic-mini" ,#~'()) ; Don't enable "with-gpl-data". We don't mind GPL in Guix, but enabling this feature causes rust-tree-magic-mini to look for a bundling crate, which will not be packaged in Guix.  Instead, disable that feature and adjust the ‘runtime’ code to look at the data with a baked-in reference to freedesktop's magic data.
     ;; dns-over-openssl is required by rust-trust-dns-openssl.
     ;; dns-over-native-tls is required by rust-trust-dns-native-tls.
