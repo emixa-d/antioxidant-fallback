@@ -4394,6 +4394,7 @@ futures-aware, FIFO queue")
     ("rust-nalgebra" ,(p rust-nalgebra-0.26)) ; replace by building version
     ("rust-nettle-sys" ,rust-nettle-sys-2)
     ("rust-nettle" ,rust-nettle-7)
+    ("rust-ordered-float" ,(p rust-ordered-float-2)) ; resolve version conflict
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
     ("rust-raw-window-handle" ,rust-raw-window-handle)
