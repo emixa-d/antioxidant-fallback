@@ -3081,6 +3081,19 @@ futures-aware, FIFO queue")
                (base32
                 "15nfg6d4qlniw4gk7039s5y07lzgr1dp9snsw63lsxarnyz4zfg5"))))))
 
+(define rust-jsonrpc-core ; @14.0 doesn't build against new rust-futures
+  (package
+    (inherit (p rust-jsonrpc-core-14))
+    (name "rust-jsonrpc-core")
+    (version "18.0.0")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "jsonrpc-core" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "1sv5m6bxyscdqg8cfzlsm8f3vks3972zc9w475l4h19dxxmggxql"))))))
+
 (define rust-s3handler ; @.7 doesn't build against new rust-hmac
   (package
     (inherit (p rust-s3handler-0.7))
@@ -4400,6 +4413,7 @@ futures-aware, FIFO queue")
     ("rust-tiff" ,rust-tiff)
     ("rust-jpeg-decoder" ,rust-jpeg-decoder)
     ("rust-image" ,rust-image)
+    ("rust-jsonrpc-core" ,rust-jsonrpc-core)
     ("rust-lebe" ,rust-lebe)
     ("rust-exr" ,rust-exr)
     ("rust-tikv-jemalloc-sys" ,(p rust-jemalloc-sys-0.3)) ; the tikv fork does bundling (https://issues.guix.gnu.org/56157), and apparently the fork is now mainstream (just a different name), see https://github.com/tikv/jemallocator/pull/25, so no need for two separate packages  (TODO: upstream rust-jemalloc-sys)
@@ -4601,6 +4615,9 @@ futures-aware, FIFO queue")
     #;("rust-boxxy" (("rust-anyhow" ,(@ (gnu packages crates-io) rust-anyhow-1)))) ; TODO: currently useless because in %removed-dependencies, revisit when tests are supported
     ("rust-petgraph" (("rust-indexmap" ,(@ (gnu packages crates-io) rust-indexmap-1))))
     ("sniffglue" (("rust-bstr" ,(@ (gnu packages crates-io) rust-bstr-0.2))))
+    ("rust-jsonrpc-core" ; new inputs for new version
+     (("rust-futures-executor" ,rust-futures-executor-0.3)
+      ("rust-futures-util" ,rust-futures-util-0.3)))
     ("rust-lalrpop" (("rust-tiny-keccak" ,(p rust-tiny-keccak-2))
                      ("rust-pico-args" ,rust-pico-args)))
     ("rust-merge-derive" (("rust-syn" ,(p rust-syn-1)) ; missing inputs
