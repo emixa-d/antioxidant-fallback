@@ -567,6 +567,13 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "Cargo.toml"
 	       (("\\[dependencies.tikv-jemalloc-sys\\]" line)
 		(string-append line "\npackage = \"jemalloc-sys\"")))))))
+    ("rust-ncurses"
+     ,#~((add-before 'configure 'find-library-directory
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     ;; Somehow the library directory is not found, curses!
+	     ;; Work-around thi by manually adding the library directory.
+	     ((@@ (antioxidant) add-c-library-directory!)
+	      (dirname (search-input-file inputs "lib/libncurses.so")))))))
     ("rust-tree-magic-mini"
      ,#~((add-after 'unpack 'use-unbundled-magic-data
 	   (lambda* (#:key inputs #:allow-other-keys)
