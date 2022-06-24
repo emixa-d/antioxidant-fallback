@@ -3840,7 +3840,7 @@ futures-aware, FIFO queue")
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ("rust-polars-core" ,#~'("default" "dtype-time" "dtype-date" "dtype-datetime" ; "dtype-time", "dtype-datetime" and "dtype-date" are required by rust-polars-io's csv support
 			     "performant" ; requested by rust-nu-protocol via rust-polars, and the downside (panic in case of incorrect usage) seems mild
-			     "pivot" "downsample" "is_in" "rolling_window" #;"random" ; required by rust-nu-command (TODO: "random" doesn't build)
+			     "pivot" "downsample" "is_in" "rolling_window" "random" ; required by rust-nu-command
 			     "object" "checked_arithmetic" ; indirectly required by rust-nu-protocol
 			     "serde" "strings" ; required by rust-nu-protocol
 			     "lazy" "private" "zip_with")) ; required by rust-polars-lazy
@@ -4057,6 +4057,10 @@ futures-aware, FIFO queue")
     ("rust-num-bigint" ,(p rust-num-bigint-0.4)) ; avoid multiple versions
     ("rust-num" ,(p rust-num-0.4)) ; avoid multiple versions (TODO: let the CI test if it doesn't cause build failures)
     ("rust-num-complex" ,(p rust-num-complex-0.4)) ; avoid multiple versions (TODO: let the CI test if it doesn't cause build failures)
+    ("rust-polars-core"
+     ,(package-with-extra-patches
+       (p rust-polars-core-0.17)
+       (list (local-file "rust-polars-core-Update-rand.patch"))))
     ("rust-arrayvec" ,(p rust-arrayvec-0.7) ; avoid multiple versions
      #:for-dependent
      ,(lambda (dependent)
