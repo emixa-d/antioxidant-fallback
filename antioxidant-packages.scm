@@ -561,6 +561,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
      ;; required to use rust-cbindgen.
      ,#~((add-after 'load-manifest 'generate-cbindgen-metadata
 		    #$generate-cbindgen-metadata-phase)))
+    ("rust-tikv-jemalloc-ctl"
+     ,#~((add-after 'unpack 'use-conventional-name
+	   (lambda _
+	     (substitute* "Cargo.toml"
+	       (("\\[dependencies.tikv-jemalloc-sys\\]" line)
+		(string-append line "\npackage = \"jemalloc-sys\"")))))))
     ("rust-tree-magic-mini"
      ,#~((add-after 'unpack 'use-unbundled-magic-data
 	   (lambda* (#:key inputs #:allow-other-keys)
