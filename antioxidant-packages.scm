@@ -3898,6 +3898,7 @@ futures-aware, FIFO queue")
     ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
     ("rust-signal-hook-mio" ,#~'("support-v0_8")) ; othef features require an old rust-mio
     ("rust-similar" ,#~'("default" "text" "inline"))
+    ("rust-text-size" ,#~'("serde")) ; Has no default features. Enable "serde", which is required by rust-rowan@1.15.2
     ("rust-derive-builder" ,#~'()) ; for now don't build the non-building test features
     ("rust-safe-arch" ,#~'("bytemuck")) ; there are no default features.  Enable "bytemuck", requires by rust-wide@0.6.5
     ("rust-selectors" ,#~'()) ; "bench" feature requires non-stable
