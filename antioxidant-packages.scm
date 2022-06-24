@@ -4420,7 +4420,8 @@ futures-aware, FIFO queue")
     ("rust-jsonrpc-core" ,rust-jsonrpc-core)
     ("rust-lebe" ,rust-lebe)
     ("rust-exr" ,rust-exr)
-    ("rust-tikv-jemalloc-sys" ,(p rust-jemalloc-sys-0.3)) ; the tikv fork does bundling (https://issues.guix.gnu.org/56157), and apparently the fork is now mainstream (just a different name), see https://github.com/tikv/jemallocator/pull/25, so no need for two separate packages  (TODO: upstream rust-jemalloc-sys)
+    ("rust-tikv-jemalloc-sys" ,(p rust-jemalloc-sys-0.3)) ; the tikv fork does bundling (https://issues.guix.gnu.org/56157), and apparently the fork is now mainstream (just a different name), see https://github.com/tikv/jemallocator/pull/25, so no need for two separate packages  (TODO: upstream rust-jemalloc-sys, TODO: update rust-jemalloc-sys)
+    ("rust-tikv-jemallocator" ,(p rust-jemallocator-0.3)) ; likewise
     ("rust-lalrpop" ,rust-lalrpop)
     ("rust-lalrpop-util" ,rust-lalrpop-util)
     ("rust-nalgebra" ,(p rust-nalgebra-0.26)) ; replace by building version
