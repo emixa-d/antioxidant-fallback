@@ -634,6 +634,15 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	       (("\\bnum_seconds\\(\\)") "whole_seconds()")
 	       (("\\bnum_nanoseconds\\(\\)") "whole_nanoseconds()") ; technically has a different semantics but in this context the result is the same
 	       (("\\.expect\\(\"Unexpected overflow\"\\) as u32") "as u32"))))))
+    ("circtools"
+     ,#~((add-after 'unpack 'fixup-link-search
+	   ;; TODO: what's the rustc-flags=-L for?
+	   ;; Why not rustc-link-search?
+	   ;; What's up with separate lib/lib64 directories?
+	   (lambda _
+	     (substitute* "build.rs"
+	       (("\\bdst\\.display\\(\\)") (object->string "build/lib"))
+	       (("^.*cargo:rustc-flags=.*$") ""))))))
     ("rust-cc"
      ,#~((add-after 'unpack 'fix-cc
 	   (lambda _
