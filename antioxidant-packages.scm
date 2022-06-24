@@ -3966,6 +3966,7 @@ futures-aware, FIFO queue")
     ("rust-winit" ,#~'("x11" "wayland")) ; don't enable the default wayland-dlopen feature, because it's not necessary and fragile in Guix. (TODO: doesn't build yet)
     ("rust-xcb" ,#~'("thread" "xfixes")) ; not all features build, for now only enable features required by rust-x11-clipboard.
     ("rust-xz2" ,#~'("futures")) ; ???
+    ("rust-x11" ,#~'("dpms" "xcursor" "xf86vmode" "xft" "xinerama" "xinput" "xlib" "xlib_xcb" "xmu" "xrandr" "xrecord" "xrender" "xss" "xt" "xtest" "xtst")) ; disable the "dox" feature, which causes build.rs to not actually look for the x11 library.  TODO: glx requires gl.pc, maybe some dependent requires that ...
     ("rust-x11rb" ,#~'("allow-unsafe-code" "cursor" "image" "resource_manager" "all-extensions")) ; disable libloading/dlopen, which is fragile and unnecessary
     ;; rust-rcgen requires "time". While at it, enable other
     ;; features as well.
@@ -4647,6 +4648,19 @@ futures-aware, FIFO queue")
       ("rust-futures-util" ,rust-futures-util-0.3)))
     ("rust-tokio-util"
      (("rust-tracing" ,(p rust-tracing-0.1)))) ; missing dependency
+    ("rust-x11" ; missing inputs
+     (("libx11" ,(@ (gnu packages xorg) libx11))
+      ("libxcursor" ,(@ (gnu packages xorg) libxcursor))
+      ("libxext" ,(@ (gnu packages xorg) libxext))
+      ("libxft" ,(@ (gnu packages xorg) libxft))
+      ("libxi" ,(@ (gnu packages xorg) libxi))
+      ("libxinerama" ,(@ (gnu packages xorg) libxinerama))
+      ("libxmu" ,(@ (gnu packages xorg) libxmu))
+      ("libxrandr" ,(@ (gnu packages xorg) libxrandr))
+      ("libxscrnsaver" ,(@ (gnu packages xorg) libxscrnsaver))
+      ("libxt" ,(@ (gnu packages xorg) libxt))
+      ("libxtst" ,(@ (gnu packages xorg) libxtst))
+      ("libxxf86vm" ,(@ (gnu packages xorg) libxxf86vm))))
     ("rust-warp" ; new dependencies for new version
      (("rust-futures-channel" ,(p rust-futures-channel-0.3))
       ("rust-futures-util" ,(p rust-futures-util-0.3))
