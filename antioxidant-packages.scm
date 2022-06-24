@@ -4432,6 +4432,8 @@ futures-aware, FIFO queue")
      (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
     ("rust-buffering-nocopy-macro" ; for new phase
      (("rust-proc-macro2" ,(p rust-proc-macro2-1))))
+    ("circtools" ; missing input (TODO: actually a native-input)
+     (("rust-cc" ,(p rust-cc-1))))
     ("rust-raw-window-handle" ; new input for new dependency
      (("rust-cty" ,(p rust-cty-0.2))))
     ("rust-smithay-client-toolkit" ; new inputs for new version
