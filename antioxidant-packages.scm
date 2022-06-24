@@ -4480,6 +4480,10 @@ futures-aware, FIFO queue")
 (define %extra-inputs
   `(("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
+    ("rust-arboard"
+     (("rust-log" ,(p rust-log-0.4))
+      ("rust-once-cell" ,(p rust-once-cell-1))
+      ("rust-parking-lot" ,(p rust-parking-lot-0.11))))
     ("rust-aom-sys"
      (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
     ("rust-buffering-nocopy-macro" ; for new phase
