@@ -255,6 +255,25 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   (lambda* (#:key inputs #:allow-other-keys)
 	     (setenv "JEMALLOC_OVERRIDE"
 		     (search-input-file inputs "lib/libjemalloc.so.2"))))))
+    ("nushell"
+     ,#~((add-after 'unpack 'unbundle-self
+	   (lambda _
+	     (delete-file-recursively "src/plugins") ; we have separate rust-nu-plugin-... packages, so no need to build them again (TODO: add wrap-program)
+	     (delete-file-recursively "crates") ; we have individual rust-nu-... packages
+	     ;; TODO: build-binaries tries to build things anyway even though they were removed.
+	     ;; For now, work-around
+	     (substitute* "Cargo.toml"
+	       (("\\[\\[bin\\]\\]") "[[bogus]]"))))))
+    ;; TODO: slow to compile nushell on my computer, let ci.guix.gnu.org
+    ;; compile things, then continue with checking "nushell".
+    ;; TODO: maybe compile nushell things with opt-level=s,
+    ;; as done in the Cargo.toml?
+    ("rust-nu-ansi-term"
+     ,#~((add-after 'unpack 'avoid-difficult-rustc-errors-in-nushell
+	   (lambda _
+	     (substitute* "src/style.rs"
+	       (("#!\\[crate_name (.*)") "")
+	       (("#!\\[crate_type (.*)") ""))))))
     ;; TODO: upstream / update
     ("rust-x509-parser"
      ,#~((add-after 'unpack 'use-nondeprecated
