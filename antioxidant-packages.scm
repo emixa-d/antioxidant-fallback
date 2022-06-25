@@ -271,7 +271,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
     ("rust-nu-ansi-term"
      ,#~((add-after 'unpack 'avoid-difficult-rustc-errors-in-nushell
 	   (lambda _
-	     (substitute* "src/style.rs"
+	     (substitute* "src/lib.rs"
 	       (("#!\\[crate_name (.*)") "")
 	       (("#!\\[crate_type (.*)") ""))))))
     ;; TODO: upstream / update
