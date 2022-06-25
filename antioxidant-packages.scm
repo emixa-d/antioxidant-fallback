@@ -3158,6 +3158,19 @@ futures-aware, FIFO queue")
                (base32
                 "0365asqd8v2iij8sl0282rrc0ixzkixl0jr0m2day0vfjnznr347"))))))
 
+(define rust-lettre
+  (package
+    (inherit (p rust-lettre-0.9))
+    (name "rust-lettre")
+    (version "0.10.0-rc.7")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "lettre" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0i1r8mpdrwvq64blzfz8b1g0vcgw81silyyqmfkywqj1skcqfzhg"))))))
+
 (define rust-postgres-types ; old version doesn't build against new rust-time
   (package
     (inherit (p rust-postgres-types-0.2))
@@ -4132,6 +4145,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-actix-service" ,rust-actix-service)
     ("rust-awc" ,rust-awc)
     ("rust-chacha20poly1305" ,rust-chacha20poly1305)
+    ("rust-lettre" ,rust-lettre)
     ("rust-libsqlite3-sys" ,(p rust-libsqlite3-sys-0.23)) ; custom phase assumes != @0.20
     ("rust-libgit2-sys" ,(p rust-libgit2-sys-0.12)) ; old version doesn't build.
     ("rust-markup5ever" ,(p rust-markup5ever-0.9)) ; @0.9 doesn't build against new rust-phf-... without patches, but we still need it because monolith doesn't support the new rust-markup5ever@0.10 yet
@@ -4698,6 +4712,15 @@ RFC-compliant `EmailAddress` newtype. ")
 		  ("rust-base64ct" ,(p rust-base64ct-1)) ; missing dep
 		  ("rust-sha2" ,(@ (gnu packages crates-io) rust-sha2-0.10))))
     ("rust-image" (("rust-exr" ,rust-exr)))
+    ("rust-lettre"
+     (("rust-socket2" ,(p rust-socket2-0.4))
+      ("rust-fastrand" ,(p rust-fastrand-1))
+      ("rust-email-address" ,rust-email-address)
+      ("rust-email-encoding" ,rust-email-encoding)
+      ("rust-idna" ,(p rust-idna-0.2))
+      ("rust-mime" ,(p rust-mime-0.3))
+      ("rust-httpdate" ,(p rust-httpdate-1))
+      ("rust-quoted-printable" ,(p rust-quoted-printable-0.4))))
     ("rust-libsqlite3-sys" (("sqlite" ,(@ (gnu packages sqlite) sqlite)))) ; missing dependencies (the old versions of rust-libsqlite3-sys acurately add this dependency!),see #56032
     ;; contains pkg-config files
     ("rust-mysqlclient-sys" (("mariadb:dev" ,(@ (gnu packages databases) mariadb) "dev")))
