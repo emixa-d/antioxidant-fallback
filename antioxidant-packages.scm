@@ -290,14 +290,14 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     ;; TODO: maybe some substitute*-ions or a search path would be better?
 	     ;; Use prefix instead of =, because this is a shell.
 	     (wrap-program (string-append #$output "/bin/nu")
-	       `(("PATH" prefix
-		  ,(map (lambda (plugin)
-			  (dirname
-			   (search-input-file inputs
-					      (string-append "bin/nu_plugin_" plugin))))
-			'("binaryview" "chart_bar" "from_bson" "from_sqlite" "inc"
-			  "match" "query_json" "s3" "selector" "start" "textview"
-			  "to_bson" "to_sqlite" "tree" "xpath")))))))))
+	       `("PATH" ":" prefix
+		 ,(map (lambda (plugin)
+			 (dirname
+			  (search-input-file inputs
+					     (string-append "bin/nu_plugin_" plugin))))
+		       '("binaryview" "chart_bar" "from_bson" "from_sqlite" "inc"
+			 "match" "query_json" "s3" "selector" "start" "textview"
+			 "to_bson" "to_sqlite" "tree" "xpath"))))))))
     ("rust-nu-plugin-binaryview" ,nu-plugin-phases)
     ("rust-nu-plugin-chart" ,nu-plugin-phases)
     ("rust-nu-plugin-from-bson" ,nu-plugin-phases)
