@@ -298,6 +298,27 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		       '("binaryview" "chart_bar" "from_bson" "from_sqlite" "inc"
 			 "match" "query_json" "s3" "selector" "start" "textview"
 			 "to_bson" "to_sqlite" "tree" "xpath"))))))))
+    ("rust-shadow-rs"
+     ,#~((add-after 'unpack 'fixup-source-date-epoch
+	   (lambda _
+	     ;; TODO: it nominally supports SOURCE_DATE_EPOCH, yet something things go wrong,
+	     ;; as the shadow.rs still contains the unnormalised time stamp ...
+	     ;; For now, do a work-around.
+	     (substitute* '("src/lib.rs" "src/env.rs")
+	       (("BuildTime::Local\\(Local::now\\(\\)\\)\\.human_format\\(\\)")
+		(object->string "[timestamp expunged for reproducibility]"))
+	       (("time\\.human_format\\(\\)")
+		"\"[timestamp expunged for reproducibility]\".to_string()")
+	       (("time\\.to_rfc3339_opts\\(SecondsFormat::Secs, true)")
+		"\"[timestamp expunged for reproducibility]\".to_string()")
+	       (("time\\.to_rfc2822\\(\\)")
+		"\"[timestamp expunged for reproducibility]\".to_string()"))))
+	 (add-after 'unpack 'more-reproducibility ;; by default, it uses a hashmap (TODO: upstream?)
+	   (lambda _ ;; TODO not sufficient, still irreproducible (but still improved)!!
+	     (substitute* "src/lib.rs" ; sort
+	       (("\\(k, v\\) in self\\.map\\.clone\\(\\)")
+		"(k, v) in std::collections::BTreeMap::from_iter(self.map.clone().iter())")
+	       (("self\\.write_const\\(k, v\\)") "self.write_const(k, v.clone())"))))))
     ("rust-nu-plugin-binaryview" ,nu-plugin-phases)
     ("rust-nu-plugin-chart" ,nu-plugin-phases)
     ("rust-nu-plugin-from-bson" ,nu-plugin-phases)
