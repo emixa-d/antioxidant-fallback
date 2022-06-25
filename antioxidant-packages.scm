@@ -690,6 +690,24 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
       ((_ phases) phases)
       (#false #~()))))
 
+;; 4.7.1 has an incompatible change, see
+;; <https://github.com/aconchillo/guile-json/issues/78#issuecomment-1166225845>.
+;; Let's see wait to see what the maintainer thinks of (partially) reverting
+;; that commit.
+(define-public guile-json-4
+  (package
+    (inherit (@ (gnu packages guile) guile-json-4))
+    (name "guile-json")
+    (version "4.5.2")
+    (source (origin
+              (method url-fetch)
+              (uri (string-append "mirror://savannah/guile-json/guile-json-"
+                                  version ".tar.gz"))
+              (sha256
+               (base32
+                "0cqr0ljqmzlc2bwrapcsmcgxg147h66mcxf23824ri5i6vn4dc0s"))))))
+
+
 (define* (antioxidant-build name inputs #:key
 			    (phases #~%standard-antioxidant-phases)
 			    (rust-dynamic-library-arguments #false)
