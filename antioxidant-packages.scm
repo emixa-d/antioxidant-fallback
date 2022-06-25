@@ -4093,6 +4093,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
     ("rust-aho-corasick" ,(p rust-aho-corasick-0.7)) ; avoid version conflict
     ("rust-average" ,(p rust-average-0.13)) ; avoid complication due to multiple versions
+    ("rust-blake3" ,(@ (gnu packages crypto) rust-blake3-1)) ; @0.3.8 doesn't build against new crypto libraries
     ("rust-buffering" ,(p rust-buffering-0.4)) ; @0.3 doesn't build
     ("rust-buffering-nocopy-macro" ,(p rust-buffering-nocopy-macro-0.2)) ; @0.1 doesn't build
     ("rust-calloop" ,rust-calloop)
