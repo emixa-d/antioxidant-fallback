@@ -3361,6 +3361,27 @@ futures-aware, FIFO queue")
                (base32
                 "0gkv0lgs1apmq3w13pj2qr2bxiy42hw3vgi1jsb705l3p01hadk5"))))))
 
+(define rust-email-address ; required by new rust-lettre
+  (package
+    (name "rust-email-address")
+    (version "0.2.1")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "email-address" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "13j6s1qz5x13rdc0zrmsjfdqqqdshksrwqmrwnhxyms8rg4vg146"))))
+    (build-system antioxidant-build-system)
+    (inputs (list (vitaminate/auto (p rust-serde-1))))
+    (home-page "https://github.com/johnstonskj/rust-email_address.git")
+    (synopsis
+     "A Rust crate providing an implementation of an RFC-compliant `EmailAddress` newtype. ")
+    (description
+     "This package provides a Rust crate providing an implementation of an
+RFC-compliant `EmailAddress` newtype. ")
+    (license license:expat)))
+
 (define rust-email-encoding ; for compatibility with new rust-lettre
   (package
     (name "rust-email-encoding")
