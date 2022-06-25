@@ -90,6 +90,27 @@
       (setenv "ANTIOXIDANT_CBINDGEN_METADATA" (in-vicinity (getcwd) ".cbindgen-metadata.json"))
       #;(copy-file #$(local-file "md.js") (getenv "ANTIOXIDANT_CBINDGEN_METADATA"))))
 
+(define nu-plugin-phases
+  ;; Otherwise, building nushell will fail with:
+  ;;   warning: #<<crate-mapping> dependency-name: "nu" local-name: "nu"> not found in the available crates -- this might cause the build to fail!
+  ;; error[E0460]: found possibly newer version of crate `nu_command` which `nu_cli` depends on
+  ;;  --> src/main.rs:1:5
+  ;;   |
+  ;; 1 | use nu_cli::App as CliApp;
+  ;;   |     ^^^^^^
+  ;;   |
+  ;;   = note: perhaps that crate needs to be recompiled?
+  ;;   = note: the following crate versions were found:
+  ;;           crate `nu_command`: /gnu/store/[...]-rust-nu-command-0.44.0/lib/guixcrate/libnu_command.rlib
+  ;;           crate `nu_cli`: /gnu/store/[...]-rust-nu-cli-0.44.0/lib/guixcrate/libnu_cli.rlib
+  ;;
+  ;; TODO: maybe delete the compiled static libraries automatically when there's a main binary?
+  ;; Would save disk space, and if the dependencies are compiled statically, possibly reduce the
+  ;; closure ...
+  #~((add-after 'install 'delete-libraries
+       (lambda _
+	 (delete-file-recursively (string-append #$output "/lib"))))))
+	  
 (define %custom-phases
   ;; TODO home page is incorrect
   `(("rust-servo-fontconfig-sys"
@@ -263,7 +284,35 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     ;; TODO: build-binaries tries to build things anyway even though they were removed.
 	     ;; For now, work-around
 	     (substitute* "Cargo.toml"
-	       (("\\[\\[bin\\]\\]") "[[bogus]]"))))))
+	       (("\\[\\[bin\\]\\]") "[[bogus]]"))))
+	 (add-after 'build-binaries 'find-plugins
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     ;; TODO: maybe some substitute*-ions or a search path would be better?
+	     ;; Use prefix instead of =, because this is a shell.
+	     (wrap-program (string-append #$output "/bin/nu")
+	       `(("PATH" prefix
+		  ,(map (lambda (plugin)
+			  (dirname
+			   (search-input-file inputs
+					      (string-append "bin/nu_plugin_" plugin))))
+			'("binaryview" "chart_bar" "from_bson" "from_sqlite" "inc"
+			  "match" "query_json" "s3" "selector" "start" "textview"
+			  "to_bson" "to_sqlite" "tree" "xpath")))))))))
+    ("rust-nu-plugin-binaryview" ,nu-plugin-phases)
+    ("rust-nu-plugin-chart" ,nu-plugin-phases)
+    ("rust-nu-plugin-from-bson" ,nu-plugin-phases)
+    ("rust-nu-plugin-from-sqlite" ,nu-plugin-phases)
+    ("rust-nu-plugin-inc" ,nu-plugin-phases)
+    ("rust-nu-plugin-match" ,nu-plugin-phases)
+    ("rust-nu-plugin-query-json" ,nu-plugin-phases)
+    ("rust-nu-plugin-s3" ,nu-plugin-phases)
+    ("rust-nu-plugin-selector" ,nu-plugin-phases)
+    ("rust-nu-plugin-start" ,nu-plugin-phases)
+    ("rust-nu-plugin-textview" ,nu-plugin-phases)
+    ("rust-nu-plugin-to-bson" ,nu-plugin-phases)
+    ("rust-nu-plugin-to-sqlite" ,nu-plugin-phases)
+    ("rust-nu-plugin-tree" ,nu-plugin-phases)
+    ("rust-nu-plugin-xpath" ,nu-plugin-phases)
     ;; TODO: slow to compile nushell on my computer, let ci.guix.gnu.org
     ;; compile things, then continue with checking "nushell".
     ;; TODO: maybe compile nushell things with opt-level=s,
