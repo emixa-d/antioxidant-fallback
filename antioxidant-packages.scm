@@ -3361,6 +3361,28 @@ futures-aware, FIFO queue")
                (base32
                 "0gkv0lgs1apmq3w13pj2qr2bxiy42hw3vgi1jsb705l3p01hadk5"))))))
 
+(define rust-email-encoding ; for compatibility with new rust-lettre
+  (package
+    (name "rust-email-encoding")
+    (version "0.1.2")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "email-encoding" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "06xljszqdicpys16jghyvr5199pqhjh3zjjl0jmmim94dnw1yzl2"))))
+    (build-system (@ (guix build-system cargo) cargo-build-system))
+    (arguments
+     `(#:cargo-inputs (("rust-base64" ,(p rust-base64-0.13))
+		       ("rust-memchr" ,(p rust-memchr-2)))
+       #:cargo-development-inputs
+       (("rust-pretty-assertions" ,(p rust-pretty-assertions-0.7)))))
+    (home-page "")
+    (synopsis "Low level email encoding RFCs implementations")
+    (description "Low level email encoding RFCs implementations")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-pangocairo
   (package
     (inherit (@ (gnu packages crates-gtk) rust-pangocairo-0.9)) ; make it build
