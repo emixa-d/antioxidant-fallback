@@ -5181,6 +5181,22 @@ RFC-compliant `EmailAddress` newtype. ")
    (description #f)
    (license #f)))
 
+(define-public antioxidated-b3sum ; new version required for compatibility with new rust-blake3. Not updated to @1.3.1, because that requires updating non-trivial dependencies.
+  (public-test-package
+   (vitaminate/auto
+    (package
+      (inherit (@ (gnu packages crypto) b3sum))
+      (name "b3sum")
+      (version "1.0.0")
+      (source (origin
+		(method url-fetch)
+		(uri (crate-uri "b3sum" version))
+		(file-name (string-append name "-" version ".tar.gz"))
+		(sha256
+		 (base32
+                  "1rq0yqqzrxwqi2c90pzl4v9g6a2gcbvirp8knbgyq38jb0cshvfr"))))))))
+
+
 ;; For local development
 (list antioxidated-rust-bindgen
       antioxidated-agate
