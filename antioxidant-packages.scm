@@ -313,12 +313,13 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"\"[timestamp expunged for reproducibility]\".to_string()")
 	       (("time\\.to_rfc2822\\(\\)")
 		"\"[timestamp expunged for reproducibility]\".to_string()"))))
-	 (add-after 'unpack 'more-reproducibility ;; by default, it uses a hashmap (TODO: upstream?)
-	   (lambda _ ;; TODO not sufficient, still irreproducible (but still improved)!!
+	 (add-after 'unpack 'more-reproducibility ;; by default, it uses a hashmap, leading to an irreproducible ordering in shadow.rs and hence an irreproducible .rmeta (TODO: upstream?)
+	   (lambda _
 	     (substitute* "src/lib.rs" ; sort
 	       (("\\(k, v\\) in self\\.map\\.clone\\(\\)")
 		"(k, v) in std::collections::BTreeMap::from_iter(self.map.clone().iter())")
-	       (("self\\.write_const\\(k, v\\)") "self.write_const(k, v.clone())"))))))
+	       (("self\\.write_const\\(k, v\\)") "self.write_const(k, v.clone())")
+	       (("self\\.map\\.keys\\(\\)") "std::collections::BTreeSet::from_iter(self.map.keys())"))))))
     ("rust-nu-plugin-binaryview" ,nu-plugin-phases)
     ("rust-nu-plugin-chart" ,nu-plugin-phases)
     ("rust-nu-plugin-from-bson" ,nu-plugin-phases)
