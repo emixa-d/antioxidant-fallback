@@ -4120,6 +4120,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-hmac-sha1" ,(package-with-extra-patches
 			(p rust-hmac-sha1-0.1)
 			(list (local-file "rust-hmac-sha1-update-dependencies.patch")))) ; compatibility with new dependencies
+    ("rust-hostname" ,(p rust-hostname-0.3)) ; rust-lettre requires new version
     ("rust-h2" ,rust-h2)
     ("rust-rand-core" ,(p rust-rand-core-0.6)) ; avoid multiple versions
     ("rust-blake2" ,rust-blake2)
