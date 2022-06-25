@@ -22,7 +22,7 @@
 	     ((guix build-system gnu) #:select (%gnu-build-system-modules))
 	     (gnu packages compression) (gnu packages python) (gnu packages python-build)
 	     (gnu packages guile) (ice-9 match) (srfi srfi-1) (srfi srfi-71)
-	     (gnu packages rust-apps) (guix utils) (srfi srfi-26)
+	     (gnu packages rust-apps) (guix utils) (srfi srfi-26) (guix download)
 	     (guix git-download) (ice-9 optargs) ((guix licenses) #:prefix license:)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
 
@@ -811,7 +811,6 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
   (syntax-rules ()
     ((_ foo) (@ (gnu packages crates-io) foo))))
 
-(use-modules (guix download))
 (define crate-uri (@ (guix build-system cargo) crate-uri))
 
 (define* (package-with-rust-features base new-features #:key (name (package-name base))
