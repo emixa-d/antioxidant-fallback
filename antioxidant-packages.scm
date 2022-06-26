@@ -3669,7 +3669,10 @@ RFC-compliant `EmailAddress` newtype. ")
     "rust-heapsize-plugin" ; makes use of removed features
     "rust-rustc-test" ; doesn't build against recent rust-time
     "rust-serde-hjson" ; doesn't build against new rust-serde
-    "rust-mio-uds" ; doesn't build against new rust-mio, now included in new rust-mio
+    ("rust-mio-uds" ; doesn't build against new rust-mio, now included in new rust-mio
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (string=? (package-name dependent) "rust-signal-hook-mio+old"))))
     "rust-speculate" ; @0.1.2 doesn't build against recent rust-syn
     "rust-skeptic" ; @0.13.4 doesn't build
     "rust-termbox-sys" ; downloads the library it wraps at compile time, cannot have work in Guix in the first place. 
@@ -4085,7 +4088,6 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-servo-fontconfig-sys" ,#~'("force_system_lib")) ; be extra sure the bundled copy isn't used
     ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
     ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
-    ("rust-signal-hook-mio" ,#~'("support-v0_8")) ; othef features require an old rust-mio
     ("rust-similar" ,#~'("default" "text" "inline"))
     ("rust-text-size" ,#~'("serde")) ; Has no default features. Enable "serde", which is required by rust-rowan@1.15.2
     ("rust-derive-builder" ,#~'()) ; for now don't build the non-building test features
@@ -4307,6 +4309,21 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-s3handler" ,rust-s3handler)
     ("rust-cookie-store" ,rust-cookie-store) ; fix failing build by updating
     ("rust-cookie-store-15" ,rust-cookie-store)
+    ("rust-signal-hook-mio"
+     ,(package-with-rust-features rust-signal-hook-mio
+				  #~'("support-v0_8")
+				  #:name "rust-signal-hook-mio")
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (member (package-name dependent) '("rust-alacritty-terminal")))))
+    ("rust-signal-hook-mio"
+     ,(package-with-rust-features rust-signal-hook-mio
+				  #~'("support-v0_6")
+				  #:name "rust-signal-hook-mio+old"
+				  #:rust-metadata "guix-variant=support-v0_6")
+     #:for-dependent ; rust-alacritty-terminal needs the old rust-mio for now
+     ,(lambda (dependent)
+	(member (package-name dependent) '("rust-alacritty-terminal"))))
     ("rust-structopt" ,(p rust-structopt-0.3))
     ("rust-structopt-derive" ,(p rust-structopt-derive-0.4)) ; @0.2.18 doesn't build
     ("rust-tectonic-bridge-core" ,(p rust-tectonic-bridge-core-0.3)) ; to keep custom phases simple, only use a single version
@@ -4347,6 +4364,7 @@ RFC-compliant `EmailAddress` newtype. ")
      ,(lambda (dependent)
 	(not (or (string=? (package-name dependent) "rust-mio-extras")
 		 (string=? (package-name dependent) "rust-mio-uds")
+		 (string=? (package-name dependent) "rust-signal-hook-mio+old")
 		 (and (string=? (package-name dependent) "rust-notify")
 		      (string-prefix? "4." (package-version dependent)))))))
     ("rust-mio" ,(package-with-rust-features (p rust-mio-0.6)
@@ -4355,6 +4373,7 @@ RFC-compliant `EmailAddress` newtype. ")
      ,(lambda (dependent)
 	(or (string=? (package-name dependent) "rust-mio-extras")
 	    (string=? (package-name dependent) "rust-mio-uds") ; requires old rust-mio
+	    (string=? (package-name dependent) "rust-signal-hook-mio+old")
 	    (and (string=? (package-name dependent) "rust-notify")
 		 (string-prefix? "4." (package-version dependent))))))
     ("rust-signal-hook-mio" ,rust-signal-hook-mio)
