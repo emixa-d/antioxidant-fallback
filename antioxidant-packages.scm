@@ -4112,6 +4112,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-serde" ,#~'("std" "alloc" "derive"
 		       "rc")) ; rc: required by rust-nu-protocol
     ("rust-servo-fontconfig-sys" ,#~'("force_system_lib")) ; be extra sure the bundled copy isn't used
+    ("rust-shadow-rs" ,#~'()) ; no need for the 'git2' feature in Guix, which brings in lots of dependents
     ;; Avoid "digest_trait" which requires old rust-digest@0.9.0
     ("rust-sha1collisiondetection" ,#~'("std" "structopt"))
     ("rust-similar" ,#~'("default" "text" "inline"))
