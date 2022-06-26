@@ -3995,6 +3995,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ;; The "dox" feature requires non-stable.
     ("rust-glib" ,#~'("log" "log_macros" "v2_68")) ; likewise
     ("rust-glib-sys" ,#~'("v2_68"))
+    ("rust-glutin" ,#~'("default" "serde")) ; required by alacritty
     ("rust-gobject-sys" ,#~'("v2_68")) ; likewise
     ("rust-gtk" ,#~'("v3_24_9")) ; likewise (for dox)
     ("rust-gtk-sys" ,#~'("v3_24_11")) ; likewise (for dox)
