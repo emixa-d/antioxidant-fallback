@@ -3872,7 +3872,6 @@ RFC-compliant `EmailAddress` newtype. ")
     ;; TODO: quickcheck with an exception for sequoia-pg
 
     ;; TODO: untested removals
-    "rust-vcpkg" ; only for interacting with the vcpkg package manager
     "rust-riscv" ; maybe optional, also riscv is not yet supported by Rust in Guix
     ("rust-shadow-rs" -> "rust-git2") ; optional, also unused in Guix (there's no git repo in the build environment)
     ))
