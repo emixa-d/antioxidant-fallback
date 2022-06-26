@@ -1191,6 +1191,20 @@ version is 0), if it is in %automatic-metadata.."
                (base32
                 "0z78vwr4apw2h8c6iijv8xvvsvjq9c87ky8v36mz2cskx1cbp8rl"))))))
 
+;; From: https://issues.guix.gnu.org/54299 (make sure to include attribution!)
+(define rust-alacritty-terminal
+  (package
+   (inherit (p rust-alacritty-terminal-0.15))
+   (name "rust-alacritty-terminal")
+   (version "0.16.1")
+   (source
+    (origin
+     (method url-fetch)
+     (uri (crate-uri "alacritty_terminal" version))
+     (file-name (string-append name "-" version ".tar.gz"))
+     (sha256
+      (base32 "0bvffvjmkran068p9bz0p9nrkj1k4bggd7q39mszjfafz155vyq2"))))))
+
 (define rust-dlib
   (package
     (inherit (p rust-dlib-0.4)) ; new rust-smithay-client-toolkit needs new rust-dlib to build without 'dlopen'
@@ -3681,8 +3695,9 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-mio-extras" ; doesn't build against new rust-mio, so avoid it where possible.  Don't remove it unconditionally, because it's required by rust-notify@4 and rust-notify@4 is required by rust-watchexec
      #:for-dependent
      ,(lambda (dependent)
-	(not (and (string=? "rust-notify" (package-name dependent))
-		  (string-prefix? "4." (package-version dependent))))))
+	(not (or (and (string=? "rust-notify" (package-name dependent))
+		      (string-prefix? "4." (package-version dependent)))
+		 (string=? "rust-alacritty-terminal" (package-name dependent))))))
     "rust-tokio-tls" ; @0.3.1 doesn't build
     "rust-rust-hawktracer-sys" ; only for tracing (debugging-only), so maybe the build failure can be avoided?
     "rust-ntest" "rust-ntest-test-cases" ; test-only, and @0.3.4 tries using non-exported syn::export
@@ -4188,6 +4203,7 @@ RFC-compliant `EmailAddress` newtype. ")
 
 (define %replacements
   `(("rust-approx" ,(p rust-approx-0.5)) ; resolve version conflict
+    ("rust-alacritty-terminal" ,rust-alacritty-terminal) ; resolve build failure
     ("rust-atk-sys" ,(@ (gnu packages crates-gtk) rust-atk-sys-0.14)) ; @0.10 doesn't build
     ("rust-aho-corasick" ,(p rust-aho-corasick-0.7)) ; avoid version conflict
     ("rust-average" ,(p rust-average-0.13)) ; avoid complication due to multiple versions
@@ -4364,6 +4380,7 @@ RFC-compliant `EmailAddress` newtype. ")
      ,(lambda (dependent)
 	(not (or (string=? (package-name dependent) "rust-mio-extras")
 		 (string=? (package-name dependent) "rust-mio-uds")
+		 (string=? (package-name dependent) "rust-alacritty-terminal")
 		 (string=? (package-name dependent) "rust-signal-hook-mio+old")
 		 (and (string=? (package-name dependent) "rust-notify")
 		      (string-prefix? "4." (package-version dependent)))))))
@@ -4373,6 +4390,7 @@ RFC-compliant `EmailAddress` newtype. ")
      ,(lambda (dependent)
 	(or (string=? (package-name dependent) "rust-mio-extras")
 	    (string=? (package-name dependent) "rust-mio-uds") ; requires old rust-mio
+	    (string=? (package-name dependent) "rust-alacritty-terminal")
 	    (string=? (package-name dependent) "rust-signal-hook-mio+old")
 	    (and (string=? (package-name dependent) "rust-notify")
 		 (string-prefix? "4." (package-version dependent))))))
@@ -4690,6 +4708,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-log" ,(p rust-log-0.4))
       ("rust-once-cell" ,(p rust-once-cell-1))
       ("rust-parking-lot" ,(p rust-parking-lot-0.11))))
+    ("rust-alacritty-terminal" ; new deps for new version
+     (("rust-signal-hook-mio" ,(p rust-signal-hook-mio-0.2))))
     ("rust-aom-sys"
      (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
     ("rust-buffering-nocopy-macro" ; for new phase
