@@ -4023,7 +4023,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-libnghttp2-sys" ,#~'()) ; don't enable the "vendored" feature
     ;; Required by rust-env-logger.
     ;; kv_unstable is required by rust-kv-log-macro.
-    ("rust-log" ,#~'("std" "kv_unstable"))
+    ;; "serde" is required by rust-alacritty
+    ("rust-log" ,#~'("std" "kv_unstable" "serde")) ;
     ("rust-lzma-sys" ,#~'()) ; don't enable "static" (TODO: add it to the list in antioxidant?)
     ;; Required by rust-tokio
     ;; TODO remove os-poll, as implied features are implemented.
