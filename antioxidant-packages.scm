@@ -3681,6 +3681,7 @@ RFC-compliant `EmailAddress` newtype. ")
     "rust-ntest" "rust-ntest-test-cases" ; test-only, and @0.3.4 tries using non-exported syn::export
     "rust-afl" ; TODO: move to 'native-inputs'/development-inputs
     "rust-js-sys" ; TODO: guix doesn't support those targets (yet)
+    "rust-lettre-email" ; current version doesn't build, and seems to have been merged into rust-lettre itself.
     "rust-cortex-m" ; ARM targets not yet supported for Rust in Guix
     ;;"rust-cc" ;; todo: build.rs, hence move to 'native-inputs'?
     "rust-stdweb" "rust-web-sys" ;; web, js, wasm?
