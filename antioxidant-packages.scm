@@ -4188,7 +4188,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-wayland-sys" ,#~'("client" "cursor" "egl" "server")) ; don't enable the dlopen feature, dlopen(...) is somewhat fragile and RUNPATH works just fine
     ("rust-wayland-client" ,#~'("use_system_lib")) ; don't use the dlopen feature, which is fragile and unneeded in Guix.  system_lib is required by rust-wayland-egl.
     ("rust-webpki" ,#~'("std" "alloc"))
-    ("rust-winit" ,#~'("x11" "wayland")) ; don't enable the default wayland-dlopen feature, because it's not necessary and fragile in Guix. (TODO: doesn't build yet)
+    ("rust-winit" ,#~'("x11" "wayland" "serde")) ; don't enable the default wayland-dlopen feature, because it's not necessary and fragile in Guix. "serde" is required by alacritty
     ("rust-xcb" ,#~'("thread" "xfixes")) ; not all features build, for now only enable features required by rust-x11-clipboard.
     ("rust-xz2" ,#~'("futures")) ; ???
     ("rust-x11" ,#~'("dpms" "xcursor" "xf86vmode" "xft" "xinerama" "xinput" "xlib" "xlib_xcb" "xmu" "xrandr" "xrecord" "xrender" "xss" "xt" "xtest" "xtst")) ; disable the "dox" feature, which causes build.rs to not actually look for the x11 library.  TODO: glx requires gl.pc, maybe some dependent requires that ...
