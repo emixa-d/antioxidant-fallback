@@ -757,7 +757,11 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   (lambda _
 	     (substitute* "src/lib.rs"
 	       (("\"cc\"") "\"gcc\"")
-	       (("\"c++\"") "\"g++\""))))))))
+	       (("\"c++\"") "\"g++\""))))))
+    ("rust-watchexec"
+     ;; All src/main.rs does is throwing a compilation error telling that the
+     ;; actual binary is moved to another crate, so don't try to build it.
+     ,#~((delete 'build-binaries)))))
 
 (define (custom-phases name)
   (define (drop-version name)
