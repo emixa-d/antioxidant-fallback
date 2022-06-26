@@ -3870,6 +3870,9 @@ RFC-compliant `EmailAddress` newtype. ")
 
     ("rust-page-size" -> "rust-spin") ; not required because no_std isn't enabled
     ;; TODO: quickcheck with an exception for sequoia-pg
+
+    ;; TODO: untested removals
+    "rust-vcpkg" ; only for interacting with the vcpkg package manager
     ))
 
 (define (remove-dependency? dependent dependency)
