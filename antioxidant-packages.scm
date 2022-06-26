@@ -4346,6 +4346,7 @@ RFC-compliant `EmailAddress` newtype. ")
      #:for-dependent
      ,(lambda (dependent)
 	(not (or (string=? (package-name dependent) "rust-mio-extras")
+		 (string=? (package-name dependent) "rust-mio-uds")
 		 (and (string=? (package-name dependent) "rust-notify")
 		      (string-prefix? "4." (package-version dependent)))))))
     ("rust-mio" ,(package-with-rust-features (p rust-mio-0.6)
@@ -4353,6 +4354,7 @@ RFC-compliant `EmailAddress` newtype. ")
      #:for-dependent
      ,(lambda (dependent)
 	(or (string=? (package-name dependent) "rust-mio-extras")
+	    (string=? (package-name dependent) "rust-mio-uds") ; requires old rust-mio
 	    (and (string=? (package-name dependent) "rust-notify")
 		 (string-prefix? "4." (package-version dependent))))))
     ("rust-signal-hook-mio" ,rust-signal-hook-mio)
