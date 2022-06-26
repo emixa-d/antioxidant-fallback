@@ -4058,7 +4058,6 @@ RFC-compliant `EmailAddress` newtype. ")
      ,#~'("default" "span-locations"))
     ("rust-ptree"
      ,#~'("petgraph" "ansi" "value")) ; default "config" feature doesn't build
-    ("rust-quick-xml" ,#~'("default" "encoding")) ; calamine requires the "encoding" feature
     ;; Without "getrandom" or "alloc", it fails to build (TODO upstream?).
     ;; small_rngs is required by rust-phf-generator.
     ("rust-rand"
@@ -4373,7 +4372,18 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-rustc-version" ,(p rust-rustc-version-0.4)) ; @0.2.3 doesn't build against rust-semver@1
     ("rust-dotenv" ,(p rust-dotenv-0.15)) ; @0.10 doesn't build
     ("rust-quickcheck-macros" ,(p rust-quickcheck-macros-1)) ; 0.9 doesn't build against rust-syn@1
-    ("rust-quick-xml" ,(p rust-quick-xml-0.22)) ; resolve version conflict
+    ("rust-quick-xml" ,(p rust-quick-xml-0.22) ; resolve version conflict
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (member (package-name dependent) '("rust-calamine")))))
+    ("rust-quick-xml"
+     ,(package-with-rust-features (p rust-quick-xml-0.22)
+				  #~'("default" "encoding") ; calamine required the "encoding" feature and tectonic required the absence.
+				  #:name "rust-quick-xml+encoding"
+				  #:rust-metadata "guix-variant=+encoding")
+     #:for-dependent
+     ,(lambda (dependent)
+	(member (package-name dependent) '("rust-calamine"))))
     ("rust-glib-sys" ,(@ (gnu packages crates-gtk) rust-glib-sys-0.14)) ; @0.10 doesn't build
     ("rust-glib" ,(@ (gnu packages crates-gtk) rust-glib-0.14)) ; @0.9 doesn't build
     ("rust-gobject-sys" ,(@ (gnu packages crates-gtk) rust-gobject-sys-0.14)) ; @0.10 doesn't build
