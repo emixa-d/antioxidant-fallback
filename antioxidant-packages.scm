@@ -3873,6 +3873,7 @@ RFC-compliant `EmailAddress` newtype. ")
 
     ;; TODO: untested removals
     "rust-vcpkg" ; only for interacting with the vcpkg package manager
+    "rust-riscv" "rust-riscv-target" ; maybe optional, also riscv is not yet supported by Rust in Guix
     ))
 
 (define (remove-dependency? dependent dependency)
