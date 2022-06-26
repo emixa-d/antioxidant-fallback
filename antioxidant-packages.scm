@@ -371,6 +371,10 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"ToUpperCamelCase, ToKebabCase, ToLowerCamelCase, ToShoutySnakeCase, ToSnakeCase")
 	       (("to_camel_case") "to_upper_camel_case")
 	       (("to_mixed_case") "to_lower_camel_case"))))))
+    ("alacritty" ; TODO: install info pages etc
+     ,#~((add-after 'unpack 'enter-directory
+	   (lambda _
+	     (chdir "alacritty")))))
     ("rust-arboard"
      ;; TODO: upstream/update
      ,#~((add-after 'unpack 'new-image-compatibility
@@ -3770,6 +3774,7 @@ RFC-compliant `EmailAddress` newtype. ")
     "rust-wasm-bindgen-test"
     ("rust-x11rb" -> "libloading") ; no need for the fragile dlopen
 
+    ("alacritty" -> "rust-time") ; not needed anymore
     ("rust-average" -> "rust-rand-distr") ; test cycle?
     ("rust-cxxbridge-macro" -> "rust-cxx") ; test cycle?
     ;; Maybe a test or example cycle?
@@ -4284,7 +4289,11 @@ RFC-compliant `EmailAddress` newtype. ")
 			 (commit "ac9586fb19e1d6fb505425dbbc9598f372122130")))
 		       (sha256 "18554xrhdl0lyga408l01yjhilh69qxkjyyss6mlpxypdwy6cf7w"))))
 		    (list (local-file "rust-meval-update-dependencies.patch"))))
-    ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4)) ; avoid multiple versions
+    ("rust-miniz-oxide" ,(p rust-miniz-oxide-0.4) ; avoid multiple versions
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (equal? (list (package-name dependent) (package-version dependent))
+		     '("rust-png" "0.16.8"))))) ; doesn't build rust-miniz-oxide@0.4
     ("rust-newtype-derive" ; TODO: can be merged in upstream Guix
      ,(package-with-extra-patches (p rust-newtype-derive-0.1)
 				  (list (local-file "rust-newtype-derive-Update-dependencies.patch"))))
@@ -4311,11 +4320,11 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-notify" ,(p rust-notify-5) ; use new version where possible, and the old where still required
      #:for-dependent
      ,(lambda (dependent)
-	(not (string=? (package-name dependent) "rust-watchexec"))))
+	(not (member (package-name dependent) '("rust-watchexec" "alacritty")))))
     ("rust-notify" ,(p rust-notify-4)
      #:for-dependent
      ,(lambda (dependent)
-	(string=? (package-name dependent) "rust-watchexec")))
+	(member (package-name dependent) '("rust-watchexec" "alacritty"))))
     ("rust-num-rational" ,(p rust-num-rational-0.4)) ; @0.1 doesn't build when "serde" is enabled
     ("rust-ivf" ,rust-ivf)
     ("rust-idna" ,(p rust-idna-0.2)) ; avoid multiple versions
@@ -4660,9 +4669,16 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-proptest-derive" ,rust-proptest-derive)
     ("rust-arc-swap" ,(p rust-arc-swap-1))
     ("rust-gif" ,(p rust-gif-0.11)) ;; @0.11.2 - crates-graphics @0.11.3 doesn't build ATM
-    ("rust-miniz-oxide" ,rust-miniz-oxide)
+    ("rust-miniz-oxide" ,rust-miniz-oxide ; TODO: there are two replacements for this, which one actually had effect?
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (equal? (list (package-name dependent) (package-version dependent))
+		     '("rust-png" "0.16.8")))))
     ("rust-deflate" ,rust-deflate)
-    ("rust-png" ,rust-png)
+    ("rust-png" ,rust-png
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (string=? (package-name dependent) "alacritty")))) ; still needs old rust-png ...
     ("rust-tiff" ,rust-tiff)
     ("rust-jpeg-decoder" ,rust-jpeg-decoder)
     ("rust-image" ,rust-image)
@@ -4716,6 +4732,8 @@ RFC-compliant `EmailAddress` newtype. ")
       ("rust-parking-lot" ,(p rust-parking-lot-0.11))))
     ("rust-alacritty-terminal" ; new deps for new version
      (("rust-signal-hook-mio" ,(p rust-signal-hook-mio-0.2))))
+    ("alacritty" ; likewise
+     (("rust-structopt" ,(p rust-structopt-0.3))))
     ("rust-aom-sys"
      (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
     ("rust-buffering-nocopy-macro" ; for new phase
@@ -5333,6 +5351,34 @@ RFC-compliant `EmailAddress` newtype. ")
    ;; /gnu/store/[...]/bin/test  || echo $? ---> 42
    (description #f)
    (license #f)))
+
+
+;; Update from <https://issues.guix.gnu.org/54299#53>.
+;;
+;; Note: the copyright info on the top is incomplete, this
+;; copies some code from the package definition, will be solved
+;; once antioxidant is merged into Guix.
+;;
+;; TODO: keep the phase that adds all the nice man pages etc.
+
+(define-public antioxidated-alacritty
+  (public-test-package
+   (vitaminate/auto
+    (package
+     (inherit (@ (gnu packages terminals) alacritty))
+     (name "alacritty")
+     (version "0.10.1")
+     (source
+      (origin
+       ;; XXX: The crate at "crates.io" has limited contents.  In particular,
+       ;; it does not contain "extra" directory with completions, icon, etc.
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://github.com/jwilm/alacritty")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+	(base32 "1s38gyx0ifcf1vcr6n8gzbk7rg1apxrz7js8cp8x5k1s0m3abys3"))))))))
 
 (define-public antioxidated-b3sum ; new version required for compatibility with new rust-blake3. Not updated to @1.3.1, because that requires updating non-trivial dependencies.
   (public-test-package
