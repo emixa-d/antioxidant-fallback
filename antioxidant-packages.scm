@@ -576,6 +576,12 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   (lambda* _
 	     (setenv "SHELL" (which "sh"))
              (setenv "CONFIG_SHELL" (which "sh")))))) ; TODO: bundles a C library
+    ("rust-rspotify"
+     ,#~((add-after 'unpack 'new-rand-compatibility
+	   ;; TODO: upstream / update
+	   (lambda _
+	     (substitute* "src/util.rs"
+	       (("\\.take\\(length\\)") ".take(length).map(char::from)"))))))
     ("rust-tokio-sync"
      ,#~((add-after 'unpack 'unpreview
 	   (lambda _
