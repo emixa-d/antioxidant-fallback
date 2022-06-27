@@ -3904,7 +3904,8 @@ RFC-compliant `EmailAddress` newtype. ")
 (define %crate-types ; resolve multiple crate types inside the Cargo.toml.
   `(("rust-hyper" ,#~"rlib")
     ("rust-jsonpath-lib" ,#~"rlib")
-    ("rust-neso" ,#~"rlib")))
+    ("rust-neso" ,#~"rlib")
+    ("parinfer-rust" ,#~"rlib"))) ; TODO: delete the compiled Rust library, only the binary needed!  Also, test if it actually works.
 
 ;; Try keeping things sorted, to avoid rebase/merge conflicts.
 (define %features
