@@ -570,6 +570,7 @@ to the crates in CRATE-MAPPINGS."
   (mkdir-p (dirname destination))
   (apply invoke
 	 "rustc" "--verbose"
+	 "-Z" "macro-backtrace" ; enable backtraces in macros during compilation, can help with debugging.
 	 (string-append "--target=" target)
 	 "-C" (string-append "opt-level=" optimisation-level)
 	 "-C" (string-append "debuginfo=" debuginfo-level)
