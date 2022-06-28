@@ -172,7 +172,7 @@
      ;; or such, or changes to antioxidant.).  TODO: if -l is added,
      ;; but not -L, bail out automaticallt.  TODO: takes 5.5 minutes to compile,
      ;; can this be reduced?
-     ,#~((add-after 'configure 'find-x11
+     ,#~((add-after 'configure 'find-xcb
 	   (lambda* (#:key inputs #:allow-other-keys)
 	     ((@@ (antioxidant) add-c-library-directory!)
 	      (dirname (search-input-file inputs "lib/libxcb.so")))))))
