@@ -592,6 +592,11 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   (lambda _
 	     (substitute* "src/util.rs"
 	       (("\\.take\\(length\\)") ".take(length).map(char::from)"))))))
+    ("spotify-tui" ;; TODO: upstream / update
+     ,#~((add-after 'unpack 'new-tokio-compatibility
+	   (lambda _
+	     (substitute* "src/network.rs"
+       	       (("tokio::time::delay_for") "tokio::time::sleep"))))))
     ("rust-tokio-sync"
      ,#~((add-after 'unpack 'unpreview
 	   (lambda _
