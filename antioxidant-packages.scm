@@ -166,6 +166,16 @@
 	   (lambda* (#:key inputs #:allow-other-keys)
 	     ((@@ (antioxidant) add-c-library-directory!)
 	      (dirname (search-input-file inputs "lib/libnitrokey.so")))))))
+    ("rust-x11rb"
+     ;; TODO: x11rb does link(name = "xcb") to link to the lib, but does
+     ;; not add the corresponding -L argument (which needs pkg-config
+     ;; or such, or changes to antioxidant.).  TODO: if -l is added,
+     ;; but not -L, bail out automaticallt.  TODO: takes 5.5 minutes to compile,
+     ;; can this be reduced?
+     ,#~((add-after 'configure 'find-x11
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     ((@@ (antioxidant) add-c-library-directory!)
+	      (dirname (search-input-file inputs "lib/libxcb.so")))))))
     ("rust-mesalink" ,#~((delete 'bootstrap))) ; build.rs is sufficient
     ("rust-buffering-nocopy-macro"
      ,#~((add-after 'unpack 'new-syn-compatibility
@@ -5020,6 +5030,8 @@ RFC-compliant `EmailAddress` newtype. ")
       ("libxt" ,(@ (gnu packages xorg) libxt))
       ("libxtst" ,(@ (gnu packages xorg) libxtst))
       ("libxxf86vm" ,(@ (gnu packages xorg) libxxf86vm))))
+    ("rust-x11rb" ; missing inputs
+     (("libxcb" ,(@ (gnu packages xorg) libxcb))))
     ("rust-warp" ; new dependencies for new version
      (("rust-futures-channel" ,(p rust-futures-channel-0.3))
       ("rust-futures-util" ,(p rust-futures-util-0.3))
