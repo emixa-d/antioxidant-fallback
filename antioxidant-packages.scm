@@ -1138,6 +1138,19 @@ version is 0), if it is in %automatic-metadata.."
                (base32
                 "1bwrrbd0lhwzlf63708vyzlh20693s5bg5s0ak6adjbyycajxb99"))))))
 
+(define rust-time ; rust-sequoia-sq requires new rust-time or old rust-chrono, to have the std::fmt::Display trait implemented for chrono::Duration
+  (package
+    (inherit (p rust-time-0.3))
+    (name "rust-time")
+    (version "0.3.11")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "time" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "05rjpgfsq6gvizn89ydwwmy0ihgfvikxcwq8bz09dw5jvi0izjbj"))))))
+
 ;; The old tokio doesn't build against recent rust-futures
 #; ; currently removed
 (define rust-tokio-io-0.2
@@ -4602,7 +4615,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-string-cache-codegen" ,(p rust-string-cache-codegen-0.5)) ; @0.4 doesn't build against new rust-phf-... crates.
     ("rust-string-cache" ,(p rust-string-cache-0.8)) ; old version doesn't build against new rust-string-cache-codegen
     ("rust-time" ; resolve version conflict
-     ,(p rust-time-0.3))
+     ,rust-time)
     ("rust-instant" ; 0.1.4 doesn't build against rust-time@0.3
      ,rust-instant)
     ;; 0.3 requires unstable
@@ -5032,6 +5045,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-tectonic-engine-xetex" ; missing input (TODO: maybe detect (upstream) in rust-tectonic-xetex-layout to add to the list?)
      (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))
       ("harfbuzz" ,(@ (gnu packages gtk) harfbuzz-3.0))))
+    ("rust-time" ; new inputs for new version
+     (("rust-num-threads" ,rust-num-threads)))
     ("rust-tungstenite"
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tokio" ; new dependency for new version
