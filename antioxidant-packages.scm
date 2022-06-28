@@ -3191,6 +3191,27 @@ futures-aware, FIFO queue")
          ("rust-tempfile" ,(p rust-tempfile-3))
          ("rust-vcpkg" ,(p rust-vcpkg-0.2)))))))
 
+(define rust-num-threads ; required by new rust-time
+  (package
+    (name "rust-num-threads")
+    (version "0.1.6")
+    (source (origin
+              (method url-fetch)
+              (uri (crate-uri "num_threads" version))
+              (file-name (string-append name "-" version ".tar.gz"))
+              (sha256
+               (base32
+                "0i5vmffsv6g79z869flp1sja69g1gapddjagdw1k3q9f3l2cw698"))))
+    (build-system antioxidant-build-system)
+    (inputs (list (p rust-libc-0.2)))
+    (home-page "https://github.com/jhpratt/num_threads")
+    (synopsis
+     "A minimal library that determines the number of running threads for the current process.")
+    (description
+     "This package provides a minimal library that determines the number of running
+threads for the current process.")
+    (license (list license:expat license:asl2.0))))
+
 (define rust-firestorm ; not yet in Guix, required by new rust-actix-router
   (package
     (name "rust-firestorm")
