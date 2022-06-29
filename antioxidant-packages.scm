@@ -3825,7 +3825,7 @@ RFC-compliant `EmailAddress` newtype. ")
     "rust-tokio-process" ;; doesn't exist in recent tokios
     "rust-tokio-executor" ;; doesn't exist in recent tokios, I think?
     "rust-tokio-io" ;; doesn't exist in recent tokios, I think?
-    #;"rust-lazy-static"
+    ("rust-lazy-static" -> "rust-spin") ; rust-spin is only needed in a no-std environment, also somewhat deep dependencies for basic functionality
     "rust-version-sync"
     "rust-trybuild"
     "rust-clang-ast-test-suite" ; empty, doesn't build
@@ -4140,6 +4140,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ;; Avoid removed feature(custom_derive)
     ("rust-language-tags" ,#~'())
     ("rust-lazycell" ,#~'()) ;; avoid nightly things
+    ("rust-lazy-static" ,#~'()) ; don't enable "spin_no_std", that way we don't have to depend on 'rust-spin' and it's only needed in no-std environments
     ("rust-lexical-util" ,#~'("default" "parse-integers" "write-integers" "floats")) ;; enable features required by various rust-lexical-... crates
     ;; extra-traits is required by rust-nix
     ("rust-libc" ,#~'("std" "extra_traits"))
