@@ -1,0 +1,9 @@
+TODO: proper TeXinfo documentation.
+TODO: actually build examples, bechmarks, things
+
+Libraries are by default put in the 'lib' output when that exists, 'out' otherwise.
+Crate info files are by default put in the 'env' output when that exists, 'lib' or 'out' otherwise.
+Binaries are by default put in the 'bin' when that output exists, 'out' otherwise.
+Examples binaries are put in 'example', or 'bin', or 'out' instead.
+Benchmark binaries are put in 'benchmarks', or 'bin', or 'out' instead.
+Test binaries are put in 'tests', or 'bin', or 'out' instead, but keep in mind that currently tests are not compiled by default when cross-compiling (this could change in the future if desired, but for now we keep the behaviour of other build systems).
