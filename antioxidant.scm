@@ -1134,6 +1134,7 @@ the \"examples\" output.
 	  (if (symbol? family)
 	      (error "the family passed to 'compile-bin-target' is unrecognised")
 	      (error "the family passed to 'compile-bin-target' is expected to be a symbol")))))))
+  (format #t "Compiling ~a to ~a~%" (target-path target/elaborated) binary-location)
   (apply compile-rust-binary
 	 (target-path target/elaborated)
 	 binary-location
