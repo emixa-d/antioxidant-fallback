@@ -314,7 +314,9 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   (lambda _
 	     ;; TODO: it nominally supports SOURCE_DATE_EPOCH, yet something things go wrong,
 	     ;; as the shadow.rs still contains the unnormalised time stamp ...
-	     ;; For now, do a work-around.
+	     ;; For now, do a work-around.  (Not yet reported upstream, because we are using
+	     ;; and old version and maybe different chrono and time versions, so maybe
+	     ;; a bug in the Guix packaging).
 	     (substitute* '("src/lib.rs" "src/env.rs")
 	       (("BuildTime::Local\\(Local::now\\(\\)\\)\\.human_format\\(\\)")
 		(object->string "[timestamp expunged for reproducibility]"))
@@ -324,7 +326,10 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		"\"[timestamp expunged for reproducibility]\".to_string()")
 	       (("time\\.to_rfc2822\\(\\)")
 		"\"[timestamp expunged for reproducibility]\".to_string()"))))
-	 (add-after 'unpack 'more-reproducibility ;; by default, it uses a hashmap, leading to an irreproducible ordering in shadow.rs and hence an irreproducible .rmeta (TODO: upstream?)
+	 (add-after 'unpack 'more-reproducibility
+	   ;; By default, it uses a hashmap, leading to an irreproducible ordering
+	   ;; in the shadow.rs and hence an irreproducible .rmeta in the compiled
+	   ;; crate.
 	   (lambda _
 	     (substitute* "src/lib.rs" ; sort
 	       (("\\(k, v\\) in self\\.map\\.clone\\(\\)")
