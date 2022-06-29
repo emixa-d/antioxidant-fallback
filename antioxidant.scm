@@ -1174,7 +1174,7 @@ the \"examples\" output.
 				(target target))))))
 	      ((target-edition)
 	       (or (target-edition target)
-		   (package-edition (manifest-package package))))))
+		   (package-edition package)))))
 
 (define (elaborate-target/skip manifest target)
   ;; Return the <target> on success, #false otherwise.
