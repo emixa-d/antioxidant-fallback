@@ -1128,6 +1128,7 @@ the \"examples\" output.
 			     (assoc-ref outputs "bin")
 			     (assoc-ref outputs "out")
 			     (error "'compile-binary-target' expects the \"out\" output to exist."))
+			 "/"
 			 output "/" (target-name target/elaborated)))
 	 (#false
 	  (if (symbol? family)
