@@ -3558,6 +3558,7 @@ threads for the current process.")
 (define rust-email-address ; required by new rust-lettre
   (package
     (name "rust-email-address")
+    (outputs %rust-library-outputs)
     (version "0.2.1")
     (source (origin
               (method url-fetch)
