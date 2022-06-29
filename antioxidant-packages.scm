@@ -291,6 +291,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	   (lambda _
 	     (delete-file-recursively "src/plugins") ; we have separate rust-nu-plugin-... packages, so no need to build them again (TODO: add wrap-program)
 	     (delete-file-recursively "crates") ; we have individual rust-nu-... packages
+	     #; ; <--- TODO: let ci.guix.gnu test if still necessary
 	     ;; TODO: build-binaries tries to build things anyway even though they were removed.
 	     ;; For now, work-around
 	     (substitute* "Cargo.toml"
@@ -717,6 +718,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	      (("\\$HOME/\\.local/share/mime/aliases")
 	       (search-input-file inputs "share/mime/aliases")))
 	     #;(error "barf"))))) ; for checking after an update with --keep-failed
+    #; ; <--- TODO: let ci.guix.gnu test if still necessary
     ("tectonic" ; TODO: binary is compiled thrice
      ;; TODO: bug in implementation in 'autobins'?
      ,#~((add-after 'unpack 'fix-found-binaries
@@ -724,6 +726,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "Cargo.toml"
 	       (("^(repository = .*)$" line)
 		(string-append line "autobins = false\n[[bin]]\nname = \"tectonic\"\npath=\"src/bin/tectonic/main.rs\"\n")))))))
+    #; ; <--- TODO: let ci.guix.gnu test if still necessary
     ;; TODO: likewise
     ("bat"
      ;; TODO: bug in implementation in 'autobins'?
