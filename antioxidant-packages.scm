@@ -329,7 +329,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	 (add-after 'unpack 'more-reproducibility
 	   ;; By default, it uses a hashmap, leading to an irreproducible ordering
 	   ;; in the shadow.rs and hence an irreproducible .rmeta in the compiled
-	   ;; crate.
+	   ;; crate.  Upstream: <https://github.com/baoyachi/shadow-rs/issues/96>.
 	   (lambda _
 	     (substitute* "src/lib.rs" ; sort
 	       (("\\(k, v\\) in self\\.map\\.clone\\(\\)")
