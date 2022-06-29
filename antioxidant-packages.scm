@@ -918,15 +918,6 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
    (description "Build software written in Rust, without cargo")
    (lower lower)))
 
-;; Convert from cargo-build-system to antioxidant-build-system,
-;; for now leaving inputs intact.
-(define*-public (vitaminate-library/no-inputs crate-package
-					      #:key (features #~'("default")))
-  (package
-    (inherit crate-package)
-    (build-system antioxidant-build-system)
-    (arguments (list #:features features))))
-
 (define (is-cargo-toml-phases? phases)
   ;; This probably just relaxes versions, so no need to keep this phase
   ;; anymore.
@@ -5157,7 +5148,8 @@ RFC-compliant `EmailAddress` newtype. ")
 					   (_ '())))))
 	 (define p-i (filter-map fix-input (package-propagated-inputs pack)))
 	 (package
-	  (inherit (vitaminate-library/no-inputs pack))
+	  (inherit pack)
+	  (build-system antioxidant-build-system)
 	  (source
 	   (match (package-name pack)
 	     ("rust-libnghttp2-sys"
