@@ -847,7 +847,9 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
     (with-extensions (list guile-json-4)
     (with-imported-modules
 	(cons '(antioxidant)
-	      (source-module-closure '((guix build utils) (guix build gnu-build-system)
+	      (source-module-closure '((guix build utils)
+				       (guix build syscalls) ; <-- can be removed once in (guix build antioxidant)
+				       (guix build gnu-build-system)
 				       (antioxidant))))
       #~(begin
 	  (use-modules (guix build utils) (guix build gnu-build-system)

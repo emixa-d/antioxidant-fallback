@@ -44,12 +44,22 @@
 	    crate-mapping?
 	    make-crate-mapping
 	    crate-mapping-dependency-name
-	    crate-mapping-local-name)
+	    crate-mapping-local-name
+
+	    elaborate-target
+	    elaborate-target/skip
+	    elaborated-target?
+	    find-rust-binaries
+	    compile-binary-target)
+  #:use-module (guix build syscalls)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
   #:use-module (rnrs records syntactic)
   #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-9 gnu)
   #:use-module (srfi srfi-26)
+  #:use-module (srfi srfi-34) ; or is the RNRS preferred?
+  #:use-module (srfi srfi-35)
   #:use-module (srfi srfi-71)
   #:use-module (ice-9 match)
   #:use-module (ice-9 string-fun)
@@ -160,6 +170,11 @@
   ;; NA for [lib]
   (required-features target-required-features "required-features"
 		     (or-empty vector->list)))
+
+(define (elaborated-target? target)
+  (and (target-name target)
+       (target-path target)
+       (target-edition target)))
 
 (define (target-proc-macro target)
   ;; TODO: which one is it?  (For rust-derive-arbitrary,
@@ -1057,93 +1072,192 @@ return false instead."
 	 ;; TODO: for 100% paranoia, check that inferred-source0
 	 ;; doesn't contain #\nul, slashes or .. components.
 	 ))
-  ;; default executable (TODO: is this code path actually ever used?)
+  ;; default executable (TODO: is this code path actually ever used?) (probably not)
   (define inferred-source1 "src/main.rs")
   (or (target-path target) ; explicit
       (and inferred-source0 (file-exists? inferred-source0) inferred-source0)
       (and (file-exists? inferred-source1) inferred-source1)))
 
-(define* (build-binaries #:key inputs outputs #:allow-other-keys #:rest arguments)
-  "Compile the Rust binaries described in Cargo.toml"
-  (define package (manifest-package *manifest*))
-  (define files-visited '())
-  (define (normalize-relative-file-name name)
-    ;; find-files includes a ./ prefix, but infer-binary-source doesn't.
-    ;; Make sure ./src/bin/foo.rs and src/bin/foo.rs are treated equally.
-    (if (string-prefix? "./" name)
-	(string-drop name 2)
-	name))
-  (define (mark-file-visited! file-name)
-    (set! files-visited (cons (normalize-relative-file-name file-name) files-visited)))
-  (define (is-file-visited? file-name)
-    (member (normalize-relative-file-name file-name) files-visited))
-  (define extern-crates (manifest-all-dependencies *manifest* '(dependency)))
-  (define (binary-location binary)
-    (string-append (or (assoc-ref outputs "bin")
-		       (assoc-ref outputs "out"))
-		   "/bin/" binary))
-  (define* (cb source binary edition)
-    (apply compile-rust-binary source
-	   (binary-location binary)
-	   (list (string-append "--edition=" edition)
-		 (string-append "-Lnative=" (getcwd)))
-	   ;; A program can use its own crate without declaring it.
-	   ;; At least, hexyl tries to do so.  For a more complicated
-	   ;; example, see 'rust-xml-rs@0.8.3', which has "xml_rs" as
-	   ;; package name and "xml" as --extern name.
-	   #:crate-mappings (cons (make-crate-mapping (package-name package)
-						      (crate-name-of-manifest *manifest*))
-				  extern-crates)
-	   ;; Binaries can use their own crates!
-	   #:available-crates
-	   (find-directly-available-crates (append outputs inputs))
-	   ;; TODO: figure out how to override things
-	   (append
-	    arguments
-	    (list #:configuration *configuration*))))
-  ;; TODO: respect required-features.
-  (define (compile-bin-target target)
-    (define source (infer-binary-source target)) ; can be #false if not found
-    ;; Make sure they won't be compiled after the the 'package-autobins'
-    ;; below if required features are missing.  This is required
-    ;; for building rust-multipart.
-    (when source
-      (mark-file-visited! source))
-    (cond ((not (lset<= string=? (target-required-features target) *features*))
-	   (format #t "not compiling ~a, because the following features are missing: ~a~%"
-		   target ; we don't care if the source exists when we are not compiling it.
-		   (lset-difference string=?
-				    (target-required-features target)
-				    *features*)))
-	  ((not source)
-	   ;; Maybe the file has been removed due to being non-free,
-	   ;; requiring dependencies not packaged in Guix, or requiring
-	   ;; a non-stable rust.  This skipping used to be required for
-	   ;; rust-phf-generator back when required-features wasn't expected
-	   ;; and hence gen_hash_test.rs had to be removed in a phase.
-	   (format #t "warning: source code of ~a could not be found, skipping.~%" target))
-	  (#true
-	   (format #t "Compiling ~a~%" source)
-	   (cb source (or (target-name target) (package-name package))
-	       (or (target-edition target) (package-edition package))))))
-  (for-each compile-bin-target (manifest-bin *manifest*))
-  (when (package-autobins package)
-    (when (and (file-exists? "src/main.rs")
-	       (not (is-file-visited? "src/main.rs")))
-      (mark-file-visited! "src/main.rs")
-      (cb "src/main.rs" (package-name package) (package-edition package)))
-    (for-each ;; TODO: support [[bin]] (TODO: resolved?)
-     (lambda (file)
-       (when (and (string-suffix? ".rs" file)
-		  ;; Possibly the binary was already in [[bin]]
-		  ;; and hence is pointless to compile again.
-		  ;; Might also be impossible due to missing
-		  ;; features (see 'compile-bin-target').
-		  (not (is-file-visited? file)))
-	 (cb file (string-drop-right (basename file)
-				     (string-length ".rs"))
-	     (package-edition package))))
-     (find-files "src/bin"))))
+(define* (compile-binary-target target/elaborated
+				#:key (destination 'auto)
+				(family 'bin)
+				inputs
+				outputs
+				#:allow-other-keys
+				#:rest arguments)
+  "Compile an elaborated target @var{target/elaborated}.
+
+If 'destination' is a file name, the binary will be saved there.
+If it is the symbol 'auto', an appropriate file name will be chosen
+according to the 'target-name' or @var{target/elaborated} and @var{family}.
+In that case, the binary will have the target-name as 'base name' and will
+be put in the 'bin' subdirectory of one of the outputs.
+
+The directory where the binary is saved in will automatically be created if
+required.
+
+The output is based on the symbol 'family' -- if this output does not exist in the list
+of outputs, this procedure fallbacks to \"bin\" and then \"bin\":
+
+@begin itemize
+@item bin: a regular binary, for the \"bin\" output
+@item example: an example (corresponding to an [[example]] section in the
+Cargo.toml terminology or a file in the 'examples' subdirectory), for
+the \"examples\" output.
+@item benchmark: a benchmark (corresponding to a [[bench]] section or a file in the
+'benches' directory)
+@item test: a test (corresponding to a [[test]] section or a file in the 'tests' directory)
+@end itemize"
+  (unless (elaborated-target? target/elaborated)
+    (error "The first argument to 'compile-binary-target' must be an elaborated target"))
+  (define %family->output
+    '((bin . "bin")
+      (example . "examples")
+      (benchmark . "benchmarks")
+      (test . "tests")))
+  (define binary-location
+    (match destination
+      ((? absolute-file-name? where)
+       where)
+      ((? string? where)
+       (error "The file name passed to 'compile-binary-target' must be absolute."))
+      ('auto
+       (match (assoc family %family->output)
+	 ((_ . output)
+	  (string-append (or (assoc-ref outputs output)
+			     (assoc-ref outputs "bin")
+			     (assoc-ref outputs "out")
+			     (error "'compile-binary-target' expects the \"out\" output to exist."))
+			 output "/" (target-name target/elaborated)))
+	 (#false
+	  (if (symbol? family)
+	      (error "the family passed to 'compile-bin-target' is unrecognised")
+	      (error "the family passed to 'compile-bin-target' is expected to be a symbol")))))))
+  (apply compile-rust-binary
+	 (target-path target/elaborated)
+	 binary-location
+	 (list (string-append "--edition=" (target-edition target/elaborated))
+	       (string-append "-Lnative=" (getcwd))) ; TODO: is this still required, now there's better support for configure scripts?
+	 ;; A program can use its own crate without declaring it.
+	 ;; At least, hexyl tries to do so.  For a more complicated
+	 ;; example, see 'rust-xml-rs@0.8.3', which has "xml_rs" as
+	 ;; package name and "xml" as --extern name.
+	 ;;
+	 ;; TODO: there were ‘could not find crate FOO’ warnings, does this
+	 ;; still have any effect?
+	 #:crate-mappings (cons (make-crate-mapping (package-name (manifest-package *manifest*))
+						    (crate-name-of-manifest *manifest*))
+				(manifest-all-dependencies *manifest* '(dependency)))
+	 ;; Binaries can use their own crates!
+	 ;; TODO: for tests, also native-inputs?
+	 #:available-crates
+	 (find-directly-available-crates (append outputs inputs))
+	 ;; TODO: figure out how to override things
+	 (append
+	  arguments
+	  (list #:configuration *configuration*))))
+
+(define-condition-type &missing-target-source-code &error
+  missing-target-source-code?
+  (target missing-target-source-code-target))
+
+(define (elaborate-target manifest target)
+  (define package (manifest-package manifest))
+  (set-fields target
+	      ((target-name)
+	       (or (target-name target) (package-name package)))
+	      ((target-path)
+	       (or (target-path target)
+		   (infer-binary-source target)
+		   (raise
+		    (condition (&missing-target-source-code
+				(target target))))))
+	      ((target-edition)
+	       (or (target-edition target)
+		   (package-edition (manifest-package package))))))
+
+(define (elaborate-target/skip manifest target)
+  ;; Return the <target> on success, #false otherwise.
+  ;; #false: source code is missing.
+  ;;
+  ;; Maybe the file has been removed due to being non-free,
+  ;; requiring dependencies not packaged in Guix, or requiring
+  ;; a non-stable rust.  This skipping used to be required for
+  ;; rust-phf-generator back when required-features wasn't expected
+  ;; and hence gen_hash_test.rs had to be removed in a phase.
+  (guard (c
+	  ((missing-target-source-code? c)
+	   (format #t "warning: source code of ~a could not be found, skipping.~%"
+		   (missing-target-source-code-target c))
+	   #false))
+    (elaborate-target manifest target)))
+
+(define* (find-rust-binaries . arguments) ; TODO: extend to [[benches]], [[tests]], [[examples]]
+  ;; This implements autobins, as desribed in
+  ;; <https://doc.rust-lang.org/cargo/guide/project-layout.html>.
+  ;; As a side-effect, targets are automatically elaborated.
+  ;; If the source code of a [[bin]] section is missing, it is ignored
+  ;; (with a warning).
+  ;;
+  ;; First look in [[bin]] sections
+  (let* ((autobins? (package-autobins (manifest-package *manifest*)))
+	 (elaborate-target/skip* (cut elaborate-target/skip *manifest* <>))
+	 (explicit-binaries (map elaborate-target/skip* (manifest-bin *manifest*)))
+	 (implicit-primary-main-binary
+	  (and autobins?
+	       (file-exists? "src/main.rs")
+	       (elaborate-target/skip* (scm->target `(("path" . "src/main.rs"))))))
+	 (implicit-other-main-binaries
+	  (and autobins?
+	       (directory-exists? "src/bin")
+	       (filter-map
+		(match-lambda
+		  ((file-name . _)
+		   ;; Is it a file or a directory?
+		   (match (stat:type (lstat file-name))
+		     ('regular
+		      ;; If it is a rust file, use it!
+		      (and (string-suffix? ".rs" file-name)
+			   (scm->target `(("path" . ,(string-append "src/bin/" file-name))))))
+		     ('directory
+		      ;; If it contains a 'main.rs' file, use it!
+		      (let ((main (string-append "src/bin/" file-name "/main.rs")))
+			(and (file-exists? main)
+			     (eq? 'regular (stat:type (stat main)) )
+			     (scm->target `(("path" . ,main)
+					    ("name" . ,file-name)))))) ; Cargo documentation says: ‘The name of the executable will be the directory name’
+		     (_ #false)))) ; something else (e.g., pipe), not something we can build.
+		(scandir* "src/bin"))))
+	 (implicit-targets
+	  (map elaborate-target/skip*
+	       (append (or (and=> implicit-primary-main-binary list)
+			   '())
+		       (or implicit-other-main-binaries '()))))
+	 ;; If it's already compiled in the explicit-binaries, don't double compile.
+	 ;; (We needed to elaborate-target, because we use the file name
+	 ;; which is not always listed.).  Likewise for the target name.
+	 (already-used?
+	  (lambda (target)
+	    (or (member (target-path target) (map target-path explicit-binaries))
+		(member (target-name target) (map target-name explicit-binaries)))))
+	 (filtered-implicit-targets
+	  (filter (negate already-used?) implicit-targets)))
+    (append explicit-binaries filtered-implicit-targets)))
+
+(define* (build-binaries #:rest arguments)
+  "Compile the Rust binaries described in Cargo.toml (but not examples, tests and benchmarks)."
+  (define (compile-binary-target* . target)
+    ;; Check required-features.
+    (if (lset<= string? (target-required-features target) *features*)
+	(apply compile-binary-target target #:family 'bin arguments)
+	(format #t "not compiling ~a, because the following features are missing: ~a~%"
+		target
+		(lset-difference string=?
+				 (target-required-features target)
+				 *features*))))
+  (for-each compile-binary-target* (apply find-rust-binaries arguments)))
+
+;; TODO: build-examples, build-benches, build-tests.
 
 (define* (load-manifest . rest)
   "Parse Cargo.toml and save it in @code{*manifest*}."
