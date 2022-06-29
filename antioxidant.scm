@@ -1213,20 +1213,21 @@ the \"examples\" output.
 	       (filter-map
 		(match-lambda
 		  ((file-name . _)
-		   ;; Is it a file or a directory?
-		   (match (stat:type (lstat file-name))
-		     ('regular
-		      ;; If it is a rust file, use it!
-		      (and (string-suffix? ".rs" file-name)
-			   (scm->target `(("path" . ,(string-append "src/bin/" file-name))))))
-		     ('directory
-		      ;; If it contains a 'main.rs' file, use it!
-		      (let ((main (string-append "src/bin/" file-name "/main.rs")))
-			(and (file-exists? main)
-			     (eq? 'regular (stat:type (stat main)) )
-			     (scm->target `(("path" . ,main)
-					    ("name" . ,file-name)))))) ; Cargo documentation says: ‘The name of the executable will be the directory name’
-		     (_ #false)))) ; something else (e.g., pipe), not something we can build.
+		   (let ((entry-file-name (string-append "src/bin/" file-name)))
+		     ;; Is it a file or a directory?
+		     (match (stat:type (lstat entry-file-name))
+		       ('regular
+			;; If it is a rust file, use it!
+			(and (string-suffix? ".rs" file-name)
+			     (scm->target `(("path" . ,entry-file-name)))))
+		       ('directory
+			;; If it contains a 'main.rs' file, use it!
+			(let ((main (string-append entry-file-name "/main.rs")))
+			  (and (file-exists? main)
+			       (eq? 'regular (stat:type (stat main)) )
+			       (scm->target `(("path" . ,main)
+					      ("name" . ,file-name)))))) ; Cargo documentation says: ‘The name of the executable will be the directory name’
+		       (_ #false))))) ; something else (e.g., pipe), not something we can build.
 		(scandir* "src/bin"))))
 	 (implicit-targets
 	  (map elaborate-target/skip*
