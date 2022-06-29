@@ -1347,6 +1347,17 @@ CARGO_CFG_TARGET_ARCH."
 		     (list #:target #false)))
       (apply (assoc-ref %standard-phases 'strip) arguments)))
 
+;; Make sure there are not empty outputs (which can happen if, say,
+;; the crate doesn't come with benchmarks and for whatever reason
+;; no license file was installed.)
+(define* (create-all-outputs #:key outputs #:allow-other-keys)
+  (define create-output
+    (match-lambda
+      ((label . file-name)
+       (unless (file-exists? file-name)
+	 (mkdir file-name)))))
+  (for-each create-output outputs))
+
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
@@ -1360,6 +1371,7 @@ CARGO_CFG_TARGET_ARCH."
     (replace 'configure configure)
     (replace 'build build)
     (add-after 'build 'build-binaries build-binaries)
+    (add-after 'install 'create-all-outputs create-all-outputs)
     (replace 'strip fixed-strip)
     (delete 'check) ; TODO
     (delete 'install))) ; TODO?

@@ -16,7 +16,8 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with GNU Guix.  If not, see <http://www.gnu.org/licenses/>.
 (define-module (antioxidant-packages)
-  #:export (vitaminate/auto public-test-package))
+  #:export (vitaminate/auto public-test-package
+			    %rust-library-outputs))
 
 (use-modules (guix packages) (guix build-system) (guix gexp) (guix utils) (guix modules)
 	     ((guix build-system gnu) #:select (%gnu-build-system-modules))
@@ -25,6 +26,17 @@
 	     (gnu packages rust-apps) (guix utils) (srfi srfi-26) (guix download)
 	     (guix git-download) (ice-9 optargs) ((guix licenses) #:prefix license:)
 	     (guix search-paths) (gnu packages rust) (gnu packages base))
+
+;; Idea is to save some closure size (because things "lib" are usually linked
+;; to statically so no point in downloading them if only the binary is needed instead).
+;; Also, examples are usually just examples, not something that the end-user
+;; is likely to want to run.
+(define %rust-library-outputs '("out" ; rest
+				"lib" ; the .rlib and the .crate-info
+				;;   "env" ; the .crate-info (does splitting this have a point?)
+				"examples"
+				"tests"
+				"benchmarks"))
 
 (define (target-environment-variables target)
   `(("RUSTC_BOOTSTRAP" . "1") ; make it sometimes possible to use unstable features (TODO: not really a ‘target’ environment variable, needs some renaming).
@@ -909,6 +921,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		    ,@(@ (gnu packages commencement) %final-inputs)
 		    ,@native-inputs))
     (host-inputs inputs)
+    (outputs outputs)
     (build (if target antioxidant-cross-build antioxidant-build))
     (arguments (strip-keyword-arguments private-keywords arguments))))
 
@@ -3209,6 +3222,7 @@ futures-aware, FIFO queue")
   (package
     (name "rust-num-threads")
     (version "0.1.6")
+    (outputs %rust-library-outputs)
     (source (origin
               (method url-fetch)
               (uri (crate-uri "num_threads" version))
@@ -5098,6 +5112,21 @@ RFC-compliant `EmailAddress` newtype. ")
 	     (error "bogus entry in %replacments"))))
   (any test-replacement %replacements))
 
+(define (looks-like-library? name)
+  (and (string-prefix? "rust-" name)
+       (not (member name '("rust-analyzer" "rust-cargo-c")))))
+(define (outputs-for-package-name name)
+  ;; If it looks like just a library, separate libs, binaries, etc,
+  ;; because usually binaries aren't needed.  (closure size considerations)
+  (if (looks-like-library? name)
+      %rust-library-outputs
+      ;; If it looks like a leaf package, separate "out" and "lib",
+      ;; because things are sort-of statically linked.
+      '("out" "lib")))
+
+(define (append-filter-map f list)
+  (concatenate (filter-map f list)))
+
 ;; todo: ‘stub‘ rust-rustc-version to reduce deps?
 ;; grrr rust-backtrace
 (define (vitaminate/auto* pack)
@@ -5120,36 +5149,55 @@ RFC-compliant `EmailAddress` newtype. ")
 	   (match-lambda
 	     ((label dependency . maybe-output)
 	      (and (not (remove-dependency? pack dependency))
-		   ;; These are actually test inputs! (TODO guix)
-		   ;; (TODO: this isn't build from source)
-		   ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
-		   #;(pk 'p pack dependency)
-		   (cons* label (vitaminate/auto
-				 ;; Resolve version conflicts, choose newer versions,
-				 ;; etc.
-				 (or (find-replacement pack dependency) dependency))
-			  maybe-output)))))
+		   (let ((vitaminated-input
+			  (vitaminate/auto
+			   ;; Resolve version conflicts, choose newer versions,
+			   ;; etc.
+			   (or (find-replacement pack dependency) dependency))))
+		     ;; These are actually test inputs! (TODO guix)
+		     ;; (TODO: this isn't build from source)
+		     ;;(not (equal? (package-name pack) "rust-pure-rust-locales"))
+		     #;(pk 'p pack dependency)
+		     (cond ((not (eq? (package-build-system vitaminated-input)
+				      antioxidant-build-system))
+			    (list (cons* label vitaminated-input maybe-output)))
+			   ;; For cbindgen, sometimes the binary, sometimes the lib
+			   ;; is needed.  Add both.
+			   ((string=? label "rust-cbindgen")
+			    (list (list label vitaminated-input "lib")
+				  (list label vitaminated-input "out")))
+			   ((string-prefix? "rust-nu-plugin" label)
+			    (list (list label vitaminated-input "out"))) ; for wrap-program
+			   ;; TODO: in some cases, "out" is needed!
+			   ;; For library crates, we usually just need the lib output.
+			   ((looks-like-library? label)
+			    (list (list label vitaminated-input "lib")))
+			   (#true (list (cons* label vitaminated-input maybe-output)))))))))
 	 ;; Detect cycles early by unthunking
 	 (define i
- 	   (filter-map fix-input
-		       (append (match (assoc-ref %extra-inputs (package-name pack))
-				 ((association-list) association-list)
-				 (#false '())) ; no extra inputs
-			       cargo-inputs
-			       (package-inputs pack))))
-	 (define n-i (filter-map fix-input
-				 (append cargo-development-inputs
-					 ;; TODO: move zlib of rust-libz-sys-1 from
-					 ;; native-inputs to inputs.
-					 (package-native-inputs pack)
-					 (match (package-name pack)
-					   ("rust-backtrace"
-					    `(("rust-cc" ,(p rust-cc-1)))) ; missing dep
-					   (_ '())))))
-	 (define p-i (filter-map fix-input (package-propagated-inputs pack)))
+ 	   (append-filter-map
+	    fix-input
+	    (append (match (assoc-ref %extra-inputs (package-name pack))
+		      ((association-list) association-list)
+		      (#false '())) ; no extra inputs
+		    cargo-inputs
+		    (package-inputs pack))))
+	 (define n-i (append-filter-map
+		      fix-input
+		      (append cargo-development-inputs
+			      ;; TODO: move zlib of rust-libz-sys-1 from
+			      ;; native-inputs to inputs.
+			      (package-native-inputs pack)
+			      (match (package-name pack)
+				("rust-backtrace"
+				 `(("rust-cc" ,(p rust-cc-1)))) ; missing dep
+				(_ '())))))
+	 (define p-i (append-filter-map
+		      fix-input (package-propagated-inputs pack)))
 	 (package
 	  (inherit pack)
 	  (build-system antioxidant-build-system)
+	  (outputs (outputs-for-package-name (package-name pack)))
 	  (source
 	   (match (package-name pack)
 	     ("rust-libnghttp2-sys"
