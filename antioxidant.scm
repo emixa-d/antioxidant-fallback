@@ -1117,10 +1117,10 @@ the \"examples\" output.
       (test . "tests")))
   (define binary-location
     (match destination
-      ((? absolute-file-name? where)
-       where)
       ((? string? where)
-       (error "The file name passed to 'compile-binary-target' must be absolute."))
+       (if (absolute-file-name? where)
+	   where
+	   (error "The file name passed to 'compile-binary-target' must be absolute.")))
       ('auto
        (match (assoc family %family->output)
 	 ((_ . output)
