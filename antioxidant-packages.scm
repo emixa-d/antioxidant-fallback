@@ -5061,7 +5061,7 @@ RFC-compliant `EmailAddress` newtype. ")
       ("harfbuzz" ,(@ (gnu packages gtk) harfbuzz)))) ; missing input, .pc points to a subdirectory while it shouldn't or #include <harfbuzz/hb.h> needs to be replaced by #include <harfbuzz/hb.h>
     ("rust-tectonic-engine-xetex" ; missing input (TODO: maybe detect (upstream) in rust-tectonic-xetex-layout to add to the list?)
      (("fontconfig" ,(@ (gnu packages fontutils) fontconfig))
-      ("harfbuzz" ,(@ (gnu packages gtk) harfbuzz-3.0))))
+      ("harfbuzz" ,(@ (gnu packages gtk) harfbuzz-3))))
     ("rust-time" ; new inputs for new version
      (("rust-num-threads" ,rust-num-threads)))
     ("rust-tungstenite"
