@@ -1251,7 +1251,7 @@ the \"examples\" output.
   "Compile the Rust binaries described in Cargo.toml (but not examples, tests and benchmarks)."
   (define (compile-binary-target* target)
     ;; Check required-features.
-    (if (lset<= string? (target-required-features target) *features*)
+    (if (lset<= string=? (target-required-features target) *features*)
 	(apply compile-binary-target target #:family 'bin arguments)
 	(format #t "not compiling ~a, because the following features are missing: ~a~%"
 		target
