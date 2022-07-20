@@ -5143,6 +5143,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-log" . removed-dependency) ; rust-serde-test
     ("rust-memchr" . removed-dependency ) ; quickcheck
     ("rust-rand" . removed-dependency) ; rand-pcg
+    ("rust-rayon" . removed-dependency) ; rand-xorshift
     ("rust-rayon-core" . removed-dependency) ; rand-rand-xorshift
     ("rust-regex" . removed-dependency) ; quickcheck
     ("rust-serde-fmt" . removed-dependency) ; rust-serde-derive
