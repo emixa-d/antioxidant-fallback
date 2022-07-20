@@ -190,7 +190,7 @@
   (map scm->target (vector->list s)))
 
 (define-json-mapping <target-specific> make-target-specific? target-specific?
-  %json->target-specific <=> %manifest->target-specific <=> scm->target-specific <=> target-specific->scm
+  %json->target-specific <=> %manifest->target-specific <=> %scm->target-specific <=> target-specific->scm
   (target %target-specific-target) ; string, not actually part of the json
   (dependencies target-specific-dependencies "dependencies" (or-empty scm->dependency-list))
   ;; For tests, examples and benchmarks
@@ -198,8 +198,22 @@
   ;; For build scripts
   (build-dependencies target-specific-build-dependencies "build-dependencies" (or-empty scm->dependency-list)))
 
+(define (fixup-section-names scm)
+  ;; Some packages, e.g. rust-smallvec, use dev_dependencies instead of dev-dependencies.
+  ;; (TODO: maybe this is the same thing as the proc-macro / proc_macro?)
+  ;; (That was in the Cargo.toml.orig and not in the Cargo.toml, but packages don't have
+  ;; to be from crates.io)
+  (define fixup-section-name
+    (match-lambda
+     (("dev_dependencies" . things) (cons "dev-dependencies" things))
+     (("build_dependencies" . things) (cons "build-dependencies" things))
+     (foo foo)))
+  (map fixup-section-name scm))
+
+(define scm->target-specific (compose %scm->target-specific fixup-section-names))
+
 (define-json-mapping <manifest> make-manifest manifest?
-  %json->manifest <=> %manifest->json <=> scm->manifest <=> manifest->scm
+  %json->manifest <=> %manifest->json <=> %scm->manifest <=> manifest->scm
   (package manifest-package "package" scm->package)
   (lib manifest-lib "lib" (or-false scm->target))
   (bin manifest-bin "bin" (or-empty scm->target-list))
@@ -221,6 +235,8 @@
 		     (scm->target-specific
 		      `(("target" . ,key) ,@value))))
 		  s)))))
+
+(define scm->manifest (compose %scm->manifest fixup-section-names))
 
 (define (convert-toml->json from to)
   (invoke "python3" "-c"
