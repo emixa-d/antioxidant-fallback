@@ -50,7 +50,9 @@
 	    elaborate-target/skip
 	    elaborated-target?
 	    find-rust-binaries
-	    compile-binary-target)
+	    compile-binary-target
+
+	    run-tests-check)
   #:use-module (guix build syscalls)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
@@ -1381,6 +1383,16 @@ package-specific information."
 	 (mkdir file-name)))))
   (for-each create-output outputs))
 
+(define* (rust-tests-check #:key outputs tests? #:allow-other-keys)
+  "Look for tests in the 'tests' output and run them."
+  (when tests?
+    (and=> (assoc-ref outputs "tests")
+	   (lambda (output)
+	     (for-each
+	      (lambda (test)
+		(invoke test)) ; TODO: allow test arguments
+	      (find-files (in-vicinity output "bin")))))))
+
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
@@ -1396,5 +1408,5 @@ package-specific information."
     (add-after 'build 'build-binaries build-binaries)
     (add-after 'install 'create-all-outputs create-all-outputs)
     (replace 'strip fixed-strip)
-    (delete 'check) ; TODO
+    (replace 'check rust-tests-check)
     (delete 'install))) ; TODO?
