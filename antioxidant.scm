@@ -1002,8 +1002,14 @@ by %excluded-keys."
 	    (pk 'types rest 'in manifest)
 	    (error "antioxidant only supports a single crate type, override Cargo.toml with #:rust-crate-type"))))))
 
-(define* (build #:key rust-crate-type inputs #:allow-other-keys #:rest arguments)
-  "Build the Rust crates (library) described in Cargo.toml."
+(define* (build #:key rust-crate-type inputs tests? #:allow-other-keys #:rest arguments)
+  "Build the Rust crates (library) described in Cargo.toml.  If tests are enabled,
+also compile the tests using the mechanism described in
+<https://doc.rust-lang.org/rustc/tests/index.html> and put the test binary in the
+\"tests\" output (or \"bin\" or \"out\")."
+  ;; TODO: maybe allow _not_ putting them in an output?
+  ;; Also, putting them in "bin" or "out" is potentially confusing.
+
   ;; Tested for: rust-cfg-il, rust-libc (TODO: more)
   (let* ((package (manifest-package *manifest*))
 	 (crate-mappings (manifest-all-dependencies *manifest* '(dependency)))
@@ -1057,7 +1063,18 @@ by %excluded-keys."
 	     #:available-crates (find-directly-available-crates inputs)
 	     #:crate-mappings crate-mappings
 	     ;; TODO: does the order matter?
-	     (append arguments (list #:configuration *configuration*))))))
+	     (append arguments (list #:configuration *configuration*)))
+      (when tests?
+	;; Compile the tests
+	(apply compile-binary-target
+	       (elaborate-target
+		*manifest*
+		(scm->target
+		 `(("name" . ,(string-append crate-name "-embedded-tests"))
+		   ("path" . ,lib-path))))
+	       #:family 'test
+	       ;; TODO: does #:configuration need to be set here as well?
+	       arguments)))))
 
 ;; See <https://doc.rust-lang.org/cargo/guide/project-layout.html>
 ;; for how source locations are inferred.
