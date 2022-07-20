@@ -852,6 +852,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 			    (phases #~%standard-antioxidant-phases)
 			    (rust-dynamic-library-arguments #false)
 			    (tests? #true)
+			    (test-options #~'()) ; G-exp evaluating to a list of CLI arguments
 			    modules ; what to do about 'modules'
 			    install-source? ; not used by antioxidant-build-system
 			    system target source search-paths outputs
@@ -898,6 +899,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		     #:rust-dynamic-library-arguments #$rust-dynamic-library-arguments
 		     #:strip-binaries? #false ; TODO exported symbols are removed
 		     #:tests? #$tests?
+		     #:test-options #$test-options
 		     #:phases (modify-phases #$phases
 				#$@(custom-phases name)))))))
   ;; TODO graft stuff, package->derivation guile-for-build

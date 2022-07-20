@@ -1402,7 +1402,9 @@ package-specific information."
 	 (mkdir file-name)))))
   (for-each create-output outputs))
 
-(define* (rust-tests-check #:key outputs tests? #:allow-other-keys)
+(define* (rust-tests-check #:key outputs tests?
+			   (test-options '())
+			   #:allow-other-keys)
   "Look for tests in the 'tests' output and run them."
   (when tests?
     ;; rust-autocfg@1.0.1 wants a TESTS_TARGET_DIR.  Can't directly
@@ -1413,7 +1415,7 @@ package-specific information."
 	   (lambda (output)
 	     (for-each
 	      (lambda (test)
-		(invoke test)) ; TODO: allow test arguments
+		(apply invoke test test-options)) ; TODO: look for reasonable defaults
 	      (find-files (in-vicinity output "bin")))))))
 
 (define %standard-antioxidant-phases
