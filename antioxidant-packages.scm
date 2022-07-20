@@ -5127,6 +5127,7 @@ RFC-compliant `EmailAddress` newtype. ")
 ;;     (e.g., rust-atty assumes stdin/out/err is a tty)
 ;;   * missing-files: some files used by tests are missing from the source code
 ;;     (fix is probably to switch to VC like done for PyPi)
+;;   * version: tests do not compile against the versions of dependencies
 ;;
 ;; (the reason symbol can be used by 'guix style' to automatically add a comment
 ;; to #:tests? #false)
