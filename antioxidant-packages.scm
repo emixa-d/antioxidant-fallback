@@ -3755,12 +3755,12 @@ RFC-compliant `EmailAddress` newtype. ")
     "rust-objc" "rust-objc-exception" "rust-objc-foundation" "rust-objc-id" "rust-objc-test-utils" ; requires gcc-objc, but gcc-objc doesn't seem to be used by any Rust crate, so it looks like these objc crates have never worked in the first place in Guix.
     "rust-avro-rs" ; doesn't compile against new rust-digest and longer maintained, replace by apache-avro, let's see if we can avoid it ...
     ("rust-quickcheck"
-     ;; Usually only required for tests.
-     ;; Avoid (quickcheck env-logger humantime chrono bincode) cycle.
-     ;; Apparently sequoia-sq requires rust-quickcheck.
+     ;; Avoid (quickcheck env-logger humantime chrono bincode) cycle
+     ;; and (quickheck env-logger humantime chrono bincode byteorder)
      #:for-dependent
      ,(lambda (dependent)
-	(not (string=? (package-name dependent) "sequoia-sq"))))
+	(not (member (package-name dependent)
+		     '("sequoia-sq")))))
     "rust-pear" "rust-pear-codegen" ; current version in Guix requires non-stable
     "rust-mesalink" ; doesn't build against recent rust-rustls
     "rust-defmt" ; accidentally requires unstable-test?
