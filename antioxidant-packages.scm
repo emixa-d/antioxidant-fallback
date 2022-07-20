@@ -68,6 +68,7 @@
     ,@(if (target-x86-64? target)
 	  '(("CARGO_CFG_TARGET_FEATURE" . "sse,sse2"))
 	  '())
+    ("RUST_BACKTRACE" . "full") ; backtraces are useful for investigating build.rs and test failures, so enable them.
     ("RUSTC_BOOTSTRAP" . "1"))) ; make it sometimes possible to use unstable features (TODO: not really a ‘target’ environment variable, needs some renaming).
 
 ;; TODO: move to antioxidant.scm

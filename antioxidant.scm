@@ -959,8 +959,6 @@ by %excluded-keys."
     (setenv "OPT_LEVEL" optimisation-level)
     ;; Expected by some configuration scripts, e.g. rust-libc
     (setenv "RUSTC" (which "rustc"))
-    ;; This improves error messages
-    (setenv "RUST_BACKTRACE" "full")
     ;; rust-indexmap expectes this to be set (TODO: this is rather ad-hoc)
     (for-each set-feature-environment-variable! *features*)
     (setenv "CARGO_FEATURE_STD" "")
