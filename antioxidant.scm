@@ -1331,12 +1331,14 @@ the \"examples\" output.
       (mkdir-p cargo-target-directory)
       (setenv "CARGO_TARGET_DIR" cargo-target-directory))))
 
-(define* (set-platform-dependent-variables #:key cargo-env-variables
-					   #:allow-other-keys)
-  "Set environment variables like CARGO_CFG_TARGET_POINTER_WIDTH and
-CARGO_CFG_TARGET_ARCH."
+(define* (set-rust-environment-variables
+	  #:key rust-environment-variables
+	  #:allow-other-keys)
+  "Set environment variables like CARGO_CFG_TARGET_POINTER_WIDTH,
+CARGO_CFG_TARGET_ARCH and RUSTC_BOOTSTRAP for which we do not need
+package-specific information."
   (for-each (match-lambda ((name . value) (setenv name value)))
-	    cargo-env-variables)) ; TODO: maybe move more things inside
+	    rust-environment-variables)) ; TODO: maybe move more things inside
 
 ;; Otherwise it looks for TARGET-strip even when compiling natively,
 ;; due to how cross-compilation has been set up.
@@ -1366,7 +1368,7 @@ CARGO_CFG_TARGET_ARCH."
     (add-after 'unpack 'read-dependency-environment-variables read-dependency-environment-variables)
     (add-after 'unpack 'set-platform-independent-manifest-variables
 	       set-platform-independent-manifest-variables)
-    (add-after 'unpack 'set-platform-dependent-variables set-platform-dependent-variables)
+    (add-after 'unpack 'set-rust-environment-variables set-rust-environment-variables)
     (add-after 'unpack 'load-manifest load-manifest)
     (replace 'configure configure)
     (replace 'build build)

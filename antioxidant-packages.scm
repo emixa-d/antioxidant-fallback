@@ -38,9 +38,8 @@
 				"tests"
 				"benchmarks"))
 
-(define (target-environment-variables target)
-  `(("RUSTC_BOOTSTRAP" . "1") ; make it sometimes possible to use unstable features (TODO: not really a ‘target’ environment variable, needs some renaming).
-    ;; TODO gnueabihf?
+(define (rust-environment-variables target)
+  `(;; TODO gnueabihf?
     ("CARGO_CFG_TARGET_ENV" .
      ,(if (or (target-linux? target) (target-hurd? target))
 	  "gnu"
@@ -68,7 +67,8 @@
     ;; e.g., rust-sleef-sys.  TODO: CPU tuning.
     ,@(if (target-x86-64? target)
 	  '(("CARGO_CFG_TARGET_FEATURE" . "sse,sse2"))
-	  '())))
+	  '())
+    ("RUSTC_BOOTSTRAP" . "1"))) ; make it sometimes possible to use unstable features (TODO: not really a ‘target’ environment variable, needs some renaming).
 
 ;; TODO: move to antioxidant.scm
 (define generate-cbindgen-metadata-phase
@@ -859,8 +859,8 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 			    (features #~'("default"))
 			    (cargo-target-directory #false)
 			    (rust-crate-type #false)
-			    (cargo-env-variables
-			     #~'#$(target-environment-variables
+			    (rust-environment-variables
+			     #~'#$(rust-environment-variables
 				   (or target
 				       (nix-system->gnu-triplet system)))))
   (define builder
@@ -889,7 +889,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 		     #:features #$features
 		     #:optimisation-level '#$optimisation-level
 		     #:debuginfo-level '#$debuginfo-level
-		     #:cargo-env-variables #$cargo-env-variables
+		     #:rust-environment-variables #$rust-environment-variables
 		     #:cargo-target-directory #$cargo-target-directory ; <-- TODO: unused, maybe remove?
 		     #:rust-crate-type #$rust-crate-type
 		     #:rust-metadata #$rust-metadata
