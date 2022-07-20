@@ -5122,6 +5122,7 @@ RFC-compliant `EmailAddress` newtype. ")
 ;; to #:tests? #false)
 (define %disable-tests
   '(("rust-atty" . build-environment) ; assumes fd 0/1/2 are ttys
+    ("rust-erased-serde" . removed-dependency) ; rust-serde-json
     ("rust-sval" . removed-dependency))) ; quickcheck
 
 (define (find-replacement dependent dependency)
