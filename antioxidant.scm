@@ -1104,7 +1104,8 @@ Cargo.toml terminology or a file in the 'examples' subdirectory), for
 the \"examples\" output.
 @item benchmark: a benchmark (corresponding to a [[bench]] section or a file in the
 'benches' directory)
-@item test: a test (corresponding to a [[test]] section or a file in the 'tests' directory)
+@item test: a test (corresponding to a [[test]] section or a file in the 'tests' directory or the tests
+embedded in the main source code)
 @end itemize"
   (unless (elaborated-target? target/elaborated)
     (error "The first argument to 'compile-binary-target' must be an elaborated target"))
@@ -1136,8 +1137,13 @@ the \"examples\" output.
   (apply compile-rust-binary
 	 (target-path target/elaborated)
 	 binary-location
-	 (list (string-append "--edition=" (target-edition target/elaborated))
-	       (string-append "-Lnative=" (getcwd))) ; TODO: is this still required, now there's better support for configure scripts?
+	 (append
+	  (if (eq? family 'test)
+	      ;; TODO: does this work for [[tests]] and integration tests?
+	      (list "--test") ; let the tests be run instead of the main function
+	      '())
+	  (list (string-append "--edition=" (target-edition target/elaborated))
+		(string-append "-Lnative=" (getcwd)))) ; TODO: is this still required, now there's better support for configure scripts?
 	 ;; A program can use its own crate without declaring it.
 	 ;; At least, hexyl tries to do so.  For a more complicated
 	 ;; example, see 'rust-xml-rs@0.8.3', which has "xml_rs" as
