@@ -5115,11 +5115,14 @@ RFC-compliant `EmailAddress` newtype. ")
 ;;
 ;;   * removed-dependency
 ;;   * fails (not proper because defeats the point of tests but will do for now).
+;;   * build-environment: tests assume things about the build environment that are false
+;;     (e.g., rust-atty assumes stdin/out/err is a tty)
 ;;
 ;; (the reason symbol can be used by 'guix style' to automatically add a comment
 ;; to #:tests? #false)
 (define %disable-tests
-  '(("rust-sval" . removed-dependency))) ; quickcheck
+  '(("rust-atty" . build-environment) ; assumes fd 0/1/2 are ttys
+    ("rust-sval" . removed-dependency))) ; quickcheck
 
 (define (find-replacement dependent dependency)
   (define test-replacement
