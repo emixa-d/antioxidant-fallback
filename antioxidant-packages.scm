@@ -5123,6 +5123,8 @@ RFC-compliant `EmailAddress` newtype. ")
 ;;   * fails (not proper because defeats the point of tests but will do for now).
 ;;   * build-environment: tests assume things about the build environment that are false
 ;;     (e.g., rust-atty assumes stdin/out/err is a tty)
+;;   * missing-files: some files used by tests are missing from the source code
+;;     (fix is probably to switch to VC like done for PyPi)
 ;;
 ;; (the reason symbol can be used by 'guix style' to automatically add a comment
 ;; to #:tests? #false)
