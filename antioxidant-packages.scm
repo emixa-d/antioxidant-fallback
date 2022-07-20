@@ -5139,6 +5139,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-chrono" . removed-dependency) ; quickcheck
     ("rust-env-logger" . removed-dependency) ; quickcheck
     ("rust-erased-serde" . removed-dependency) ; rust-serde-json
+    ("rust-hashbrown" . version) ; rust-rand?
     ("rust-humantime" . removed-dependency) ; quickcheck
     ("rust-indexmap" . removed-dependency) ; quickcheck
     ("rust-itertools" . removed-dependency) ; quickcheck
