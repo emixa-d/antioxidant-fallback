@@ -1188,7 +1188,10 @@ embedded in the main source code)
 	 ;; still have any effect?
 	 #:crate-mappings (cons (make-crate-mapping (package-name (manifest-package *manifest*))
 						    (crate-name-of-manifest *manifest*))
-				(manifest-all-dependencies *manifest* '(dependency)))
+				(manifest-all-dependencies (pk 'm *manifest*)
+							   (if (eq? family 'test)
+							       '(dependency dev)
+							       '(dependency))))
 	 ;; Binaries can use their own crates!
 	 ;; TODO: for tests, also native-inputs?
 	 #:available-crates
