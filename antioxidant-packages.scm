@@ -3996,7 +3996,12 @@ RFC-compliant `EmailAddress` newtype. ")
     ("castor" -> "pango")
     ("monolith" -> "pkg-config")
     ("monolith" -> "openssl")
-    ))
+
+    ("rust-vcpkg" ; for Windows, usually not needed elsewhere
+     #:for-dependent
+     ,(lambda (dependent)
+	;; TODO: which packages require this?
+	(not (member (package-name dependent) '()))))))
 
 (define (remove-dependency? dependent dependency)
   "Should DEPENDENCY be removed from the dependencies of DEPENDENT (both are package objects)?"
