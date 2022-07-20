@@ -3756,11 +3756,13 @@ RFC-compliant `EmailAddress` newtype. ")
     "rust-avro-rs" ; doesn't compile against new rust-digest and longer maintained, replace by apache-avro, let's see if we can avoid it ...
     ("rust-quickcheck"
      ;; Avoid (quickcheck env-logger humantime chrono bincode) cycle
-     ;; and (quickheck env-logger humantime chrono bincode byteorder)
+     ;; and some others (TODO: try compiling rust-quickcheck against dependencies
+     ;; compiled without tests to break the cycle).
      #:for-dependent
      ,(lambda (dependent)
-	(not (member (package-name dependent)
-		     '("sequoia-sq")))))
+	(member (package-name dependent)
+		'("rust-env-logger" "rust-humantime" "rust-chrono" "rust-bincode" "rust-byteorder"
+		  "rust-regex" "rust-time" "rust-itertools" "rust-indexmap"))))
     "rust-pear" "rust-pear-codegen" ; current version in Guix requires non-stable
     "rust-mesalink" ; doesn't build against recent rust-rustls
     "rust-defmt" ; accidentally requires unstable-test?
@@ -5130,13 +5132,22 @@ RFC-compliant `EmailAddress` newtype. ")
 ;; to #:tests? #false)
 (define %disable-tests
   '(("rust-atty" . build-environment) ; assumes fd 0/1/2 are ttys
+    ("rust-bincode" . removed-dependency) ; quickcheck
+    ("rust-byteorder" . removed-dependency) ; quickcheck
+    ("rust-chrono" . removed-dependency) ; quickcheck
+    ("rust-env-logger" . removed-dependency) ; quickcheck
     ("rust-erased-serde" . removed-dependency) ; rust-serde-json
+    ("rust-humantime" . removed-dependency) ; quickcheck
+    ("rust-indexmap" . removed-dependency) ; quickcheck
+    ("rust-itertools" . removed-dependency) ; quickcheck
     ("rust-log" . removed-dependency) ; rust-serde-test
+    ("rust-memchr" . removed-dependency ) ; quickcheck
     ("rust-rand" . removed-dependency) ; rand-pcg
     ("rust-rayon-core" . removed-dependency) ; rand-rand-xorshift
+    ("rust-regex" . removed-dependency) ; quickcheck
     ("rust-serde-fmt" . removed-dependency) ; rust-serde-derive
     ("rust-sval" . removed-dependency) ; quickcheck
-    ("rust-time" . missing-files))) ; the tests module
+    ("rust-time" . missing-files))) ; the tests module, and quickcheck
 
 (define (find-replacement dependent dependency)
   (define test-replacement
