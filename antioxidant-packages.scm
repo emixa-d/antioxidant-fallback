@@ -5135,7 +5135,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-rand" . removed-dependency) ; rand-pcg
     ("rust-rayon-core" . removed-dependency) ; rand-rand-xorshift
     ("rust-serde-fmt" . removed-dependency) ; rust-serde-derive
-    ("rust-sval" . removed-dependency))) ; quickcheck
+    ("rust-sval" . removed-dependency) ; quickcheck
+    ("rust-time" . missing-files))) ; the tests module
 
 (define (find-replacement dependent dependency)
   (define test-replacement
