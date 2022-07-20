@@ -5110,6 +5110,17 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-zip" ; new inputs for new version
      (("rust-zstd" ,(p rust-zstd-0.9))))))
 
+;; Packages for which tests are disabled.
+;; The second part of the pair is a 'reason' for disabling them.
+;;
+;;   * removed-dependency
+;;   * fails (not proper because defeats the point of tests but will do for now).
+;;
+;; (the reason symbol can be used by 'guix style' to automatically add a comment
+;; to #:tests? #false)
+(define %disable-tests
+  '(("rust-sval" . removed-dependency))) ; quickcheck
+
 (define (find-replacement dependent dependency)
   (define test-replacement
     (match-lambda
@@ -5238,6 +5249,8 @@ RFC-compliant `EmailAddress` newtype. ")
 			   (match (assoc (package-name pack) %crate-types)
 			     ((_ value) value)
 			     (#false #~#false)) ; use Cargo.toml
+			   #:tests?
+			   (not (assoc-ref %disable-tests (package-name pack)))
 			   #:features
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?  And maybe the features can be moved
