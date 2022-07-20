@@ -1405,6 +1405,10 @@ package-specific information."
 (define* (rust-tests-check #:key outputs tests? #:allow-other-keys)
   "Look for tests in the 'tests' output and run them."
   (when tests?
+    ;; rust-autocfg@1.0.1 wants a TESTS_TARGET_DIR.  Can't directly
+    ;; find out what for.
+    (mkdir ".test-target-dir")
+    (setenv "TESTS_TARGET_DIR" (in-vicinity (getcwd) ".test-target-dir"))
     (and=> (assoc-ref outputs "tests")
 	   (lambda (output)
 	     (for-each
