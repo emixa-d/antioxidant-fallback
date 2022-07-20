@@ -3234,7 +3234,7 @@ futures-aware, FIFO queue")
                (base32
                 "0i5vmffsv6g79z869flp1sja69g1gapddjagdw1k3q9f3l2cw698"))))
     (build-system antioxidant-build-system)
-    (inputs (list (p rust-libc-0.2)))
+    ;; rust-libc is only needed on macos, ios and freebsd
     (home-page "https://github.com/jhpratt/num_threads")
     (synopsis
      "A minimal library that determines the number of running threads for the current process.")
