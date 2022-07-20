@@ -3236,6 +3236,10 @@ futures-aware, FIFO queue")
                (base32
                 "0i5vmffsv6g79z869flp1sja69g1gapddjagdw1k3q9f3l2cw698"))))
     (build-system antioxidant-build-system)
+    (arguments
+     (list
+      #:test-options
+      #~(list "--test-threads=1"))) ; test parallelism interferes with rust-num-thread's tests
     ;; rust-libc is only needed on macos, ios and freebsd
     (home-page "https://github.com/jhpratt/num_threads")
     (synopsis
