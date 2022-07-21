@@ -3816,6 +3816,7 @@ RFC-compliant `EmailAddress` newtype. ")
     #;"rust-structopt" #;"rust-structopt-derive"
     "rust-compiler-builtins"
     "rust-compiletest-rs" ;; TODO: rustc-dev?
+    "rust-cloudabi" ; doesn't seem like a supported target
     "rust-winapi" "rust-winutil" "rust-winapi-wsapoll" "rust-kernel32-sys" "rust-user32-sys" "rust-winreg" "rust-wepoll-sys" "rust-wepoll-sys-stjepang" "rust-ipconfig" "rust-windows" "rust-windows-x86-64-msvc" "rust-windows-x86-64-gnu" "rust-windows-i686-msvc" "rust-windows-i686-gnu" "rust-windows-aarch64-msvc" "rust-windows-sys" "rust-windows-gen" "rust-windows-macros" ; skip Windows support for now
     "rust-mio-anonymous-pipes" ; also Windows-specific
     "rust-nodrop-union" ; required unstable, and deprecated
