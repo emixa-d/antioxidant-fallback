@@ -4781,7 +4781,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-lazy-static"
      ,(p rust-lazy-static-1))
     ("rust-rand"
-     ,(p rust-rand-0.8))
+     ,(p rust-rand-0.8)) ; tests of some dependencies of rust-rand@0.6 fail, so no need to try adding test-only exceptions for some dependents
     ("rust-lock-api" ; 0.3, 0.2, 0.1
      ,(p rust-lock-api-0.4))
     ("rust-sysctl" ; 0.1 does not compile (type errors)
