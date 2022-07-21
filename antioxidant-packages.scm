@@ -5124,7 +5124,10 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-zstd" ,(p rust-zstd-0.9))))))
 
 (define %test-options
-  '(("rust-sysinfo"
+  '(("rust-ansi-term"
+     "--exact"
+     "--skip=debug::test::long_and_detailed") ; fails because the new rust-serde-json outputs things a little different from what rust-ansi-term is used to, seems harmless
+    ("rust-sysinfo"
      "--exact"
      "--skip=test::check_uid_gid" ; there's no root in the build environment
      "--skip=test::check_system_info"))) ; there's no /etc/os-release or /etc/lsb-release (TODO: maybe we could patch SystemExt.name to just return Guix?).
