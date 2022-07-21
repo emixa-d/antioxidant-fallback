@@ -5120,7 +5120,11 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-zip" ; new inputs for new version
      (("rust-zstd" ,(p rust-zstd-0.9))))))
 
-(define %test-options '())
+(define %test-options
+  '(("rust-sysinfo"
+     "--exact"
+     "--skip=test::check_uid_gid" ; there's no root in the build environment
+     "--skip=test::check_system_info"))) ; there's no /etc/os-release or /etc/lsb-release (TODO: maybe we could patch SystemExt.name to just return Guix?).
 
 ;; Packages for which tests are disabled.
 ;; The second part of the pair is a 'reason' for disabling them.
