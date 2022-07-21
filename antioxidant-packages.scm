@@ -4868,8 +4868,9 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-log" ,(p rust-log-0.4))
       ("rust-once-cell" ,(p rust-once-cell-1))
       ("rust-parking-lot" ,(p rust-parking-lot-0.11))))
-    ("rust-alacritty-terminal" ; new deps for new version
-     (("rust-signal-hook-mio" ,(p rust-signal-hook-mio-0.2))))
+    ("rust-alacritty-terminal"
+     (("rust-signal-hook-mio" ,(p rust-signal-hook-mio-0.2)) ; new dep for new version
+      ("rust-serde-json" ,(p rust-serde-json-1)))) ; for test
     ("alacritty" ; likewise
      (("rust-structopt" ,(p rust-structopt-0.3))))
     ("rust-aom-sys"
