@@ -5158,6 +5158,7 @@ RFC-compliant `EmailAddress` newtype. ")
   '(("rust-adler32" . version) ; rust-rand
     ("rust-ahash" . removed-dependency) ; rust-hex
     ("rust-atty" . build-environment) ; assumes fd 0/1/2 are ttys
+    ("rust-base64" . version) ; rust-rand
     ("rust-bincode" . removed-dependency) ; quickcheck
     ("rust-byteorder" . removed-dependency) ; quickcheck
     ("rust-chrono" . removed-dependency) ; quickcheck
