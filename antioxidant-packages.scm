@@ -5052,6 +5052,8 @@ RFC-compliant `EmailAddress` newtype. ")
 			  ("rust-bindgen" ,(p rust-bindgen-0.59)) ; TODO: actually a native-input
 			  ("rust-cc" ,(p rust-cc-1)))) ; TODO: actually a native-input
     ("rust-nix" (("rust-assert-impl" ,(p rust-assert-impl-0.1)))) ; required by tests (TODO: maybe native-inputs)
+    ("rust-nu-ansi-term" (("rust-regex" ,(p rust-regex-1)) ; for tests
+			  ("rust-serde-json" ,(p rust-serde-json-1)))) ; for tests
     ;; TODO: is this sufficient?
     ("rust-futures-core-preview"
      (("rust-futures-core" ,rust-futures-core-0.3)))
