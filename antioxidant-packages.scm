@@ -5146,7 +5146,8 @@ RFC-compliant `EmailAddress` newtype. ")
 ;; (the reason symbol can be used by 'guix style' to automatically add a comment
 ;; to #:tests? #false)
 (define %disable-tests
-  '(("rust-ahash" . removed-dependency) ; rust-hex
+  '(("rust-adler32" . version) ; rust-rand
+    ("rust-ahash" . removed-dependency) ; rust-hex
     ("rust-atty" . build-environment) ; assumes fd 0/1/2 are ttys
     ("rust-bincode" . removed-dependency) ; quickcheck
     ("rust-byteorder" . removed-dependency) ; quickcheck
