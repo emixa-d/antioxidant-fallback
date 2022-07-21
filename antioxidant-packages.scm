@@ -5164,6 +5164,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-memmap" . removed-dependency) ; rust-tempdir
     ("rust-memmap2" . removed-dependency) ; rust-tempdir
     ("rust-nom" . removed-dependency) ; rust-proptest
+    ("rust-png" . missing-files)
     ("rust-rand" . removed-dependency) ; rand-pcg
     ("rust-rayon" . removed-dependency) ; rand-xorshift
     ("rust-rayon-core" . removed-dependency) ; rand-rand-xorshift
