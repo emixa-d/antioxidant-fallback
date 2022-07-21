@@ -4859,6 +4859,8 @@ RFC-compliant `EmailAddress` newtype. ")
 (define %extra-inputs
   `(("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
+    ("rust-sysinfo" ; for tests (TODO: maybe native-inputs)
+     (("rust-tempfile" ,(p rust-tempfile-3))))
     ("rust-arboard"
      (("rust-log" ,(p rust-log-0.4))
       ("rust-once-cell" ,(p rust-once-cell-1))
