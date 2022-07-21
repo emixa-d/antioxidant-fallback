@@ -4827,6 +4827,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-nettle" ,rust-nettle-7)
     ;; 0.4.30 fails to build.
     ("rust-proc-macro2" ,(p rust-proc-macro2-1))
+    ("rust-quickcheck" ,(p rust-quickcheck-1)) ; old versions of rust-quickcheck don't build against new rust-rand
     ("rust-raw-window-handle" ,rust-raw-window-handle)
     ("rust-smithay-client-toolkit" ,rust-smithay-client-toolkit)
     ("rust-smithay-clipboard" ,rust-smithay-clipboard)
