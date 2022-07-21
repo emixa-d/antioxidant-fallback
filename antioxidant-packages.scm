@@ -5127,6 +5127,9 @@ RFC-compliant `EmailAddress` newtype. ")
   '(("rust-ansi-term"
      "--exact"
      "--skip=debug::test::long_and_detailed") ; fails because the new rust-serde-json outputs things a little different from what rust-ansi-term is used to, seems harmless
+    ("rust-glob"
+     "--exact"
+     "--skip=test::test_iteration_errors") ; /root does not exist in the build environment
     ("rust-sysinfo"
      "--exact"
      "--skip=test::check_uid_gid" ; there's no root in the build environment
