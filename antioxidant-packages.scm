@@ -5162,7 +5162,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-regex" . removed-dependency) ; quickcheck
     ("rust-serde-fmt" . removed-dependency) ; rust-serde-derive
     ("rust-sval" . removed-dependency) ; quickcheck
-    ("rust-time" . missing-files))) ; the tests module, and quickcheck
+    ("rust-time" . missing-files) ; the tests module, and quickcheck
+    ("rust-winres" . fails))) ; only for compiling to Windows, which isn't supported yet
 
 (define (find-replacement dependent dependency)
   (define test-replacement
