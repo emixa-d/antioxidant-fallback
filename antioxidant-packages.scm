@@ -5166,6 +5166,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-hashbrown" . version) ; rust-rand?
     ("rust-humantime" . removed-dependency) ; quickcheck
     ("rust-indexmap" . removed-dependency) ; quickcheck
+    ("rust-inotify" . version ) ; rust-rand
     ("rust-itertools" . removed-dependency) ; quickcheck
     ("rust-log" . removed-dependency) ; rust-serde-test
     ("rust-memchr" . removed-dependency ) ; quickcheck
