@@ -4808,6 +4808,7 @@ RFC-compliant `EmailAddress` newtype. ")
 	(not (equal? (list (package-name dependent) (package-version dependent))
 		     '("rust-png" "0.16.8")))))
     ("rust-deflate" ,rust-deflate)
+    ("rust-gl-generator" ,(@ (gnu packages crates-graphics) rust-gl-generator-0.14)) ; resolve version conflict
     ("rust-png" ,rust-png
      #:for-dependent
      ,(lambda (dependent)
