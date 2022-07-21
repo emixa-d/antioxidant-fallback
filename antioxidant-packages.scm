@@ -5163,6 +5163,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-rayon" . removed-dependency) ; rand-xorshift
     ("rust-rayon-core" . removed-dependency) ; rand-rand-xorshift
     ("rust-regex" . removed-dependency) ; quickcheck
+    ("rust-rustc-serialize" . fails) ; fails to compile
     ("rust-serde-fmt" . removed-dependency) ; rust-serde-derive
     ("rust-sval" . removed-dependency) ; quickcheck
     ("rust-time" . missing-files) ; the tests module, and quickcheck
