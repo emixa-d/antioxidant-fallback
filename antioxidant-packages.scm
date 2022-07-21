@@ -5136,6 +5136,13 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-glob"
      "--exact"
      "--skip=test::test_iteration_errors") ; /root does not exist in the build environment
+    ("rust-rustls"
+     "--skip=msgs::message_test::test_read_fuzz_corpus" ; some test files are missing
+     ;; It doesn't find some issuers, probably just
+     ;; <https://github.com/rustls/rustls/pull/896> which would be fixed in later versions.
+     ;; Additionally, the certificate tests are time bombs in that they expire:
+     ;; <https://github.com/rustls/rustls/pull/71>, so disable them.
+     "--skip=verifybench::test_")
     ("rust-sysinfo"
      "--exact"
      "--skip=test::check_uid_gid" ; there's no root in the build environment
