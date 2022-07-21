@@ -5118,6 +5118,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-zip" ; new inputs for new version
      (("rust-zstd" ,(p rust-zstd-0.9))))))
 
+(define %test-options '())
+
 ;; Packages for which tests are disabled.
 ;; The second part of the pair is a 'reason' for disabling them.
 ;;
@@ -5283,6 +5285,10 @@ RFC-compliant `EmailAddress` newtype. ")
 			     (#false #~#false)) ; use Cargo.toml
 			   #:tests?
 			   (not (assoc-ref %disable-tests (package-name pack)))
+			   ;; TODO: what's the keyword for cargo-build-system?
+			   ;; Maybe the old values can be copied.
+			   #:test-options
+			   #~'#$(or (assoc-ref %test-options (package-name pack)) '())
 			   #:features
 			   ;; TODO: can some now be removed now that default features
 			   ;; are enabled by default?  And maybe the features can be moved
