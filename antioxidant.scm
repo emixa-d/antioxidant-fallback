@@ -52,7 +52,7 @@
 	    find-rust-binaries
 	    compile-binary-target
 
-	    run-tests-check)
+	    rust-tests-check)
   #:use-module (guix build syscalls)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
