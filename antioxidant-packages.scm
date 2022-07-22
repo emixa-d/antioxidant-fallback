@@ -4082,6 +4082,10 @@ RFC-compliant `EmailAddress` newtype. ")
     ;; which is currently uncompilable.
     ("rust-bytecount" ,#~'())
     ("rust-bzip2" ,#~'("futures")) ; "tokio" requires old tokio-io
+    ("rust-cairo-sys-rs"
+     ;; "dox" disables actually linking to the cairo library, which breaks the build
+     ;; of dependents.
+     ,#~'("v1_16" "xlib" "png" "pdf" "svg" "ps" "freetype" "script" "xcb" "use_glib"))
     ;; "alloc" is required by some crates. serde is required by alfis
     ("rust-chrono" ,#~'("default" "alloc" "serde"))
     ("rust-chrono-tz" ,#~'("default" "case-insensitive")) ; doesn't build without "case-insensitive"
