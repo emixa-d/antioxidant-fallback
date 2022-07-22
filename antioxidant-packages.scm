@@ -2560,23 +2560,6 @@ It is not optimised for performance.  As such, users are recommended to use
         (sha256
           (base32 "0wyasmnqqngvm54x0gsxbwpxznvn747jkp0dx1nnppy1j9xj927y"))))))
 
-(define rust-ansi-parser ; old version doesn't build against new rust-nom
-  (package
-    (inherit (p rust-ansi-parser-0.6))
-    (name "rust-ansi-parser")
-    (version "0.6.0") ; TODO: 0.6.0/0.7.0/0.8.0?
-    (source
-     ;; For nom 0.7 compatibility, submitted upstream at
-     ;; <https://gitlab.com/davidbittner/ansi-parser/-/merge_requests/11>
-     (origin
-       (method git-fetch)
-       (uri (git-reference
-	     (url "https://gitlab.com/emixa-d/ansi-parser")
-	     (commit "bcf3d534e38d6afaca9e898cef1af7fa3e0ecdb3")))
-       (sha256
-	(base32 "0jhsd8vhz0z0x8p3k5gaf8wwyn253n5fjvf27sdvv4nkh4b1cp2d"))
-       (file-name (git-file-name name version))))))
-
 (define-public rust-async-process ; @1.0.1 is not compatible with new rust-signal-hook
   (package
     (inherit (p rust-async-process-1))
@@ -4618,7 +4601,6 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-pango-sys" ,(@ (gnu packages crates-gtk) rust-pango-sys-0.14)) ; likewise
     ("rust-pangocairo" ,rust-pangocairo) ; old version doesn't build
     ("rust-gtk" ,(@ (gnu packages crates-gtk) rust-gtk-0.14)) ; avoid potential problems
-    ("rust-ansi-parser" ,rust-ansi-parser)
     ("rust-system-deps" ,rust-system-deps)
     ("rust-version-compare" ,rust-version-compare)
     ("rust-input-buffer" ,rust-input-buffer)
