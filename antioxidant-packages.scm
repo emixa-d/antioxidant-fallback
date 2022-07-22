@@ -5189,6 +5189,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-byteorder" . removed-dependency) ; quickcheck
     ("rust-chrono" . removed-dependency) ; quickcheck
     ("rust-deflate" . other) ; something about Rust 2018 and use statements having changed?
+    ("rust-duct" . removed-dependency) ; rust-tempdir
     ("rust-env-logger" . removed-dependency) ; quickcheck
     ("rust-erased-serde" . removed-dependency) ; rust-serde-json
     ("rust-fst" . version) ; rust-quickcheck
