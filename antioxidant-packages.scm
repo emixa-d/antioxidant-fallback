@@ -5234,6 +5234,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-rustc-serialize" . fails) ; fails to compile
     ("rust-serde-fmt" . removed-dependency) ; rust-serde-derive
     ("rust-sval" . removed-dependency) ; quickcheck
+    ("rust-system-deps" . version) ; rust-pkg-config
     ("rust-time" . missing-files) ; the tests module, and quickcheck
     ("rust-tokio" . removed-dependency) ; rust-tokio<->rust-tokio-test cycle
     ("rust-winres" . fails))) ; only for compiling to Windows, which isn't supported yet
