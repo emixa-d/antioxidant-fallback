@@ -5065,6 +5065,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
     ("rust-headers"
      (("rust-httpdate" ,(p rust-httpdate-1)))) ; new dependency
+    ("rust-hex"
+     (("rust-pretty-assertions" ,(p rust-pretty-assertions-1)))) ; for tests
     ("rust-s3handler" ; new dependency for new version
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tectonic-bridge-core"
