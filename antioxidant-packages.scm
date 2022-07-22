@@ -125,8 +125,12 @@
 	 (delete-file-recursively (string-append #$output "/lib"))))))
 	  
 (define %custom-phases
-  ;; TODO home page is incorrect
-  `(("rust-servo-fontconfig-sys"
+  `(("rust-blake3-reference-impl"
+     ,#~((add-after 'unpack 'chdir
+	   (lambda _
+	     (chdir "reference_impl")))))
+    ;; TODO home page is incorrect
+    ("rust-servo-fontconfig-sys"
      ,#~((add-after 'unpack 'unbundle
 	   (lambda _
 	     (for-each ((@ (srfi srfi-26) cut) delete-file-recursively <>)
@@ -2442,6 +2446,18 @@ of operation.")
         (file-name (string-append name "-" version ".tar.gz"))
         (sha256
           (base32 "121k5yj3c8fr826pbh0gf0b3jly2ivzrfvz3lpxyabjvw2g89kxr"))))))
+
+(define rust-blake3-reference-impl
+  (package
+   (inherit (@ (gnu packages crypto) rust-blake3-1))
+   (build-system antioxidant-build-system)
+   (arguments '())
+   (name "rust-blake3-reference-impl")
+   (synopsis "Reference implementation of BLAKE3.")
+   (description "This package is the reference implementation of BLAKE3.
+
+It is not optimised for performance.  As such, users are recommended to use
+@code{rust-blake3} instead.")))
 
 (define rust-hkdf ; 0.11 doesn't build against new rust-digest
   (package
