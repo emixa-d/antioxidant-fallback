@@ -4024,7 +4024,8 @@ RFC-compliant `EmailAddress` newtype. ")
      #:for-dependent
      ,(lambda (dependent)
 	;; TODO: which packages require this?
-	(not (member (package-name dependent) '()))))))
+	(not (member (package-name dependent) '()))))
+    ("rust-cairo-rs" -> "cairo"))) ; it's rust-cairo-sys-rs that depends on cairo, not rust-cairo-rs
 
 (define (remove-dependency? dependent dependency)
   "Should DEPENDENCY be removed from the dependencies of DEPENDENT (both are package objects)?"
