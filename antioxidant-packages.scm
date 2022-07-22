@@ -5229,6 +5229,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-erased-serde" . removed-dependency) ; rust-serde-json
     ("rust-fst" . version) ; rust-quickcheck
     ("rust-hashbrown" . version) ; rust-rand?
+    ("rust-heapless" . version) ; rust-scoped-threadpool?
     ("rust-humantime" . removed-dependency) ; quickcheck
     ("rust-indexmap" . removed-dependency) ; quickcheck
     ("rust-inotify" . version ) ; rust-rand
