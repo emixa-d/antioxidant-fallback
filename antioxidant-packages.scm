@@ -4808,7 +4808,12 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-tempdir"
      ,(p rust-tempfile-3))
     ("rust-version-check"
-     ,(p rust-version-check-0.9)) ; rust-email@0.0.21 needs a new rust-version-check
+     ,(p rust-version-check-0.9) ; rust-email@0.0.21 needs a new rust-version-check
+     #:for-dependent
+     ,(lambda (dependent)
+	;; old rust-nom needs an old rust-version-check
+	(not (and (string=? (package-name dependent) "rust-nom")
+		  (string=? (package-version dependent) "4.2.3")))))
     ("rust-bare-metal"
      ,(p rust-bare-metal-1))
     ;; The old parking-lot doesn't build against
