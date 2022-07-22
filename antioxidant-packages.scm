@@ -797,16 +797,7 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* "src/lib.rs"
 	       (("path_to_exe\\(\"([a-z_]+)\"\\)" _ name)
 		(object->string
-		 (string-append #$output "/bin/" name))))))
-	 ;; bug in antioxidant
-	 (add-before 'check 'check-files
-	   (lambda _
-	     (unless (and
-		      (file-exists? (string-append #$output "/bin/cat"))
-		      (file-exists? (string-append #$output "/bin/cat_both"))
-		      (file-exists? (string-append #$output "/bin/swap"))
-		      (not (file-exists? (string-append #$output "/bin/os_pipe"))))
-	       (error "some target binaries missing or have an incorrect name"))))))
+		 (string-append #$output "/bin/" name))))))))
     ("circtools"
      ,#~((add-after 'unpack 'fixup-link-search
 	   ;; TODO: what's the rustc-flags=-L for?
