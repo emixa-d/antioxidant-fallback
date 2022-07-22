@@ -5291,7 +5291,13 @@ RFC-compliant `EmailAddress` newtype. ")
 			   ;; TODO: in some cases, "out" is needed!
 			   ;; For library crates, we usually just need the lib output.
 			   ((looks-like-library? label)
-			    (list (list label vitaminated-input "lib")))
+			    ;; For some packages, we don't have separate outputs
+			    ;; (e.g. if they don't have tests, binaries, etc.).
+			    ;; In that case, just do the default output.
+			    (let ((output (if (member "lib" (package-outputs vitaminated-input))
+					      "lib"
+					      "out")))
+			      (list (list label vitaminated-input output))))
 			   (#true (list (cons* label vitaminated-input maybe-output)))))))))
 	 ;; Detect cycles early by unthunking
 	 (define i
