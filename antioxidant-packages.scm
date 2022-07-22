@@ -5042,6 +5042,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-proc-macro2" ,(p rust-proc-macro2-1)))) ; new input for new version
     ("rust-embed-resource"
      (("rust-cc" ,(p rust-cc-1)))) ;; TODO: native-input
+    ("rust-gio"
+     (("rust-futures-util" ,(p rust-futures-util-0.3)))) ; for tests
     ("rust-glib"
      (("rust-futures-core" ,(p rust-futures-core-0.3)) ; for tests
       ("rust-futures-util" ,(p rust-futures-util-0.3)) ; for tests
