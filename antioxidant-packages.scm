@@ -4906,6 +4906,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-blake3-reference-impl" ,rust-blake3-reference-impl))) ; missing test input
     ("rust-buffering-nocopy-macro" ; for new phase
      (("rust-proc-macro2" ,(p rust-proc-macro2-1))))
+    ("rust-cairo-sys-rs"
+     (("cairo" ,(@ (gnu packages gtk) cairo)))) ; missing input
     ("circtools" ; missing input (TODO: actually a native-input)
      (("rust-cc" ,(p rust-cc-1))
       ("rust-cmake" ,(p rust-cmake-0.1))))
