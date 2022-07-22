@@ -5149,6 +5149,11 @@ RFC-compliant `EmailAddress` newtype. ")
   '(("rust-ansi-term"
      "--exact"
      "--skip=debug::test::long_and_detailed") ; fails because the new rust-serde-json outputs things a little different from what rust-ansi-term is used to, seems harmless
+    ("rust-arrayref"
+     "--exact"
+     ;; reported upstream: https://github.com/droundy/arrayref/issues/22
+     "--skip=test::check_array_mut_ref_7"
+     "--skip=test::check_array_ref_5")
     ("rust-calloop"
      "--exact"
      "--skip=loop_logic::tests::insert_source_no_interest") ; known test failure, reported at <https://github.com/Smithay/calloop/issues/96>
