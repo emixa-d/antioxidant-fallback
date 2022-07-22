@@ -5129,6 +5129,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-wayland-cursor" ; new dependencies for new version
      (("rust-xcursor" ,(p rust-xcursor-0.3))
       ("rust-wayland-client" ,(@ (gnu packages crates-graphics) rust-wayland-client-0.28))))
+    ("rust-yansi"
+     (("rust-parking-lot" ,(p rust-parking-lot-0.11)))) ; test input
     ("rust-zip" ; new inputs for new version
      (("rust-zstd" ,(p rust-zstd-0.9))))))
 
