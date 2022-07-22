@@ -4872,7 +4872,9 @@ RFC-compliant `EmailAddress` newtype. ")
 
 ;; TODO: add these (upstream) or teach "guix style" to add them
 (define %extra-inputs
-  `(("rust-structopt" ; for paw feature
+  `(("rust-shared-child"
+     (("python-minimal" ,(@ (gnu packages python) python-minimal-wrapper)))) ; for tests
+    ("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
     ("rust-sysinfo" ; for tests (TODO: maybe native-inputs)
      (("rust-tempfile" ,(p rust-tempfile-3))))
