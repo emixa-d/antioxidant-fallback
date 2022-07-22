@@ -5043,7 +5043,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-embed-resource"
      (("rust-cc" ,(p rust-cc-1)))) ;; TODO: native-input
     ("rust-gio"
-     (("rust-futures-util" ,(p rust-futures-util-0.3)))) ; for tests
+     (("rust-futures-util" ,(p rust-futures-util-0.3)) ; for tests
+      ("glib:bin" ,(@ (gnu packages glib) glib) "bin"))) ; for tests
     ("rust-glib"
      (("rust-futures-core" ,(p rust-futures-core-0.3)) ; for tests
       ("rust-futures-util" ,(p rust-futures-util-0.3)) ; for tests
