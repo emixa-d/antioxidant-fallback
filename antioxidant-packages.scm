@@ -4163,6 +4163,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ;; extra-traits is required by rust-nix
     ("rust-libc" ,#~'("std" "extra_traits"))
     ("rust-libnghttp2-sys" ,#~'()) ; don't enable the "vendored" feature
+    ("rust-lock-api" ,#~'("default" "nightly")) ; "nightly" is required by rust-yansi
     ;; Required by rust-env-logger.
     ;; kv_unstable is required by rust-kv-log-macro.
     ;; "serde" is required by rust-alacritty
