@@ -4905,6 +4905,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-structopt" ,(p rust-structopt-0.3))))
     ("rust-aom-sys"
      (("rust-system-deps" ,(p rust-system-deps-3)))) ; missing input (TODO: native-input)
+    ("rust-blake3"
+     (("rust-blake3-reference-impl" ,rust-blake3-reference-impl))) ; missing test input
     ("rust-buffering-nocopy-macro" ; for new phase
      (("rust-proc-macro2" ,(p rust-proc-macro2-1))))
     ("circtools" ; missing input (TODO: actually a native-input)
