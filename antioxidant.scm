@@ -1250,6 +1250,10 @@ embedded in the main source code)
   ;; (with a warning).
   ;;
   ;; First look in [[bin]] sections
+  ;;;
+  ;; Packages to test after modifications:
+  ;;  * rust-os-pipe
+  ;;  * ???
   (let* ((autobins? (package-autobins (manifest-package *manifest*)))
 	 (elaborate-target/skip* (cut elaborate-target/skip *manifest* <>))
 	 (explicit-binaries (map elaborate-target/skip* (manifest-bin *manifest*)))
@@ -1267,9 +1271,11 @@ embedded in the main source code)
 		     ;; Is it a file or a directory?
 		     (match (stat:type (lstat entry-file-name))
 		       ('regular
-			;; If it is a rust file, use it!
+			;; If it is a rust file, use it!  The binary will have the same name
+			;; as the source file name, except for extension.
 			(and (string-suffix? ".rs" file-name)
-			     (scm->target `(("path" . ,entry-file-name)))))
+			     (scm->target `(("name" . ,(string-drop-right file-name 3))
+					    ("path" . ,entry-file-name)))))
 		       ('directory
 			;; If it contains a 'main.rs' file, use it!
 			(let ((main (string-append entry-file-name "/main.rs")))
