@@ -4201,7 +4201,9 @@ RFC-compliant `EmailAddress` newtype. ")
     ;; The 'backtrace' and 'petgraph' dependency has been removed.
     ;; (including petgraph causes a cycle between rust-ahash and rust-hashbrown,
     ;; but it's ‘only’ required for deadlock detection).
-    ("rust-parking-lot-core" ,#~'())
+    ;;
+    ;; 'nightly' is required by rust-yansi's tests.
+    ("rust-parking-lot-core" ,#~'("nightly"))
     ;; "quickcheck" features requires removed crate "quickcheck"
     ("rust-partial-io" ,#~'("futures03" "tokio1"))
     ("rust-polars-core" ,#~'("default" "dtype-time" "dtype-date" "dtype-datetime" ; "dtype-time", "dtype-datetime" and "dtype-date" are required by rust-polars-io's csv support
