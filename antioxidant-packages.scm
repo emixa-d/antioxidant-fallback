@@ -4708,7 +4708,7 @@ RFC-compliant `EmailAddress` newtype. ")
      ,(p rust-nom-7)
      #:for-dependent
      ,(lambda (p)
-	(not (member (package-name p) '("rust-terminfo"))))) ; needs old rust-nom@5 and no update available
+	(not (member (package-name p) '("rust-terminfo" "rust-ansi-parser"))))) ; needs old rust-nom@5 (or older, in case of rust-ansi-parser) and no update available
     ("rust-nom" ,(p rust-nom-5)
      #:for-dependent
      ,(lambda (p)
