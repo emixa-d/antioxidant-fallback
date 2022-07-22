@@ -1430,18 +1430,6 @@ package-specific information."
 		(apply invoke test test-options)) ; TODO: look for reasonable defaults
 	      (find-files (in-vicinity output "bin")))))))
 
-(define (augment-path! target build outputs #:allow-other-keys)
-  "Unless cross-compiling, add the binaries in the outputs to PATH.
-This is required by some tests, e.g. those in rust-os-pipe@0.9.2."
-  (define augment!
-    (match-lambda
-     ((_ . directory)
-      (let ((bin (in-vicinity directory "bin")))
-	(when (directory-exists? bin)
-	  (setenv "PATH" (string-append (getenv "PATH") ":" bin)))))))
-  (when (equal? target build) ; not cross-compiling
-    (for-each augment! outputs)))
-
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
     ;; TODO: before configure?
@@ -1457,7 +1445,6 @@ This is required by some tests, e.g. those in rust-os-pipe@0.9.2."
     (add-after 'build 'build-binaries build-binaries)
     (delete 'check)
     (add-after 'install 'create-all-outputs create-all-outputs)
-    (add-after 'install 'augment-path!)
     (replace 'strip fixed-strip)
     ;; Some Rust packages (e.g. rust-os-pipe@0.9.2) want to access its binaries
     ;; in the check phase.
