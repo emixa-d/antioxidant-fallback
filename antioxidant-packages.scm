@@ -789,6 +789,24 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	       (("\\bnum_seconds\\(\\)") "whole_seconds()")
 	       (("\\bnum_nanoseconds\\(\\)") "whole_nanoseconds()") ; technically has a different semantics but in this context the result is the same
 	       (("\\.expect\\(\"Unexpected overflow\"\\) as u32") "as u32"))))))
+    ("rust-os-pipe"
+     ,#~((add-after 'unpack 'no-cargo
+	   ;; TODO would be nice to build them with debug
+	   ;; assertions. Calling cargo isn't going to work.
+	   (lambda _
+	     (substitute* "src/lib.rs"
+	       (("path_to_exe\\(\"([a-z_]+)\"\\)" _ name)
+		(object->string
+		 (string-append #$output "/bin/" name))))))
+	 ;; bug in antioxidant
+	 (add-before 'check 'check-files
+	   (lambda _
+	     (unless (and
+		      (file-exists? (string-append #$output "/bin/cat"))
+		      (file-exists? (string-append #$output "/bin/cat_both"))
+		      (file-exists? (string-append #$output "/bin/swap"))
+		      (not (file-exists? (string-append #$output "/bin/os_pipe"))))
+	       (error "some target binaries missing or have an incorrect name"))))))
     ("circtools"
      ,#~((add-after 'unpack 'fixup-link-search
 	   ;; TODO: what's the rustc-flags=-L for?
