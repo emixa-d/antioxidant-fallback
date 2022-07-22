@@ -4020,6 +4020,15 @@ RFC-compliant `EmailAddress` newtype. ")
     ("monolith" -> "pkg-config")
     ("monolith" -> "openssl")
 
+    ;; No need to include transitive dependencies (tidyness)
+    ("castor" -> "pkg-config")
+    ("castor" -> "atk")
+    ("castor" -> "cairo")
+    ("castor" -> "gdk-pixbuf")
+    ("castor" -> "gtk+")
+    ("castor" -> "libressl")
+    ("castor" -> "pango")
+
     ("rust-vcpkg" ; for Windows, usually not needed elsewhere
      #:for-dependent
      ,(lambda (dependent)
