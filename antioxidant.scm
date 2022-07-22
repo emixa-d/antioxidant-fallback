@@ -1126,6 +1126,8 @@ according to the 'target-name' or @var{target/elaborated} and @var{family}.
 In that case, the binary will have the target-name as 'base name' and will
 be put in the 'bin' subdirectory of one of the outputs.
 
+If the file already exists, bail out.
+
 The directory where the binary is saved in will automatically be created if
 required.
 
@@ -1168,6 +1170,10 @@ embedded in the main source code)
 	  (if (symbol? family)
 	      (error "the family passed to 'compile-bin-target' is unrecognised")
 	      (error "the family passed to 'compile-bin-target' is expected to be a symbol")))))))
+  (when (file-exists? binary-location)
+    ;; This identified a miscompilation of rust-os-pipe.
+    (error (format #f "~a already exists when building ~a, refusing to build to avoid overwrite~%"
+		   binary-location target/elaborated)))
   (format #t "Compiling ~a to ~a~%" (target-path target/elaborated) binary-location)
   (apply compile-rust-binary
 	 (target-path target/elaborated)
