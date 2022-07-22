@@ -1431,7 +1431,10 @@ package-specific information."
     (replace 'configure configure)
     (replace 'build build)
     (add-after 'build 'build-binaries build-binaries)
+    (delete 'check)
     (add-after 'install 'create-all-outputs create-all-outputs)
     (replace 'strip fixed-strip)
-    (replace 'check rust-tests-check)
+    ;; Some Rust packages (e.g. rust-os-pipe@0.9.2) want to access its binaries
+    ;; in the check phase.
+    (add-after 'strip 'check rust-tests-check)
     (delete 'install))) ; TODO?
