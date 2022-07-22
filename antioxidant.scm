@@ -1192,12 +1192,19 @@ embedded in the main source code)
 	 ;;
 	 ;; TODO: there were ‘could not find crate FOO’ warnings, does this
 	 ;; still have any effect?
-	 #:crate-mappings (cons (make-crate-mapping (package-name (manifest-package *manifest*))
-						    (crate-name-of-manifest *manifest*))
-				(manifest-all-dependencies (pk 'm *manifest*)
-							   (if (eq? family 'test)
-							       '(dependency dev)
-							       '(dependency))))
+	 #:crate-mappings
+	 (append (if (eq? family 'test)
+		     ;; When compiling tests, we are at the same time compiling
+		     ;; the library.  Linking to a library when a variant of it
+		     ;; is being compiled can cause import ambiguities (e.g. in
+		     ;; case of rust-glib@0.14.8), so don't do that.
+		     '()
+		     (list (make-crate-mapping (package-name (manifest-package *manifest*))
+					       (crate-name-of-manifest *manifest*))))
+		 (manifest-all-dependencies (pk 'm *manifest*)
+					    (if (eq? family 'test)
+						'(dependency dev)
+						'(dependency))))
 	 ;; Binaries can use their own crates!
 	 ;; TODO: for tests, also native-inputs?
 	 #:available-crates
