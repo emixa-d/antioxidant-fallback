@@ -145,6 +145,12 @@
 			 "README" "NEWS" "INSTALL" "ChangeLog" "AUTHORS" ; these are for freetype, not rust-servo-freetype-sys
 			 "COPYING" ; this is for freetype, not rust-servo-freetype-sys which is MPL
 			 ))))))
+    ("rust-test-cert-gen"
+     ,#~((add-after 'unpack 'fix-references
+	   (lambda* (#:key inputs #:allow-other-keys)
+	     (substitute* "src/lib.rs"
+	       (("Command::new\\(\"openssl\"\\)")
+		(format #f "Command::new(~s)" (search-input-file inputs "bin/openssl"))))))))
     ("rust-mysqlclient-sys" ; the pkg-config file is named mariadb.pc, not mysqclient.pc
      ,#~((add-after 'unpack 'fix-pkg-config-use
 	   (lambda _
@@ -4927,6 +4933,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-swayipc+sync"
      (("rust-futures-core" ,rust-futures-core-0.3)
       ("rust-failure" ,(p rust-failure-0.1))))
+    ("rust-test-cert-gen"
+     (("openssl" ,(@ (gnu packages tls) openssl-3.0))))
     ("rust-tree-magic-mini" ; new inputs for new version
      (("rust-bytecount" ,(p rust-bytecount-0.6))
       ("rust-once-cell" ,(p rust-once-cell-1))
