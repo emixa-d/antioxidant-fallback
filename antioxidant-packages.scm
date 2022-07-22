@@ -5184,6 +5184,15 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-glob"
      "--exact"
      "--skip=test::test_iteration_errors") ; /root does not exist in the build environment
+    ("rust-native-tls"
+     "--exact" ; these tests try accessing the network
+     "--skip=test::alpn_google_invalid"
+     "--skip=test::connect_bad_hostname_ignored"
+     "--skip=test::connect_google"
+     "--skip=test::alpn_google_none"
+     "--skip=test::connect_no_root_certs"
+     "--skip=test::connect_bad_hostname"
+     "--skip=test::alpn_google_h2")
     ("rust-rustls"
      "--skip=msgs::message_test::test_read_fuzz_corpus" ; some test files are missing
      ;; It doesn't find some issuers, probably just
