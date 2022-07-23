@@ -52,7 +52,8 @@
 	    find-rust-binaries
 	    compile-binary-target
 
-	    rust-tests-check)
+	    rust-tests-check
+	    rust-tests-check/xorg)
   #:use-module (guix build syscalls)
   #:use-module (guix build utils)
   #:use-module (guix build gnu-build-system)
@@ -1422,6 +1423,7 @@ package-specific information."
   (for-each create-output outputs))
 
 (define* (rust-tests-check #:key outputs tests?
+			   (test-runner invoke)
 			   (test-options '())
 			   #:allow-other-keys)
   "Look for tests in the 'tests' output and run them."
@@ -1434,8 +1436,15 @@ package-specific information."
 	   (lambda (output)
 	     (for-each
 	      (lambda (test)
-		(apply invoke test test-options)) ; TODO: look for reasonable defaults
+		(apply test-runner test test-options)) ; TODO: look for reasonable defaults
 	      (find-files (in-vicinity output "bin")))))))
+
+(define (rust-tests-check/xorg . arguments)
+  "Run tests inside an environment with an X display server.  This is often
+required for graphical software."
+  (define (invoke/xorg . arguments)
+    (apply invoke "xvfb-run" "--" arguments))
+  (apply rust-tests-check (append arguments (list #:test-runner invoke/xorg))))
 
 (define %standard-antioxidant-phases
   (modify-phases %standard-phases
