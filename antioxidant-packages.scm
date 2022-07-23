@@ -5106,6 +5106,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ;; TODO: is this sufficient?
     ("rust-futures-core-preview"
      (("rust-futures-core" ,rust-futures-core-0.3)))
+    ("rust-git2"
+     (("rust-tempfile" ,(p rust-tempfile-3)))) ; for tests
     ("rust-http-body" ; at least for 0.4
      (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
     ("rust-headers"
