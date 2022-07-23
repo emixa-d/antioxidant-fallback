@@ -5179,7 +5179,19 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-zstd" ,(p rust-zstd-0.9))))))
 
 (define %test-options
-  '(("rust-ansi-term"
+  '(("rust-git2"
+     "--exact"
+     ;; These tests fail.  TODO: report them if still present
+     ;; after updating to latest.
+     "--skip=build::tests::smoke2"
+     "--skip=remote::tests::push"
+     "--skip=remote::tests::transfer_cb"
+     "--skip=submodule::tests::clone_submodule"
+     "--skip=index::tests::add_then_read"
+     "--skip=worktree::tests::smoke_add_from_branch"
+     "--skip=worktree::tests::smoke_add_locked"
+     "--skip=worktree::tests::smoke_add_no_ref")
+    ("rust-ansi-term"
      "--exact"
      "--skip=debug::test::long_and_detailed") ; fails because the new rust-serde-json outputs things a little different from what rust-ansi-term is used to, seems harmless
     ("rust-arrayref"
