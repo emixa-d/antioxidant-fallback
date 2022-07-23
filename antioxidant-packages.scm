@@ -448,6 +448,8 @@ fn _find_target_dir_unused(out_dir: &Path) -> TargetDir {"
 	     (substitute* '("src/genum_derive.rs" "src/gflags_attribute.rs")
 	       (("CamelCase, KebabCase") "ToUpperCamelCase, ToKebabCase")
 	       (("to_camel_case") "to_upper_camel_case"))))))
+    ("rust-gtk"
+     ,#~((replace 'check rust-tests-check/xorg)))
     ;; TODO: add rust-peg-macros to native-inputs for
     ;; cross-compilation reasons.
     ;;
@@ -5049,6 +5051,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-futures-core" ,(p rust-futures-core-0.3)) ; for tests
       ("rust-futures-util" ,(p rust-futures-util-0.3)) ; for tests
       ("rust-tempfile" ,(p rust-tempfile-3)))) ; for tests
+    ("rust-gtk"
+     (("xvfb-run" ,(@ (gnu packages xorg) xvfb-run)))) ; for tests
     ;; for "pem" and "alloc" feature
     ("rust-pkcs1"
      (("rust-pkcs8" ,(@ (gnu packages crates-io) rust-pkcs8-0.7))))
