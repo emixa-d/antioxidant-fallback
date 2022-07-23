@@ -5251,6 +5251,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-duct" . removed-dependency) ; rust-tempdir
     ("rust-env-logger" . removed-dependency) ; quickcheck
     ("rust-erased-serde" . removed-dependency) ; rust-serde-json
+    ("rust-flate2" . version) ; rust-rand
     ("rust-fst" . version) ; rust-quickcheck
     ("rust-hashbrown" . version) ; rust-rand?
     ("rust-heapless" . version) ; rust-scoped-threadpool?
