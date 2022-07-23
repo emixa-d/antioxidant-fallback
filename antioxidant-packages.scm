@@ -5687,7 +5687,7 @@ RFC-compliant `EmailAddress` newtype. ")
 	  #~(modify-phases %standard-antioxidant-phases
 	      (replace 'build-binaries
 		(lambda _
-		  (mkdir (string-append #$output "/bin"))
+		  (mkdir-p (string-append #$output "/bin"))
 		  (invoke "gcc" "-L" (string-append #$output "/lib")
 			  "-lsharedlib"
 			  "example.c"
