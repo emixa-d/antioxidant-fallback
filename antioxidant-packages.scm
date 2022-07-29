@@ -5117,6 +5117,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-httpdate" ,(p rust-httpdate-1)))) ; new dependency
     ("rust-hex"
      (("rust-pretty-assertions" ,(p rust-pretty-assertions-1)))) ; for tests
+    ("rust-ron"
+     (("rust-serde-bytes" ,(p rust-serde-bytes-0.11))))
     ("rust-s3handler" ; new dependency for new version
      (("rust-thiserror" ,(p rust-thiserror-1))))
     ("rust-tectonic-bridge-core"
