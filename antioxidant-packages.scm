@@ -4471,7 +4471,7 @@ RFC-compliant `EmailAddress` newtype. ")
 						  #~'("default"))
      #:for-dependent
      ,(lambda (dependent)
-	(member (package-name dependent) '("rust-vte" "rust-csv-core")))) ; still required old rust-arrayvec
+	(member (package-name dependent) '("rust-vte" "rust-csv-core")))) ; still requires old rust-arrayvec
     ("rust-bitstream-io" ,(p rust-bitstream-io-1)) ; avoid multiple versions
     ("rust-bytestring" ,rust-bytestring)
     ("rust-avif-serialize" ,rust-avif-serialize)
