@@ -5153,7 +5153,8 @@ RFC-compliant `EmailAddress` newtype. ")
       ("rust-futures-sink" ,rust-futures-sink-0.3)
       ("rust-futures-util" ,rust-futures-util-0.3)))
     ("rust-tokio-util"
-     (("rust-tracing" ,(p rust-tracing-0.1)))) ; missing dependency
+     (("rust-tracing" ,(p rust-tracing-0.1)) ; missing dependency
+      ("rust-tokio-stream" ,(p rust-tokio-stream-0.1)))) ; for tests
     ("rust-x11" ; missing inputs
      (("libx11" ,(@ (gnu packages xorg) libx11))
       ("libxcursor" ,(@ (gnu packages xorg) libxcursor))
