@@ -5243,6 +5243,7 @@ RFC-compliant `EmailAddress` newtype. ")
 (define %disable-tests
   '(("rust-adler32" . version) ; rust-rand
     ("rust-ahash" . removed-dependency) ; rust-hex
+    ("rust-ascii-canvas" . missing-files) ; test_util
     ("rust-atty" . build-environment) ; assumes fd 0/1/2 are ttys
     ("rust-base64" . version) ; rust-rand
     ("rust-bincode" . removed-dependency) ; quickcheck
