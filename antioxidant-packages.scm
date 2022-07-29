@@ -5243,7 +5243,10 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-sysinfo"
      "--exact"
      "--skip=test::check_uid_gid" ; there's no root in the build environment
-     "--skip=test::check_system_info"))) ; there's no /etc/os-release or /etc/lsb-release (TODO: maybe we could patch SystemExt.name to just return Guix?).
+     "--skip=test::check_system_info") ; there's no /etc/os-release or /etc/lsb-release (TODO: maybe we could patch SystemExt.name to just return Guix?).
+    ("rust-tiff"
+     "--exact"
+     "--skip=encoder::compression::deflate::tests::test_deflate"))) ; <https://github.com/image-rs/image-tiff/issues/169>
 
 ;; Packages for which tests are disabled.
 ;; The second part of the pair is a 'reason' for disabling them.
