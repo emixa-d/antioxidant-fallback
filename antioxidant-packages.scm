@@ -5210,6 +5210,10 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-calloop"
      "--exact"
      "--skip=loop_logic::tests::insert_source_no_interest") ; known test failure, reported at <https://github.com/Smithay/calloop/issues/96>
+    ("rust-gif"
+     "--exact"
+     "--skip=reader::test::test_simple_indexed" ; TODO: missing file
+     "--skip=round_trip") ; TODO: missing file
     ("rust-glob"
      "--exact"
      "--skip=test::test_iteration_errors") ; /root does not exist in the build environment
