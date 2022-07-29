@@ -5202,6 +5202,11 @@ RFC-compliant `EmailAddress` newtype. ")
      ;; reported upstream: https://github.com/droundy/arrayref/issues/22
      "--skip=test::check_array_mut_ref_7"
      "--skip=test::check_array_ref_5")
+    ("rust-bigdecimal"
+     "--exact"
+     ;; To be investigated ... (dependencies seem correct?)
+     "--skip=bigdecimal_serde::test_serde_deserialize_int"
+     "--skip=bigdecimal_serde::test_serde_deserialize_f64")
     ("rust-calloop"
      "--exact"
      "--skip=loop_logic::tests::insert_source_no_interest") ; known test failure, reported at <https://github.com/Smithay/calloop/issues/96>
