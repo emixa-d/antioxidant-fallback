@@ -5287,6 +5287,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-time" . missing-files) ; the tests module, and quickcheck
     ("rust-tokio" . removed-dependency) ; rust-tokio<->rust-tokio-test cycle
     ("rust-xz2" . version) ; rust-rand
+    ("rust-weezl" . missing-files) ; benches/binary-8-msb.lzw
     ("rust-winres" . fails))) ; only for compiling to Windows, which isn't supported yet
 
 (define (find-replacement dependent dependency)
