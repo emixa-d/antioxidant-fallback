@@ -5286,6 +5286,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-terminal-size" . build-environment) ; /dev/stderr is not a tty
     ("rust-time" . missing-files) ; the tests module, and quickcheck
     ("rust-tokio" . removed-dependency) ; rust-tokio<->rust-tokio-test cycle
+    ("rust-xz2" . version) ; rust-rand
     ("rust-winres" . fails))) ; only for compiling to Windows, which isn't supported yet
 
 (define (find-replacement dependent dependency)
