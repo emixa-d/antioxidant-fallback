@@ -4934,6 +4934,10 @@ RFC-compliant `EmailAddress` newtype. ")
       ("rust-failure" ,(p rust-failure-0.1))))
     ("rust-test-cert-gen"
      (("openssl" ,(@ (gnu packages tls) openssl-3.0))))
+    ("rust-tokio-rustls"
+     ;; TODO: check that there are no time bombs embedded
+     (("rust-futures-util" ,(p rust-futures-util-0.3)) ; test input
+      ("rust-rustls-pemfile" ,(p rust-rustls-pemfile-0.2))))
     ("rust-tree-magic-mini" ; new inputs for new version
      (("rust-bytecount" ,(p rust-bytecount-0.6))
       ("rust-once-cell" ,(p rust-once-cell-1))
