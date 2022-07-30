@@ -3864,7 +3864,10 @@ RFC-compliant `EmailAddress` newtype. ")
     "rust-tokio-mock-task" ; doesn't build
     "rust-tokio-test"
     "rust-rand-xorshift"
-    "rust-serde-test"
+    ("rust-serde-test"
+     #:for-dependent
+     ,(lambda (dependent)
+	(not (member (package-name dependent) '("rust-uuid")))))
     "rust-actix-testing" ; doesn't build
     "rust-actix-connect" ; doesn't build and no update available
     ("rust-xml5ever" -> "rust-time") ; new version doesn't use rust-time anymore
@@ -5175,6 +5178,9 @@ RFC-compliant `EmailAddress` newtype. ")
       ("libxxf86vm" ,(@ (gnu packages xorg) libxxf86vm))))
     ("rust-x11rb" ; missing inputs
      (("libxcb" ,(@ (gnu packages xorg) libxcb))))
+    ("rust-uuid"
+     (("rust-serde-derive" ,(p rust-serde-derive-1)) ; for tests
+      ("rust-serde-test" ,(p rust-serde-test-1)))) ; for tests
     ("rust-warp" ; new dependencies for new version
      (("rust-futures-channel" ,(p rust-futures-channel-0.3))
       ("rust-futures-util" ,(p rust-futures-util-0.3))
