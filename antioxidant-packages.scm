@@ -5258,6 +5258,9 @@ RFC-compliant `EmailAddress` newtype. ")
      ;; Additionally, the certificate tests are time bombs in that they expire:
      ;; <https://github.com/rustls/rustls/pull/71>, so disable them.
      "--skip=verifybench::test_")
+    ("rust-streaming-decompression"
+     "--exact"
+     "--skip=tests::test_basics_uncompressed") ; <https://github.com/jorgecarleitao/parquet2/issues/164>
     ("rust-sysinfo"
      "--exact"
      "--skip=test::check_uid_gid" ; there's no root in the build environment
