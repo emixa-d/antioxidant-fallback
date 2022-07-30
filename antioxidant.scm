@@ -1091,6 +1091,7 @@ also compile the tests using the mechanism described in
 		(scm->target
 		 `(("name" . ,(string-append crate-name "-embedded-tests"))
 		   ("path" . ,lib-path))))
+	       crate-name
 	       #:family 'test
 	       ;; TODO: does #:configuration need to be set here as well?
 	       arguments)))))
@@ -1112,7 +1113,7 @@ return false instead."
       (and inferred-source0 (file-exists? inferred-source0) inferred-source0)
       (and (file-exists? inferred-source1) inferred-source1)))
 
-(define* (compile-binary-target target/elaborated
+(define* (compile-binary-target target/elaborated crate-name
 				#:key (destination 'auto)
 				(family 'bin)
 				inputs
@@ -1183,6 +1184,9 @@ embedded in the main source code)
 	  (if (eq? family 'test)
 	      ;; TODO: does this work for [[tests]] and integration tests?
 	      (list "--test") ; let the tests be run instead of the main function
+	      '())
+	  (if crate-name
+	      (list (string-append "--crate-name=" crate-name))
 	      '())
 	  (list (string-append "--edition=" (target-edition target/elaborated))
 		(string-append "-Lnative=" (getcwd)))) ; TODO: is this still required, now there's better support for configure scripts?
@@ -1314,7 +1318,9 @@ embedded in the main source code)
   (define (compile-binary-target* target)
     ;; Check required-features.
     (if (lset<= string=? (target-required-features target) *features*)
-	(apply compile-binary-target target #:family 'bin arguments)
+	(apply compile-binary-target target
+	       #false ; maybe TODO?
+	       #:family 'bin arguments)
 	(format #t "not compiling ~a, because the following features are missing: ~a~%"
 		target
 		(lset-difference string=?
