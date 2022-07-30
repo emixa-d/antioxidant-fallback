@@ -4922,6 +4922,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("cairo" ,(@ (gnu packages gtk) cairo)))) ; missing input
     ("rust-const-oid"
      (("rust-hex-literal" ,(p rust-hex-literal-0.3)))) ; for tests
+    ("rust-lz4"
+     (("rust-rand" ,(p rust-rand-0.8)))) ; for tests
     ("circtools" ; missing input (TODO: actually a native-input)
      (("rust-cc" ,(p rust-cc-1))
       ("rust-cmake" ,(p rust-cmake-0.1))))
