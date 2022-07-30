@@ -3835,6 +3835,7 @@ RFC-compliant `EmailAddress` newtype. ")
     "rust-cloudabi" ; doesn't seem like a supported target
     "rust-winapi" "rust-winutil" "rust-winapi-wsapoll" "rust-kernel32-sys" "rust-user32-sys" "rust-winreg" "rust-wepoll-sys" "rust-wepoll-sys-stjepang" "rust-ipconfig" "rust-windows" "rust-windows-x86-64-msvc" "rust-windows-x86-64-gnu" "rust-windows-i686-msvc" "rust-windows-i686-gnu" "rust-windows-aarch64-msvc" "rust-windows-sys" "rust-windows-gen" "rust-windows-macros" ; skip Windows support for now
     "rust-mio-anonymous-pipes" ; also Windows-specific
+    "rust-ntapi" ; likewise
     "rust-nodrop-union" ; required unstable, and deprecated
     "rust-sleef-sys" ; requires unstable
     "rust-packed-simd" "rust-packed-simd-2" ; requires unstable (TODO: rust-packed-simd-2?)
