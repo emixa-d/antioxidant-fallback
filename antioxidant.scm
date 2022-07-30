@@ -717,8 +717,17 @@ chosen, enabling all features like Cargo does (except nightly).~%")
      (set! *features* (append features *features*))))
   (set! *features* (delete-duplicates *features*)))
 
-(define (make-features-closure . _)
+(define* (make-features-closure #:key (features '()) #:allow-other-keys)
+  (define (forbid-vendoring feature)
+    (when (member feature *features*)
+      (unless (member feature features)
+	(format (current-error-port)
+		"The vendoring feature ~a was implicitly enabled, but vendoring is usually considered unacceptable due to reasons, so the build is halted.  To vendor anyway, explicitly enable the feature.~%")
+	(exit 1))))
   (set! *features* (features-closure *features* (manifest-features *manifest*)))
+  (forbid-vendoring "vendored")
+  (forbid-vendoring "vendor")
+  (forbid-vendoring "bundle")
   (format #t "The following features will be used: ~a~%." *features*))
 
 
