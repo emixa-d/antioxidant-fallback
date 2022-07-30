@@ -5279,6 +5279,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-base64" . version) ; rust-rand
     ("rust-bincode" . removed-dependency) ; quickcheck
     ("rust-bitpacking" . removed-dependency) ; rust-proptest (cycle)
+    ("rust-bson" . missing-files) ; mod tests;
     ("rust-byteorder" . removed-dependency) ; quickcheck
     ("rust-chrono" . removed-dependency) ; quickcheck
     ("rust-deflate" . other) ; something about Rust 2018 and use statements having changed?
