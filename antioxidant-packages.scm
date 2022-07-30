@@ -5116,7 +5116,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-git2"
      (("rust-tempfile" ,(p rust-tempfile-3)))) ; for tests
     ("rust-http-body" ; at least for 0.4
-     (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))))
+     (("rust-pin-project-lite" ,(@ (gnu packages crates-io) rust-pin-project-lite-0.2))
+      ("rust-tokio" ,(p rust-tokio-1)))) ; for tests
     ("rust-headers"
      (("rust-httpdate" ,(p rust-httpdate-1)))) ; new dependency
     ("rust-hex"
