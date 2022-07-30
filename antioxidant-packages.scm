@@ -4920,6 +4920,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-proc-macro2" ,(p rust-proc-macro2-1))))
     ("rust-cairo-sys-rs"
      (("cairo" ,(@ (gnu packages gtk) cairo)))) ; missing input
+    ("rust-const-oid"
+     (("rust-hex-literal" ,(p rust-hex-literal-0.3)))) ; for tests
     ("circtools" ; missing input (TODO: actually a native-input)
      (("rust-cc" ,(p rust-cc-1))
       ("rust-cmake" ,(p rust-cmake-0.1))))
