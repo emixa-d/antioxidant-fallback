@@ -5313,6 +5313,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-tokio-rustls" . other) ; some tests fail due to expired certificates, let's disable all the tests for now -- tests can be re-enabled once the time bombs are removed
     ("rust-time" . missing-files) ; the tests module, and quickcheck
     ("rust-tokio" . removed-dependency) ; rust-tokio<->rust-tokio-test cycle
+    ("rust-unic-segment" . missing-dependency) ; rust-unic-ucd-common
     ("rust-xz2" . version) ; rust-rand
     ("rust-wasmparser" . missing-files) ; ../../tests/local/naming.wasm
     ("rust-weezl" . missing-files) ; benches/binary-8-msb.lzw
