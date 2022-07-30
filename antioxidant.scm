@@ -1093,7 +1093,6 @@ also compile the tests using the mechanism described in
 		   ("path" . ,lib-path))))
 	       crate-name
 	       #:family 'test
-	       ;; TODO: does #:configuration need to be set here as well?
 	       arguments)))))
 
 ;; See <https://doc.rust-lang.org/cargo/guide/project-layout.html>
