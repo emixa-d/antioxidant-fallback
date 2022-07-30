@@ -5306,6 +5306,7 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-sval" . removed-dependency) ; quickcheck
     ("rust-system-deps" . version) ; rust-pkg-config
     ("rust-terminal-size" . build-environment) ; /dev/stderr is not a tty
+    ("rust-tokio-openssl" . other) ; test::server is a time bomb (certificate expiration) and test::google assumes network access (and a time bomb if Google disappears)
     ("rust-tokio-rustls" . other) ; some tests fail due to expired certificates, let's disable all the tests for now -- tests can be re-enabled once the time bombs are removed
     ("rust-time" . missing-files) ; the tests module, and quickcheck
     ("rust-tokio" . removed-dependency) ; rust-tokio<->rust-tokio-test cycle
