@@ -694,6 +694,9 @@ default features implied by the \"default\" feature."
     (match-lambda
       (("nightly" . _) #false) ; unlikely to work in Guix, e.g. rust-lock-api@0.4
       (("unstable" . _) #false) ; likewise, e.g. rust-fallible-collections@0.4.2
+      (("vendored" . _) #false) ; not desired in Guix (e.g.: rust-libnghttp2-sys)
+      (("vendor" . _) #false) ; plausible alternate spelling for same concept
+      (("bundle" . _) #false) ; likewise
       ((x . y) x)))
   (match (list (->bool (member "default" features))
 	       (->bool (assoc "default" (manifest-features *manifest*))))
