@@ -4899,6 +4899,8 @@ RFC-compliant `EmailAddress` newtype. ")
      (("rust-serde-json" ,(p rust-serde-json-1)))) ; for tests
     ("rust-shared-child"
      (("python-minimal" ,(@ (gnu packages python) python-minimal-wrapper)))) ; for tests
+    ("rust-strength-reduce"
+     (("rust-num-bigint" ,(p rust-num-bigint-0.4)))) ; for tests
     ("rust-structopt" ; for paw feature
      (("rust-paw" ,(p rust-paw-1))))
     ("rust-sysinfo" ; for tests (TODO: maybe native-inputs)
