@@ -7,3 +7,8 @@ Binaries are by default put in the 'bin' when that output exists, 'out' otherwis
 Examples binaries are put in 'example', or 'bin', or 'out' instead.
 Benchmark binaries are put in 'benchmarks', or 'bin', or 'out' instead.
 Test binaries are put in 'tests', or 'bin', or 'out' instead, but keep in mind that currently tests are not compiled by default when cross-compiling (this could change in the future if desired, but for now we keep the behaviour of other build systems).
+
+Crate types:
+  * rlib: equivalent to static libraries (.a) for C, + some metadata
+  * staticlib: _not_ static library, but rather the compiled crate _and all its dependencies_ as a single static library
+  * ...
