@@ -1192,7 +1192,10 @@ embedded in the main source code)
 	 (append
 	  (if (eq? family 'test)
 	      ;; TODO: does this work for [[tests]] and integration tests?
-	      (list "--test") ; let the tests be run instead of the main function
+	      (list "--test" ; let the tests be run instead of the main function
+		    ;; Some packages, e.g. rust-unsafe-unwrap, expect this to be
+		    ;; enabled for tests.
+		    "-C" "debug-assertions=on")
 	      '())
 	  (if crate-name
 	      (list (string-append "--crate-name=" crate-name))
