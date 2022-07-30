@@ -5102,6 +5102,8 @@ RFC-compliant `EmailAddress` newtype. ")
     ("rust-jsonrpc-core" ; new inputs for new version
      (("rust-futures-executor" ,rust-futures-executor-0.3)
       ("rust-futures-util" ,rust-futures-util-0.3)))
+    ("rust-jsonpath-lib"
+     (("rust-env-logger" ,(p rust-env-logger-0.9)))) ; for tests
     ("rust-lalrpop" (("rust-tiny-keccak" ,(p rust-tiny-keccak-2))
                      ("rust-pico-args" ,rust-pico-args)))
     ("rust-merge-derive" (("rust-syn" ,(p rust-syn-1)) ; missing inputs
