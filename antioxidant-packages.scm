@@ -5258,7 +5258,12 @@ RFC-compliant `EmailAddress` newtype. ")
      "--skip=test::check_system_info") ; there's no /etc/os-release or /etc/lsb-release (TODO: maybe we could patch SystemExt.name to just return Guix?).
     ("rust-tiff"
      "--exact"
-     "--skip=encoder::compression::deflate::tests::test_deflate"))) ; <https://github.com/image-rs/image-tiff/issues/169>
+     "--skip=encoder::compression::deflate::tests::test_deflate") ; <https://github.com/image-rs/image-tiff/issues/169>
+    ("rust-unsafe-unwrap"
+     "--exact"
+     ;; the _failure tests assume that 'debug_assertions' is used
+     "--skip=tests::option_unwrap_failure"
+     "--skip=tests::result_unwrap_failure")))
 
 ;; Packages for which tests are disabled.
 ;; The second part of the pair is a 'reason' for disabling them.
