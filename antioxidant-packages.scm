@@ -4893,7 +4893,9 @@ RFC-compliant `EmailAddress` newtype. ")
 
 ;; TODO: add these (upstream) or teach "guix style" to add them
 (define %extra-inputs
-  `(("rust-bigdecimal"
+  `(("rust-aes"
+     (("rust-hex-literal" ,(p rust-hex-literal-0.3)))) ; for tests
+    ("rust-bigdecimal"
      (("rust-serde-json" ,(p rust-serde-json-1)))) ; for tests
     ("rust-shared-child"
      (("python-minimal" ,(@ (gnu packages python) python-minimal-wrapper)))) ; for tests
